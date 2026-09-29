@@ -98,11 +98,29 @@ public class NexusCore {
         eventBus.subscribe(UserInputEvent.class, this::processUserInput);
     }
 
+    private GestureDetectedEvent.Gesture lastTriggeredGesture = GestureDetectedEvent.Gesture.NONE;
+    private long lastGestureTriggerTime = 0;
+
     private void handleGestureTrigger(GestureDetectedEvent event) {
+        if (event == null || event.getGesture() == GestureDetectedEvent.Gesture.NONE) {
+            return;
+        }
+
+        long now = System.currentTimeMillis();
+        // Debounce: only fire if gesture changed or 3 seconds passed
+        if (event.getGesture() == lastTriggeredGesture && (now - lastGestureTriggerTime < 3000)) {
+            return;
+        }
+
+        lastTriggeredGesture = event.getGesture();
+        lastGestureTriggerTime = now;
+
         if (event.getGesture() == GestureDetectedEvent.Gesture.STOP_PALM) {
             System.out.println("[NexusCore] Open Palm Gesture: Pausing audio/speech.");
         } else if (event.getGesture() == GestureDetectedEvent.Gesture.PEACE) {
             System.out.println("[NexusCore] Peace Gesture: Triggering quick context summary.");
+        } else if (event.getGesture() == GestureDetectedEvent.Gesture.THUMBS_UP) {
+            System.out.println("[NexusCore] Thumbs Up Gesture: Action confirmed.");
         }
     }
 

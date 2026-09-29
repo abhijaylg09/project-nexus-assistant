@@ -176,9 +176,8 @@ public class VisionService {
             );
             eventBus.publish(fullMoodEvent);
 
-            // 7. Gesture classification
-            boolean gestureActive = (Math.sin(scanAngle * 0.25) > 0.88);
-            GestureDetectedEvent gestureEvent = gestureClassifier.evaluateGesture(gestureActive);
+            // 7. Gesture classification (only active when triggered)
+            GestureDetectedEvent gestureEvent = gestureClassifier.evaluateGesture(false);
             if (gestureEvent.getGesture() != GestureDetectedEvent.Gesture.NONE) {
                 eventBus.publish(gestureEvent);
             }
