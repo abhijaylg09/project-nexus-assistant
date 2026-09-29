@@ -140,4 +140,31 @@ public class NexusCoreTest {
         assertTrue(topics.contains("Computer Vision"));
         assertTrue(topics.contains("Speech I/O"));
     }
+
+    @Test
+    @DisplayName("Verify MotionDetector and EyeStateClassifier")
+    public void testMotionAndEyeClassifiers() {
+        com.nexus.vision.MotionDetector md = new com.nexus.vision.MotionDetector();
+        assertEquals(0.0, md.getCurrentMotionLevel());
+
+        com.nexus.vision.EyeStateClassifier ec = new com.nexus.vision.EyeStateClassifier();
+        assertFalse(ec.isEyesClosed());
+        assertFalse(ec.isDrowsinessAlert());
+
+        ec.setManualOverride(com.nexus.vision.EyeStateClassifier.EyeStatus.CLOSED, 5000);
+        assertTrue(ec.isEyesClosed());
+        assertTrue(ec.isDrowsinessAlert());
+    }
+
+    @Test
+    @DisplayName("Verify TeammateProfile catalog for STI25CS")
+    public void testTeammates() {
+        com.nexus.personalization.TeammateProfile[] list = com.nexus.personalization.TeammateProfile.getAllTeammates();
+        assertEquals(5, list.length);
+        assertNotNull(com.nexus.personalization.TeammateProfile.findById("ABHIJAY"));
+        assertNotNull(com.nexus.personalization.TeammateProfile.findById("BHADRA"));
+        assertNotNull(com.nexus.personalization.TeammateProfile.findById("ALEENA"));
+        assertNotNull(com.nexus.personalization.TeammateProfile.findById("ABHISHEK"));
+        assertNotNull(com.nexus.personalization.TeammateProfile.findById("DIA"));
+    }
 }

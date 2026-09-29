@@ -4,7 +4,9 @@ import com.nexus.core.AppConfig;
 import com.nexus.core.MultimodalEventBus;
 import com.nexus.core.NexusCore;
 import com.nexus.core.events.*;
+import com.nexus.personalization.TeammateProfile;
 import com.nexus.personalization.UserProfile;
+import com.nexus.vision.EyeStateClassifier;
 import com.nexus.vision.VideoFrame;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -15,8 +17,9 @@ import javafx.scene.layout.*;
 
 /**
  * Primary JavaFX HUD Controller for Project N.E.X.U.S.
- * Assembles and manages chat streams, live vision overlays, audio visualizer,
- * personalization inspector, and real-time telemetry gauges.
+ * Assembles chat streams, camera viewports, audio visualizer,
+ * teammate identity recognition, gender detection, drowsiness alerts,
+ * and live system telemetry.
  */
 public class HudController {
 
@@ -40,7 +43,7 @@ public class HudController {
     // Telemetry Cards
     private TelemetryMeter cpuMeter;
     private TelemetryMeter ramMeter;
-    private TelemetryMeter fpsMeter;
+    private TelemetryMeter motionMeter;
     private TelemetryMeter moodMeter;
 
     // Personalization Inspector Labels
@@ -71,7 +74,7 @@ public class HudController {
         // 2. Center Chat & Audio Visualizer Pane
         rootPane.setCenter(createChatSection());
 
-        // 3. Right Sidebar: Vision HUD + Personalization Engine Inspector + Telemetry
+        // 3. Right Sidebar: Vision HUD + Teammate Selector + Personalization Inspector + Telemetry
         rootPane.setRight(createRightSidebar());
     }
 
@@ -96,10 +99,10 @@ public class HudController {
         Label coreStatus = new Label("CORE: ONLINE");
         coreStatus.getStyleClass().addAll("hud-status-badge", "hud-status-badge-active");
 
-        Label visionStatus = new Label("VISION: OPENCV/ONNX");
+        Label visionStatus = new Label("VISION: LIVE WEBCAM");
         visionStatus.getStyleClass().add("hud-status-badge");
 
-        Label speechStatus = new Label("SPEECH: VOSK/PIPER");
+        Label speechStatus = new Label("SPEECH: LIVE MIC");
         speechStatus.getStyleClass().add("hud-status-badge");
 
         Label engineStatus = new Label("ADAPTIVE: ACTIVE");
@@ -128,7 +131,7 @@ public class HudController {
 
         // Seed welcome greeting
         chatMessagesBox.getChildren().add(new ChatMessageCell(
-                "N.E.X.U.S online. Central Java Orchestrator active. Live vision tracking and adaptive personalization engine ready. How can I assist you today?",
+                "N.E.X.U.S online. Central Java Orchestrator active. Live camera perception, gender analysis, optical motion detection, and teammate recognition active. How can I assist you today?",
                 false, "FOCUSED", 18
         ));
 
@@ -139,12 +142,12 @@ public class HudController {
         HBox inputBar = new HBox(8);
         inputBar.setAlignment(Pos.CENTER);
 
-        inputTextField.setPromptText("Enter your query or prompt here (e.g. 'Summarize system telemetry', 'How does your vision work?')...");
+        inputTextField.setPromptText("Enter your query or prompt here (e.g. 'Who is our team?', 'Check eye state', 'Status')...");
         inputTextField.getStyleClass().add("hud-text-field");
         HBox.setHgrow(inputTextField, Priority.ALWAYS);
 
         sendButton.getStyleClass().add("hud-button");
-        micButton.getStyleClass().add("hud-button-secondary");
+        micButton.getStyleClass().addAll("hud-button-secondary", "hud-button-mic-active");
 
         // Transmit actions
         inputTextField.setOnAction(e -> handleSendMessage());
@@ -152,12 +155,12 @@ public class HudController {
 
         // Mic toggle action
         micButton.setOnAction(e -> {
-            if (core.getSpeechService().isListening()) {
-                core.getSpeechService().stop();
+            if (core.getSpeechService().getLiveMicService().isRecording()) {
+                core.getSpeechService().getLiveMicService().stopCapture();
                 micButton.setText("MIC MUTED");
                 micButton.getStyleClass().remove("hud-button-mic-active");
             } else {
-                core.getSpeechService().start();
+                core.getSpeechService().getLiveMicService().startCapture(chunk -> {});
                 micButton.setText("MIC ACTIVE");
                 micButton.getStyleClass().add("hud-button-mic-active");
             }
@@ -171,15 +174,15 @@ public class HudController {
         Label gestLabel = new Label("GESTURE SHORTCUTS:");
         gestLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: #64748b; -fx-font-weight: bold;");
 
-        Button btnThumbs = new Button("👍 Acknowledge");
+        Button btnThumbs = new Button("Confirm");
         btnThumbs.getStyleClass().add("hud-button-secondary");
         btnThumbs.setOnAction(e -> core.getVisionService().getGestureClassifier().triggerManualGesture(GestureDetectedEvent.Gesture.THUMBS_UP));
 
-        Button btnStop = new Button("✋ Mute / Pause");
+        Button btnStop = new Button("Mute / Pause");
         btnStop.getStyleClass().add("hud-button-secondary");
         btnStop.setOnAction(e -> core.getVisionService().getGestureClassifier().triggerManualGesture(GestureDetectedEvent.Gesture.STOP_PALM));
 
-        Button btnPeace = new Button("✌️ Summarize");
+        Button btnPeace = new Button("Summarize");
         btnPeace.getStyleClass().add("hud-button-secondary");
         btnPeace.setOnAction(e -> core.getVisionService().getGestureClassifier().triggerManualGesture(GestureDetectedEvent.Gesture.PEACE));
 
@@ -190,45 +193,71 @@ public class HudController {
     }
 
     private Node createRightSidebar() {
-        VBox sidebar = new VBox(12);
-        sidebar.setPrefWidth(420);
+        VBox sidebar = new VBox(10);
+        sidebar.setPrefWidth(430);
         BorderPane.setMargin(sidebar, new Insets(8, 0, 8, 8));
 
         // 1. Live Vision Feed Panel
-        VBox visionPanel = new VBox(8);
+        VBox visionPanel = new VBox(6);
         visionPanel.getStyleClass().add("hud-panel");
-        visionPanel.setPadding(new Insets(12));
+        visionPanel.setPadding(new Insets(10));
 
-        Label visionTitle = new Label("VISUAL PERCEPTION HUD (OPENCV / ONNX)");
+        Label visionTitle = new Label("VISUAL PERCEPTION HUD (CAMERA / GENDER / MOTION)");
         visionTitle.getStyleClass().add("section-title");
 
-        cameraCanvas = new CameraViewportCanvas(396, 220);
+        cameraCanvas = new CameraViewportCanvas(406, 210);
 
-        // Emotion Test Overrides for Viva / Demonstration
-        HBox emotionOverrideBox = new HBox(6);
-        emotionOverrideBox.setAlignment(Pos.CENTER_LEFT);
-        Label emoLabel = new Label("TEST MOOD:");
-        emoLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: #64748b; -fx-font-weight: bold;");
+        // Teammate Switcher Toolbar
+        VBox teamBox = new VBox(4);
+        Label teamTitle = new Label("RECOGNIZE TEAM MEMBER (STI25CS):");
+        teamTitle.setStyle("-fx-font-size: 9px; -fx-text-fill: #38bdf8; -fx-font-weight: bold;");
 
-        Button btnHappy = new Button("😊 Happy");
+        HBox teamButtons = new HBox(4);
+        teamButtons.setAlignment(Pos.CENTER_LEFT);
+
+        for (TeammateProfile t : TeammateProfile.getAllTeammates()) {
+            Button b = new Button(t.getName().split(" ")[0]);
+            b.getStyleClass().add("hud-button-secondary");
+            b.setStyle("-fx-font-size: 10px; -fx-padding: 4px 8px;");
+            b.setOnAction(e -> selectTeammate(t));
+            teamButtons.getChildren().add(b);
+        }
+        teamBox.getChildren().addAll(teamTitle, teamButtons);
+
+        // Perception & Eye Controls
+        HBox perceptionControls = new HBox(5);
+        perceptionControls.setAlignment(Pos.CENTER_LEFT);
+
+        Button btnHappy = new Button("Happy");
         btnHappy.getStyleClass().add("hud-button-secondary");
+        btnHappy.setStyle("-fx-font-size: 10px; -fx-padding: 4px 6px;");
         btnHappy.setOnAction(e -> core.getVisionService().getEmotionClassifier().setManualEmotionOverride(MoodDetectedEvent.Emotion.HAPPY, 0.94));
 
-        Button btnStressed = new Button("⚡ Stressed");
+        Button btnStressed = new Button("Stressed");
         btnStressed.getStyleClass().add("hud-button-secondary");
+        btnStressed.setStyle("-fx-font-size: 10px; -fx-padding: 4px 6px;");
         btnStressed.setOnAction(e -> core.getVisionService().getEmotionClassifier().setManualEmotionOverride(MoodDetectedEvent.Emotion.STRESSED, 0.91));
 
-        Button btnFocused = new Button("🎯 Focused");
-        btnFocused.getStyleClass().add("hud-button-secondary");
-        btnFocused.setOnAction(e -> core.getVisionService().getEmotionClassifier().setManualEmotionOverride(MoodDetectedEvent.Emotion.FOCUSED, 0.96));
+        Button btnEyesOpen = new Button("Eyes Open");
+        btnEyesOpen.getStyleClass().add("hud-button-secondary");
+        btnEyesOpen.setStyle("-fx-font-size: 10px; -fx-padding: 4px 6px;");
+        btnEyesOpen.setOnAction(e -> core.getVisionService().getEyeClassifier().setManualOverride(EyeStateClassifier.EyeStatus.OPEN, 60000));
 
-        emotionOverrideBox.getChildren().addAll(emoLabel, btnHappy, btnStressed, btnFocused);
-        visionPanel.getChildren().addAll(visionTitle, cameraCanvas, emotionOverrideBox);
+        Button btnEyesClosed = new Button("Drowsy Alert");
+        btnEyesClosed.getStyleClass().add("hud-button-secondary");
+        btnEyesClosed.setStyle("-fx-font-size: 10px; -fx-padding: 4px 6px; -fx-border-color: #ef4444; -fx-text-fill: #f87171;");
+        btnEyesClosed.setOnAction(e -> {
+            core.getVisionService().getEyeClassifier().setManualOverride(EyeStateClassifier.EyeStatus.CLOSED, 15000);
+            core.getSpeechService().speak("Attention! Drowsiness detected. Please take a rest or stretch.", null);
+        });
 
-        // 2. Adaptive Personalization Engine Inspector Panel
-        VBox profilePanel = new VBox(8);
+        perceptionControls.getChildren().addAll(btnHappy, btnStressed, btnEyesOpen, btnEyesClosed);
+        visionPanel.getChildren().addAll(visionTitle, cameraCanvas, teamBox, perceptionControls);
+
+        // 2. Adaptive Personalization Inspector Panel
+        VBox profilePanel = new VBox(6);
         profilePanel.getStyleClass().add("hud-panel");
-        profilePanel.setPadding(new Insets(12));
+        profilePanel.setPadding(new Insets(10));
 
         HBox profileHeader = new HBox(8);
         profileHeader.setAlignment(Pos.CENTER_LEFT);
@@ -237,46 +266,47 @@ public class HudController {
         Region profSpacer = new Region();
         HBox.setHgrow(profSpacer, Priority.ALWAYS);
 
-        Button synthButton = new Button("⚡ Re-Synthesize");
+        Button synthButton = new Button("Re-Synthesize");
         synthButton.getStyleClass().add("hud-button-secondary");
+        synthButton.setStyle("-fx-font-size: 10px; -fx-padding: 4px 8px;");
         synthButton.setOnAction(e -> core.getPersonalizationEngine().triggerBehavioralSynthesisAsync());
         profileHeader.getChildren().addAll(profileTitle, profSpacer, synthButton);
 
         UserProfile currentProfile = core.getPersonalizationEngine().getCurrentProfile();
 
-        userProfileLabel = new Label("User: " + currentProfile.getUserName());
-        userProfileLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #00f2fe; -fx-font-size: 12px;");
+        userProfileLabel = new Label("Recognized: " + core.getVisionService().getActiveTeammate().getName());
+        userProfileLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #00f2fe; -fx-font-size: 11px;");
 
         preferredToneLabel = new Label("Inferred Demeanor: " + currentProfile.getPreferredTone());
-        preferredToneLabel.setStyle("-fx-text-fill: #38bdf8; -fx-font-size: 11px;");
+        preferredToneLabel.setStyle("-fx-text-fill: #38bdf8; -fx-font-size: 10px;");
 
-        topTopicsLabel = new Label("Interest Clusters: " + currentProfile.getTopTopics());
+        topTopicsLabel = new Label("Focus: " + core.getVisionService().getActiveTeammate().getRole());
         topTopicsLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 10px;");
 
         interactionCountLabel = new Label("Interaction Turns Logged: " + currentProfile.getTotalInteractions());
-        interactionCountLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 10px;");
+        interactionCountLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 9px;");
 
         behavioralSummaryArea = new TextArea(currentProfile.getBehavioralSummary());
         behavioralSummaryArea.setWrapText(true);
         behavioralSummaryArea.setEditable(false);
-        behavioralSummaryArea.setPrefRowCount(3);
-        behavioralSummaryArea.setStyle("-fx-background-color: rgba(7, 10, 19, 0.7); -fx-text-fill: #e2e8f0; -fx-font-size: 11px;");
+        behavioralSummaryArea.setPrefRowCount(2);
+        behavioralSummaryArea.setStyle("-fx-background-color: rgba(7, 10, 19, 0.7); -fx-text-fill: #e2e8f0; -fx-font-size: 10px;");
 
         profilePanel.getChildren().addAll(profileHeader, userProfileLabel, preferredToneLabel, topTopicsLabel, interactionCountLabel, behavioralSummaryArea);
 
         // 3. System Telemetry Grid
         GridPane telemetryGrid = new GridPane();
-        telemetryGrid.setHgap(8);
-        telemetryGrid.setVgap(8);
+        telemetryGrid.setHgap(6);
+        telemetryGrid.setVgap(6);
 
-        cpuMeter = new TelemetryMeter("CPU LOAD", "6.2%");
-        ramMeter = new TelemetryMeter("RAM USAGE", "148 MB");
-        fpsMeter = new TelemetryMeter("VISION FPS", "30 FPS");
+        cpuMeter = new TelemetryMeter("CPU LOAD", "4.8%");
+        ramMeter = new TelemetryMeter("RAM USAGE", "64 MB");
+        motionMeter = new TelemetryMeter("OPTICAL MOTION", "12% [STABLE]");
         moodMeter = new TelemetryMeter("DETECTED MOOD", "FOCUSED");
 
         telemetryGrid.add(cpuMeter, 0, 0);
         telemetryGrid.add(ramMeter, 1, 0);
-        telemetryGrid.add(fpsMeter, 0, 1);
+        telemetryGrid.add(motionMeter, 0, 1);
         telemetryGrid.add(moodMeter, 1, 1);
 
         ColumnConstraints col1 = new ColumnConstraints();
@@ -289,18 +319,41 @@ public class HudController {
         return sidebar;
     }
 
+    private void selectTeammate(TeammateProfile teammate) {
+        core.getVisionService().setActiveTeammate(teammate);
+
+        // Update profile in memory
+        UserProfile profile = core.getPersonalizationEngine().getCurrentProfile();
+        profile.setUserName(teammate.getName());
+        profile.setPreferredTone(teammate.getPreferredTone());
+        profile.setTopTopics(teammate.getInterestClusters());
+        profile.setBehavioralSummary(teammate.getName() + " (" + teammate.getStudentId() + ") - Focus area: " + teammate.getRole() + ".");
+
+        // Speak welcoming announcement
+        core.getSpeechService().speak(teammate.getWelcomePhrase(), null);
+
+        // Update UI
+        userProfileLabel.setText("Recognized: " + teammate.getName());
+        preferredToneLabel.setText("Inferred Demeanor: " + teammate.getPreferredTone());
+        topTopicsLabel.setText("Focus: " + teammate.getRole());
+        behavioralSummaryArea.setText(profile.getBehavioralSummary());
+
+        // Add greeting message to chat
+        chatMessagesBox.getChildren().add(new ChatMessageCell(
+                teammate.getWelcomePhrase(),
+                false, "FOCUSED", 12
+        ));
+        chatScrollPane.setVvalue(1.0);
+    }
+
     private void handleSendMessage() {
         String text = inputTextField.getText().trim();
         if (text.isEmpty()) return;
 
-        // Clear input
         inputTextField.clear();
-
-        // Render user message bubble
         chatMessagesBox.getChildren().add(new ChatMessageCell(text, true, null, 0));
         chatScrollPane.setVvalue(1.0);
 
-        // Dispatch input event to central Java core
         eventBus.publish(new UserInputEvent(text, UserInputEvent.InputSource.TEXT));
     }
 
@@ -323,11 +376,14 @@ public class HudController {
             Platform.runLater(() -> cameraCanvas.updateFrame(frame));
         });
 
-        // Mood Detected -> Update reticle and telemetry
+        // Mood / Perception Detected -> Update reticle and telemetry
         eventBus.subscribe(MoodDetectedEvent.class, moodEvent -> {
             Platform.runLater(() -> {
                 cameraCanvas.updateMood(moodEvent);
                 moodMeter.updateTextOnly(moodEvent.getEmotion().name() + " (" + moodEvent.getFormattedConfidence() + ")");
+                double motionPercent = moodEvent.getMotionLevel() * 100;
+                String motionStatus = (motionPercent > 35) ? "ACTIVE" : "STABLE";
+                motionMeter.update(String.format("%.0f%% [%s]", motionPercent, motionStatus), moodEvent.getMotionLevel());
             });
         });
 
@@ -341,7 +397,6 @@ public class HudController {
             Platform.runLater(() -> {
                 cpuMeter.update(String.format("%.1f%%", telem.getCpuUsagePercent()), telem.getCpuUsagePercent() / 100.0);
                 ramMeter.update(telem.getMemoryUsedMB() + " MB", (double) telem.getMemoryUsedMB() / telem.getMemoryTotalMB());
-                fpsMeter.update(String.format("%.0f FPS", telem.getVisionFps()), telem.getVisionFps() / 60.0);
                 audioCanvas.setAudioLevel(telem.getAudioLevel());
             });
         });

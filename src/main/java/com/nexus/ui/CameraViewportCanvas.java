@@ -11,7 +11,8 @@ import javafx.scene.text.FontWeight;
 
 /**
  * High-tech HUD Camera Viewport Canvas.
- * Renders live camera frame, target reticle, face detection box, and emotion indicators.
+ * Renders live camera frame, target reticle, face bounding box,
+ * gender detection, eye-state / drowsiness warning, teammate recognition, and optical motion.
  */
 public class CameraViewportCanvas extends Canvas {
 
@@ -48,7 +49,6 @@ public class CameraViewportCanvas extends Canvas {
         if (currentFrame != null && currentFrame.getFxImage() != null) {
             gc.drawImage(currentFrame.getFxImage(), 0, 0, w, h);
         } else {
-            // Standby dark background
             gc.setFill(Color.rgb(10, 16, 30));
             gc.fillRoundRect(0, 0, w, h, 8, 8);
         }
@@ -65,61 +65,111 @@ public class CameraViewportCanvas extends Canvas {
             double bw = currentMood.getFaceWidth() * scaleX;
             double bh = currentMood.getFaceHeight() * scaleY;
 
-            // Draw glowing cyan corner brackets
-            gc.setStroke(Color.rgb(0, 242, 254, 0.95));
+            // Clamp inside viewport
+            bx = Math.max(10, Math.min(w - bw - 10, bx));
+            by = Math.max(30, Math.min(h - bh - 30, by));
+
+            // Glowing corner brackets
+            Color bracketColor = currentMood.isDrowsinessAlert()
+                    ? Color.rgb(255, 75, 75, 0.95)
+                    : Color.rgb(0, 242, 254, 0.95);
+
+            gc.setStroke(bracketColor);
             gc.setLineWidth(2.5);
             double cornerLen = Math.min(bw, bh) * 0.22;
 
-            // Top-Left
+            // Corners
             gc.strokeLine(bx, by, bx + cornerLen, by);
             gc.strokeLine(bx, by, bx, by + cornerLen);
-            // Top-Right
             gc.strokeLine(bx + bw, by, bx + bw - cornerLen, by);
             gc.strokeLine(bx + bw, by, bx + bw, by + cornerLen);
-            // Bottom-Left
             gc.strokeLine(bx, by + bh, bx + cornerLen, by + bh);
             gc.strokeLine(bx, by + bh, bx, by + bh - cornerLen);
-            // Bottom-Right
             gc.strokeLine(bx + bw, by + bh, bx + bw - cornerLen, by + bh);
             gc.strokeLine(bx + bw, by + bh, bx + bw, by + bh - cornerLen);
 
-            // Center crosshair
+            // Center target crosshair
             gc.setStroke(Color.rgb(0, 242, 254, 0.4));
             gc.setLineWidth(1.0);
             double cx = bx + bw / 2.0;
             double cy = by + bh / 2.0;
-            gc.strokeLine(cx - 10, cy, cx + 10, cy);
-            gc.strokeLine(cx, cy - 10, cx, cy + 10);
+            gc.strokeLine(cx - 8, cy, cx + 8, cy);
+            gc.strokeLine(cx, cy - 8, cx, cy + 8);
 
             // Emotion Tag Card above face
-            gc.setFill(Color.rgb(13, 22, 41, 0.85));
-            gc.fillRoundRect(bx, by - 28, 140, 22, 4, 4);
+            gc.setFill(Color.rgb(13, 22, 41, 0.88));
+            gc.fillRoundRect(bx, by - 26, 140, 22, 4, 4);
             gc.setStroke(Color.rgb(0, 242, 254, 0.6));
-            gc.strokeRoundRect(bx, by - 28, 140, 22, 4, 4);
+            gc.strokeRoundRect(bx, by - 26, 140, 22, 4, 4);
 
             gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 10));
             gc.setFill(Color.rgb(0, 255, 135));
-            gc.fillText("MOOD: " + currentMood.getEmotion().name() + " (" + currentMood.getFormattedConfidence() + ")", bx + 6, by - 13);
+            gc.fillText("MOOD: " + currentMood.getEmotion().name() + " (" + currentMood.getFormattedConfidence() + ")", bx + 6, by - 11);
+
+            // Gender & Eye Status Tag below face box
+            gc.setFill(Color.rgb(13, 22, 41, 0.88));
+            gc.fillRoundRect(bx, by + bh + 4, 180, 22, 4, 4);
+            gc.setStroke(Color.rgb(56, 189, 248, 0.4));
+            gc.strokeRoundRect(bx, by + bh + 4, 180, 22, 4, 4);
+
+            String genderSymbol = (currentMood.getGender() == MoodDetectedEvent.Gender.MALE) ? "MALE" : "FEMALE";
+            String eyeText = currentMood.isEyesClosed() ? "EYES: CLOSED" : "EYES: OPEN";
+
+            gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 9));
+            gc.setFill(currentMood.getGender() == MoodDetectedEvent.Gender.MALE ? Color.rgb(56, 189, 248) : Color.rgb(244, 114, 182));
+            gc.fillText(genderSymbol + " (" + currentMood.getFormattedGenderConfidence() + ")", bx + 6, by + bh + 19);
+
+            gc.setFill(currentMood.isEyesClosed() ? Color.rgb(255, 75, 75) : Color.rgb(0, 255, 135));
+            gc.fillText(" | " + eyeText, bx + 96, by + bh + 19);
         }
 
-        // 3. Top-Right Gesture Status Badge
+        // 3. Recognized Teammate Identity Banner (Top Left)
+        if (currentMood != null && currentMood.getRecognizedIdentity() != null) {
+            gc.setFill(Color.rgb(13, 22, 41, 0.9));
+            gc.fillRoundRect(8, 8, 240, 32, 6, 6);
+            gc.setStroke(Color.rgb(0, 242, 254, 0.7));
+            gc.strokeRoundRect(8, 8, 240, 32, 6, 6);
+
+            gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 10));
+            gc.setFill(Color.rgb(0, 242, 254));
+            gc.fillText("TEAMMATE: " + currentMood.getRecognizedIdentity(), 16, 22);
+
+            gc.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 8));
+            gc.setFill(Color.rgb(148, 163, 184));
+            String roleText = currentMood.getIdentityRole();
+            if (roleText.length() > 36) roleText = roleText.substring(0, 36) + "...";
+            gc.fillText(roleText, 16, 33);
+        }
+
+        // 4. Gesture Status Badge (Top Right)
         if (currentGesture != null && currentGesture.getGesture() != GestureDetectedEvent.Gesture.NONE) {
-            gc.setFill(Color.rgb(155, 81, 224, 0.9));
-            gc.fillRoundRect(w - 180, 12, 168, 26, 6, 6);
+            gc.setFill(Color.rgb(155, 81, 224, 0.92));
+            gc.fillRoundRect(w - 175, 8, 165, 26, 6, 6);
             gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 10));
             gc.setFill(Color.WHITE);
-            gc.fillText("GESTURE: " + currentGesture.getGesture().getDisplayName(), w - 172, 29);
+            gc.fillText("GESTURE: " + currentGesture.getGesture().getDisplayName(), w - 167, 25);
         }
 
-        // 4. Viewport Corner Sci-Fi Borders
-        gc.setStroke(Color.rgb(0, 242, 254, 0.35));
-        gc.setLineWidth(1.0);
-        gc.strokeRect(4, 4, w - 8, h - 8);
+        // 5. Drowsiness / Sleep Alert Banner
+        if (currentMood != null && currentMood.isDrowsinessAlert()) {
+            gc.setFill(Color.rgb(239, 68, 68, 0.92));
+            gc.fillRoundRect(w / 2.0 - 130, h / 2.0 - 18, 260, 36, 6, 6);
+            gc.setStroke(Color.WHITE);
+            gc.setLineWidth(1.5);
+            gc.strokeRoundRect(w / 2.0 - 130, h / 2.0 - 18, 260, 36, 6, 6);
 
-        // Animated scan line indicator at bottom
+            gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 11));
+            gc.setFill(Color.WHITE);
+            gc.fillText("WARNING: DROWSINESS ALERT!", w / 2.0 - 95, h / 2.0 + 4);
+        }
+
+        // 6. Motion Indicator & Feed Status Banner (Bottom)
         reticleAngle += 0.05;
-        gc.setFill(Color.rgb(0, 242, 254, 0.7));
+        gc.setFill(Color.rgb(0, 242, 254, 0.75));
         gc.setFont(Font.font("Consolas", FontWeight.NORMAL, 9));
-        gc.fillText("[LIVE PERCEPTION FEED - OPENCV/ONNX RUNTIME]", 12, h - 12);
+
+        double motionPercent = (currentMood != null) ? currentMood.getMotionLevel() * 100 : 5.0;
+        String motionTag = (motionPercent > 30) ? "ACTIVE" : "STABLE";
+        gc.fillText("[LIVE FEED] MOTION: " + String.format("%.0f%%", motionPercent) + " [" + motionTag + "]", 12, h - 10);
     }
 }

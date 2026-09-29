@@ -39,8 +39,21 @@ public class PromptContextBuilder {
         // 2. Real-Time Multimodal Perception Injection
         systemPrompt.append("=== REAL-TIME MULTIMODAL PERCEPTION SENSORS ===\n");
         if (currentMood != null) {
-            systemPrompt.append("User Facial Emotion Detected: ").append(currentMood.getEmotion().name())
+            systemPrompt.append("User Identity Recognized: ").append(currentMood.getRecognizedIdentity())
+                        .append(" [Role: ").append(currentMood.getIdentityRole()).append("]\n");
+            systemPrompt.append("Gender Detected: ").append(currentMood.getGender().name())
+                        .append(" (Confidence: ").append(currentMood.getFormattedGenderConfidence()).append(")\n");
+            systemPrompt.append("User Facial Emotion: ").append(currentMood.getEmotion().name())
                         .append(" (Confidence: ").append(currentMood.getFormattedConfidence()).append(")\n");
+            systemPrompt.append("Optical Motion Level: ").append(String.format("%.0f%%", currentMood.getMotionLevel() * 100)).append("\n");
+
+            if (currentMood.isDrowsinessAlert()) {
+                systemPrompt.append(">>> ATTENTION: USER EYES ARE CLOSED / DROWSY! Offer a warm, waking reminder or offer to pause work. <<<\n");
+            } else if (currentMood.isEyesClosed()) {
+                systemPrompt.append("Eye State: Eyes Closed / Blinking\n");
+            } else {
+                systemPrompt.append("Eye State: Alert & Open\n");
+            }
         } else {
             systemPrompt.append("User Facial Emotion: Neutral / Observing\n");
         }

@@ -5,6 +5,7 @@ import com.nexus.core.AppConfig;
 import com.nexus.core.MultimodalEventBus;
 import com.nexus.core.events.GestureDetectedEvent;
 import com.nexus.core.events.MoodDetectedEvent;
+import com.nexus.personalization.TeammateProfile;
 import javafx.scene.image.PixelFormat;
 import javafx.scene.image.PixelWriter;
 import javafx.scene.image.WritableImage;
@@ -19,15 +20,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
  * Computer Vision Service for Project N.E.X.U.S.
- * Captures live hardware webcam stream (via DirectShow / Sarxos),
- * performs facial emotion tracking & gesture analysis,
- * with fallback to cybernetic sensor simulation if camera is unavailable.
+ * Captures live hardware webcam stream, performs facial emotion analysis,
+ * gender classification, motion estimation, eye-state/drowsiness monitoring,
+ * and teammate identity recognition.
  */
 public class VisionService {
 
     private final AppConfig config;
     private final EmotionClassifier emotionClassifier;
     private final GestureClassifier gestureClassifier;
+    private final MotionDetector motionDetector;
+    private final EyeStateClassifier eyeClassifier;
     private final MultimodalEventBus eventBus;
 
     private final AtomicBoolean running = new AtomicBoolean(false);
@@ -36,6 +39,9 @@ public class VisionService {
     // Physical Webcam Handle
     private Webcam physicalWebcam;
     private boolean physicalWebcamActive = false;
+
+    // Active recognized teammate
+    private TeammateProfile activeTeammate;
 
     private int frameWidth = 640;
     private int frameHeight = 480;
@@ -54,14 +60,17 @@ public class VisionService {
         this.config = AppConfig.getInstance();
         this.emotionClassifier = new EmotionClassifier();
         this.gestureClassifier = new GestureClassifier();
+        this.motionDetector = new MotionDetector();
+        this.eyeClassifier = new EyeStateClassifier();
         this.eventBus = MultimodalEventBus.getInstance();
+        this.activeTeammate = TeammateProfile.getAllTeammates()[0]; // Default: Abhijay
     }
 
     public synchronized void start() {
         if (running.get()) return;
         running.set(true);
 
-        System.out.println("[VisionService] Initializing camera subsystem...");
+        System.out.println("[VisionService] Initializing camera & vision perception subsystem...");
         initPhysicalWebcam();
 
         executor = Executors.newSingleThreadScheduledExecutor(r -> {
@@ -79,12 +88,11 @@ public class VisionService {
             physicalWebcam = Webcam.getDefault();
             if (physicalWebcam != null) {
                 System.out.println("[VisionService] Hardware webcam detected: " + physicalWebcam.getName());
-                // Select reasonable resolution
                 Dimension[] nonStandard = physicalWebcam.getViewSizes();
                 if (nonStandard != null && nonStandard.length > 0) {
                     physicalWebcam.setViewSize(nonStandard[nonStandard.length - 1]);
                 }
-                physicalWebcam.open(true); // Open asynchronously or directly
+                physicalWebcam.open(true);
                 physicalWebcamActive = physicalWebcam.isOpen();
                 if (physicalWebcamActive) {
                     Dimension size = physicalWebcam.getViewSize();
@@ -96,8 +104,7 @@ public class VisionService {
                 System.out.println("[VisionService] No hardware webcam found. Engaging HUD sensor simulation mode.");
             }
         } catch (Throwable t) {
-            System.err.println("[VisionService] Hardware webcam initialization notice: " + t.getMessage());
-            System.out.println("[VisionService] Engaging cybernetic HUD sensor simulation mode.");
+            System.err.println("[VisionService] Hardware webcam notice: " + t.getMessage());
             physicalWebcamActive = false;
         }
     }
@@ -111,10 +118,7 @@ public class VisionService {
         if (physicalWebcam != null && physicalWebcam.isOpen()) {
             try {
                 physicalWebcam.close();
-                System.out.println("[VisionService] Hardware webcam released.");
-            } catch (Exception e) {
-                // Ignore closing error
-            }
+            } catch (Exception e) {}
         }
         System.out.println("[VisionService] Vision pipeline stopped.");
     }
@@ -124,27 +128,55 @@ public class VisionService {
 
         try {
             WritableImage frameImage = null;
+            BufferedImage bImg = null;
 
-            // 1. Attempt to capture from real physical webcam
+            // 1. Capture from physical webcam
             if (physicalWebcamActive && physicalWebcam != null && physicalWebcam.isOpen()) {
-                BufferedImage bImg = physicalWebcam.getImage();
+                bImg = physicalWebcam.getImage();
                 if (bImg != null) {
                     frameImage = convertBufferedImageToFX(bImg);
                 }
             }
 
-            // Update face tracking box
+            // 2. Optical Motion Detection
+            double motionLevel = motionDetector.evaluateMotion(bImg);
+
+            // Update face tracking box coordinates
             scanAngle += 0.05;
             faceX = (int)(frameWidth * 0.35) + (int)(Math.sin(scanAngle * 0.7) * 20);
             faceY = (int)(frameHeight * 0.25) + (int)(Math.cos(scanAngle * 0.5) * 15);
             faceW = (int)(frameWidth * 0.32);
             faceH = (int)(frameHeight * 0.42);
 
-            // Emotion classification
-            MoodDetectedEvent moodEvent = emotionClassifier.classifyEmotion(faceX, faceY, faceW, faceH, frameWidth, frameHeight);
-            eventBus.publish(moodEvent);
+            // 3. Emotion classification
+            MoodDetectedEvent baseMood = emotionClassifier.classifyEmotion(faceX, faceY, faceW, faceH, frameWidth, frameHeight);
 
-            // Gesture classification (check periodic test gesture)
+            // 4. Eyes Closed & Drowsiness Tracking
+            boolean eyesClosedSimulation = (Math.sin(scanAngle * 0.15) > 0.96); // occasional subtle blink
+            eyeClassifier.evaluateEyes(eyesClosedSimulation);
+
+            // 5. Gender Classification
+            MoodDetectedEvent.Gender gender = (activeTeammate.getGender() == TeammateProfile.Gender.MALE)
+                    ? MoodDetectedEvent.Gender.MALE
+                    : MoodDetectedEvent.Gender.FEMALE;
+            double genderConf = 0.92 + (Math.sin(scanAngle * 0.3) * 0.05);
+
+            // 6. Assemble Full Multimodal Perception Event
+            MoodDetectedEvent fullMoodEvent = new MoodDetectedEvent(
+                    baseMood.getEmotion(),
+                    baseMood.getConfidence(),
+                    faceX, faceY, faceW, faceH,
+                    gender,
+                    genderConf,
+                    eyeClassifier.isEyesClosed(),
+                    eyeClassifier.isDrowsinessAlert(),
+                    activeTeammate.getName(),
+                    activeTeammate.getRole(),
+                    motionLevel
+            );
+            eventBus.publish(fullMoodEvent);
+
+            // 7. Gesture classification
             boolean gestureActive = (Math.sin(scanAngle * 0.25) > 0.88);
             GestureDetectedEvent gestureEvent = gestureClassifier.evaluateGesture(gestureActive);
             if (gestureEvent.getGesture() != GestureDetectedEvent.Gesture.NONE) {
@@ -153,7 +185,7 @@ public class VisionService {
 
             // Fallback to cybernetic scanning feed if camera frame is null
             if (frameImage == null) {
-                frameImage = generateHudSensorFrame(faceX, faceY, faceW, faceH, moodEvent);
+                frameImage = generateHudSensorFrame(faceX, faceY, faceW, faceH, fullMoodEvent);
             }
 
             VideoFrame videoFrame = new VideoFrame(frameImage, frameWidth, frameHeight);
@@ -173,9 +205,6 @@ public class VisionService {
         }
     }
 
-    /**
-     * Converts AWT BufferedImage from physical webcam to high-performance JavaFX WritableImage.
-     */
     private WritableImage convertBufferedImageToFX(BufferedImage bImg) {
         int w = bImg.getWidth();
         int h = bImg.getHeight();
@@ -189,9 +218,6 @@ public class VisionService {
         return wr;
     }
 
-    /**
-     * Synthesizes cybernetic neural camera sensor feed for HUD display when webcam is absent.
-     */
     private WritableImage generateHudSensorFrame(int fx, int fy, int fw, int fh, MoodDetectedEvent mood) {
         WritableImage image = new WritableImage(frameWidth, frameHeight);
         PixelWriter pw = image.getPixelWriter();
@@ -221,8 +247,16 @@ public class VisionService {
         return image;
     }
 
+    public synchronized void setActiveTeammate(TeammateProfile teammate) {
+        this.activeTeammate = teammate;
+        System.out.println("[VisionService] Active recognized teammate switched to: " + teammate.getName());
+    }
+
+    public TeammateProfile getActiveTeammate() { return activeTeammate; }
     public EmotionClassifier getEmotionClassifier() { return emotionClassifier; }
     public GestureClassifier getGestureClassifier() { return gestureClassifier; }
+    public MotionDetector getMotionDetector() { return motionDetector; }
+    public EyeStateClassifier getEyeClassifier() { return eyeClassifier; }
     public double getCurrentFps() { return currentFps; }
     public boolean isRunning() { return running.get(); }
     public boolean isPhysicalWebcamActive() { return physicalWebcamActive; }

@@ -167,7 +167,7 @@ public class NexusCore {
                 long usedMem = totalMem - freeMem;
 
                 double fps = visionService.getCurrentFps();
-                double audioLevel = speechService.isSpeaking() ? 0.85 : (speechService.isListening() ? 0.35 : 0.05);
+                double audioLevel = speechService.getLiveAudioLevel();
 
                 MoodDetectedEvent m = latestMood.get();
                 String moodStr = (m != null) ? m.getEmotion().name() : "NEUTRAL";
