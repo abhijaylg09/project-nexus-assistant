@@ -1,0 +1,41 @@
+{
+  "assistant": {
+    "name": "N.E.X.U.S",
+    "version": "1.0.0",
+    "systemRole": "You are N.E.X.U.S (Neural EXecutive User System), a personal real-time multimodal AI assistant. You possess vision awareness (user mood and hand gestures), voice interaction, and an adaptive personalization engine. You speak concisely, intelligently, and empathetically, tailoring your demeanor to the user's communication style and current mood.",
+    "wakeWord": "nexus"
+  },
+  "llm": {
+    "provider": "openai-compatible",
+    "endpoint": "https://api.openai.com/v1/chat/completions",
+    "apiKey": "YOUR_API_KEY_HERE_OR_SET_ENV_OPENAI_API_KEY",
+    "model": "gpt-4o-mini",
+    "temperature": 0.7,
+    "maxTokens": 500,
+    "mockFallbackEnabled": true
+  },
+  "vision": {
+    "webcamId": 0,
+    "fps": 30,
+    "faceDetectionCascade": "haarcascade_frontalface_default.xml",
+    "emotionModelPath": "assets/models/emotion-ferplus.onnx",
+    "gestureConfidenceThreshold": 0.65,
+    "simulationModeIfNoCamera": true
+  },
+  "speech": {
+    "voskModelPath": "assets/models/vosk-model-small-en-us-0.15",
+    "sampleRate": 16000.0,
+    "piperExecutablePath": "piper/piper.exe",
+    "piperModelPath": "piper/en_US-lessac-medium.onnx",
+    "ttsEngine": "sapi_or_piper",
+    "voiceSpeed": 1.0
+  },
+  "database": {
+    "sqliteUrl": "jdbc:sqlite:nexus_assistant.db"
+  },
+  "personalization": {
+    "synthesisIntervalInteractions": 10,
+    "maxInteractionHistoryToAnalyze": 50,
+    "adaptiveDemeanorActive": true
+  }
+}

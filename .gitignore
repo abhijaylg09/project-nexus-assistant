@@ -1,0 +1,26 @@
+# Target build directory (exclude large caches when pushing to GitHub)
+target/
+*.class
+
+# SQLite local database (generated at runtime)
+*.db
+*.db-journal
+
+# Maven dependency reduced pom
+dependency-reduced-pom.xml
+
+# IDE and Editor files
+.idea/
+*.iml
+.vscode/
+.settings/
+.project
+.classpath
+
+# OS generated files
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Logs
+*.log

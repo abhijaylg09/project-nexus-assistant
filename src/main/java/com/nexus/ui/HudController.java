@@ -1,0 +1,360 @@
+package com.nexus.ui;
+
+import com.nexus.core.AppConfig;
+import com.nexus.core.MultimodalEventBus;
+import com.nexus.core.NexusCore;
+import com.nexus.core.events.*;
+import com.nexus.personalization.UserProfile;
+import com.nexus.vision.VideoFrame;
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+
+/**
+ * Primary JavaFX HUD Controller for Project N.E.X.U.S.
+ * Assembles and manages chat streams, live vision overlays, audio visualizer,
+ * personalization inspector, and real-time telemetry gauges.
+ */
+public class HudController {
+
+    private final NexusCore core;
+    private final MultimodalEventBus eventBus;
+
+    // Root Container
+    private final BorderPane rootPane = new BorderPane();
+
+    // UI Nodes
+    private final VBox chatMessagesBox = new VBox(10);
+    private final ScrollPane chatScrollPane = new ScrollPane();
+    private final TextField inputTextField = new TextField();
+    private final Button sendButton = new Button("TRANSMIT");
+    private final Button micButton = new Button("MIC ACTIVE");
+
+    // Perceptual Viewports
+    private CameraViewportCanvas cameraCanvas;
+    private AudioVisualizerCanvas audioCanvas;
+
+    // Telemetry Cards
+    private TelemetryMeter cpuMeter;
+    private TelemetryMeter ramMeter;
+    private TelemetryMeter fpsMeter;
+    private TelemetryMeter moodMeter;
+
+    // Personalization Inspector Labels
+    private Label userProfileLabel;
+    private Label preferredToneLabel;
+    private TextArea behavioralSummaryArea;
+    private Label topTopicsLabel;
+    private Label interactionCountLabel;
+
+    public HudController(NexusCore core) {
+        this.core = core;
+        this.eventBus = MultimodalEventBus.getInstance();
+        buildUI();
+        registerEventSubscriptions();
+    }
+
+    public Pane getRoot() {
+        return rootPane;
+    }
+
+    private void buildUI() {
+        rootPane.getStyleClass().add("hud-root");
+        rootPane.setPadding(new Insets(12));
+
+        // 1. Top Header Bar
+        rootPane.setTop(createHeader());
+
+        // 2. Center Chat & Audio Visualizer Pane
+        rootPane.setCenter(createChatSection());
+
+        // 3. Right Sidebar: Vision HUD + Personalization Engine Inspector + Telemetry
+        rootPane.setRight(createRightSidebar());
+    }
+
+    private Node createHeader() {
+        HBox header = new HBox(16);
+        header.getStyleClass().add("hud-header");
+        header.setAlignment(Pos.CENTER_LEFT);
+        header.setPadding(new Insets(8, 14, 12, 14));
+
+        VBox titleBox = new VBox(2);
+        Label title = new Label("PROJECT N.E.X.U.S");
+        title.getStyleClass().add("hud-title");
+
+        Label subtitle = new Label("PERSONAL REAL-TIME MULTIMODAL ASSISTANT • TEAM STI25CS");
+        subtitle.getStyleClass().add("hud-subtitle");
+        titleBox.getChildren().addAll(title, subtitle);
+
+        Region spacer = new Region();
+        HBox.setHgrow(spacer, Priority.ALWAYS);
+
+        // Status Badges
+        Label coreStatus = new Label("CORE: ONLINE");
+        coreStatus.getStyleClass().addAll("hud-status-badge", "hud-status-badge-active");
+
+        Label visionStatus = new Label("VISION: OPENCV/ONNX");
+        visionStatus.getStyleClass().add("hud-status-badge");
+
+        Label speechStatus = new Label("SPEECH: VOSK/PIPER");
+        speechStatus.getStyleClass().add("hud-status-badge");
+
+        Label engineStatus = new Label("ADAPTIVE: ACTIVE");
+        engineStatus.getStyleClass().addAll("hud-status-badge", "hud-status-badge-active");
+
+        header.getChildren().addAll(titleBox, spacer, coreStatus, visionStatus, speechStatus, engineStatus);
+        return header;
+    }
+
+    private Node createChatSection() {
+        VBox chatContainer = new VBox(10);
+        chatContainer.getStyleClass().addAll("hud-panel", "chat-container");
+        chatContainer.setPadding(new Insets(14));
+        BorderPane.setMargin(chatContainer, new Insets(8, 8, 8, 0));
+
+        // Title
+        Label chatTitle = new Label("REAL-TIME CONVERSATIONAL STREAM");
+        chatTitle.getStyleClass().add("section-title");
+
+        // Scrollable Chat Message Area
+        chatMessagesBox.setFillWidth(true);
+        chatScrollPane.setContent(chatMessagesBox);
+        chatScrollPane.setFitToWidth(true);
+        chatScrollPane.getStyleClass().add("chat-scroll");
+        VBox.setVgrow(chatScrollPane, Priority.ALWAYS);
+
+        // Seed welcome greeting
+        chatMessagesBox.getChildren().add(new ChatMessageCell(
+                "N.E.X.U.S online. Central Java Orchestrator active. Live vision tracking and adaptive personalization engine ready. How can I assist you today?",
+                false, "FOCUSED", 18
+        ));
+
+        // Real-Time Audio Visualizer Canvas
+        audioCanvas = new AudioVisualizerCanvas(580, 48);
+
+        // Input Box & Controls
+        HBox inputBar = new HBox(8);
+        inputBar.setAlignment(Pos.CENTER);
+
+        inputTextField.setPromptText("Enter your query or prompt here (e.g. 'Summarize system telemetry', 'How does your vision work?')...");
+        inputTextField.getStyleClass().add("hud-text-field");
+        HBox.setHgrow(inputTextField, Priority.ALWAYS);
+
+        sendButton.getStyleClass().add("hud-button");
+        micButton.getStyleClass().add("hud-button-secondary");
+
+        // Transmit actions
+        inputTextField.setOnAction(e -> handleSendMessage());
+        sendButton.setOnAction(e -> handleSendMessage());
+
+        // Mic toggle action
+        micButton.setOnAction(e -> {
+            if (core.getSpeechService().isListening()) {
+                core.getSpeechService().stop();
+                micButton.setText("MIC MUTED");
+                micButton.getStyleClass().remove("hud-button-mic-active");
+            } else {
+                core.getSpeechService().start();
+                micButton.setText("MIC ACTIVE");
+                micButton.getStyleClass().add("hud-button-mic-active");
+            }
+        });
+
+        inputBar.getChildren().addAll(inputTextField, sendButton, micButton);
+
+        // Gesture Action Shortcut Toolbar
+        HBox gestureToolbar = new HBox(8);
+        gestureToolbar.setAlignment(Pos.CENTER_LEFT);
+        Label gestLabel = new Label("GESTURE SHORTCUTS:");
+        gestLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: #64748b; -fx-font-weight: bold;");
+
+        Button btnThumbs = new Button("👍 Acknowledge");
+        btnThumbs.getStyleClass().add("hud-button-secondary");
+        btnThumbs.setOnAction(e -> core.getVisionService().getGestureClassifier().triggerManualGesture(GestureDetectedEvent.Gesture.THUMBS_UP));
+
+        Button btnStop = new Button("✋ Mute / Pause");
+        btnStop.getStyleClass().add("hud-button-secondary");
+        btnStop.setOnAction(e -> core.getVisionService().getGestureClassifier().triggerManualGesture(GestureDetectedEvent.Gesture.STOP_PALM));
+
+        Button btnPeace = new Button("✌️ Summarize");
+        btnPeace.getStyleClass().add("hud-button-secondary");
+        btnPeace.setOnAction(e -> core.getVisionService().getGestureClassifier().triggerManualGesture(GestureDetectedEvent.Gesture.PEACE));
+
+        gestureToolbar.getChildren().addAll(gestLabel, btnThumbs, btnStop, btnPeace);
+
+        chatContainer.getChildren().addAll(chatTitle, chatScrollPane, audioCanvas, inputBar, gestureToolbar);
+        return chatContainer;
+    }
+
+    private Node createRightSidebar() {
+        VBox sidebar = new VBox(12);
+        sidebar.setPrefWidth(420);
+        BorderPane.setMargin(sidebar, new Insets(8, 0, 8, 8));
+
+        // 1. Live Vision Feed Panel
+        VBox visionPanel = new VBox(8);
+        visionPanel.getStyleClass().add("hud-panel");
+        visionPanel.setPadding(new Insets(12));
+
+        Label visionTitle = new Label("VISUAL PERCEPTION HUD (OPENCV / ONNX)");
+        visionTitle.getStyleClass().add("section-title");
+
+        cameraCanvas = new CameraViewportCanvas(396, 220);
+
+        // Emotion Test Overrides for Viva / Demonstration
+        HBox emotionOverrideBox = new HBox(6);
+        emotionOverrideBox.setAlignment(Pos.CENTER_LEFT);
+        Label emoLabel = new Label("TEST MOOD:");
+        emoLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: #64748b; -fx-font-weight: bold;");
+
+        Button btnHappy = new Button("😊 Happy");
+        btnHappy.getStyleClass().add("hud-button-secondary");
+        btnHappy.setOnAction(e -> core.getVisionService().getEmotionClassifier().setManualEmotionOverride(MoodDetectedEvent.Emotion.HAPPY, 0.94));
+
+        Button btnStressed = new Button("⚡ Stressed");
+        btnStressed.getStyleClass().add("hud-button-secondary");
+        btnStressed.setOnAction(e -> core.getVisionService().getEmotionClassifier().setManualEmotionOverride(MoodDetectedEvent.Emotion.STRESSED, 0.91));
+
+        Button btnFocused = new Button("🎯 Focused");
+        btnFocused.getStyleClass().add("hud-button-secondary");
+        btnFocused.setOnAction(e -> core.getVisionService().getEmotionClassifier().setManualEmotionOverride(MoodDetectedEvent.Emotion.FOCUSED, 0.96));
+
+        emotionOverrideBox.getChildren().addAll(emoLabel, btnHappy, btnStressed, btnFocused);
+        visionPanel.getChildren().addAll(visionTitle, cameraCanvas, emotionOverrideBox);
+
+        // 2. Adaptive Personalization Engine Inspector Panel
+        VBox profilePanel = new VBox(8);
+        profilePanel.getStyleClass().add("hud-panel");
+        profilePanel.setPadding(new Insets(12));
+
+        HBox profileHeader = new HBox(8);
+        profileHeader.setAlignment(Pos.CENTER_LEFT);
+        Label profileTitle = new Label("ADAPTIVE PERSONALIZATION INSPECTOR");
+        profileTitle.getStyleClass().add("section-title");
+        Region profSpacer = new Region();
+        HBox.setHgrow(profSpacer, Priority.ALWAYS);
+
+        Button synthButton = new Button("⚡ Re-Synthesize");
+        synthButton.getStyleClass().add("hud-button-secondary");
+        synthButton.setOnAction(e -> core.getPersonalizationEngine().triggerBehavioralSynthesisAsync());
+        profileHeader.getChildren().addAll(profileTitle, profSpacer, synthButton);
+
+        UserProfile currentProfile = core.getPersonalizationEngine().getCurrentProfile();
+
+        userProfileLabel = new Label("User: " + currentProfile.getUserName());
+        userProfileLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #00f2fe; -fx-font-size: 12px;");
+
+        preferredToneLabel = new Label("Inferred Demeanor: " + currentProfile.getPreferredTone());
+        preferredToneLabel.setStyle("-fx-text-fill: #38bdf8; -fx-font-size: 11px;");
+
+        topTopicsLabel = new Label("Interest Clusters: " + currentProfile.getTopTopics());
+        topTopicsLabel.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 10px;");
+
+        interactionCountLabel = new Label("Interaction Turns Logged: " + currentProfile.getTotalInteractions());
+        interactionCountLabel.setStyle("-fx-text-fill: #64748b; -fx-font-size: 10px;");
+
+        behavioralSummaryArea = new TextArea(currentProfile.getBehavioralSummary());
+        behavioralSummaryArea.setWrapText(true);
+        behavioralSummaryArea.setEditable(false);
+        behavioralSummaryArea.setPrefRowCount(3);
+        behavioralSummaryArea.setStyle("-fx-background-color: rgba(7, 10, 19, 0.7); -fx-text-fill: #e2e8f0; -fx-font-size: 11px;");
+
+        profilePanel.getChildren().addAll(profileHeader, userProfileLabel, preferredToneLabel, topTopicsLabel, interactionCountLabel, behavioralSummaryArea);
+
+        // 3. System Telemetry Grid
+        GridPane telemetryGrid = new GridPane();
+        telemetryGrid.setHgap(8);
+        telemetryGrid.setVgap(8);
+
+        cpuMeter = new TelemetryMeter("CPU LOAD", "6.2%");
+        ramMeter = new TelemetryMeter("RAM USAGE", "148 MB");
+        fpsMeter = new TelemetryMeter("VISION FPS", "30 FPS");
+        moodMeter = new TelemetryMeter("DETECTED MOOD", "FOCUSED");
+
+        telemetryGrid.add(cpuMeter, 0, 0);
+        telemetryGrid.add(ramMeter, 1, 0);
+        telemetryGrid.add(fpsMeter, 0, 1);
+        telemetryGrid.add(moodMeter, 1, 1);
+
+        ColumnConstraints col1 = new ColumnConstraints();
+        col1.setPercentWidth(50);
+        ColumnConstraints col2 = new ColumnConstraints();
+        col2.setPercentWidth(50);
+        telemetryGrid.getColumnConstraints().addAll(col1, col2);
+
+        sidebar.getChildren().addAll(visionPanel, profilePanel, telemetryGrid);
+        return sidebar;
+    }
+
+    private void handleSendMessage() {
+        String text = inputTextField.getText().trim();
+        if (text.isEmpty()) return;
+
+        // Clear input
+        inputTextField.clear();
+
+        // Render user message bubble
+        chatMessagesBox.getChildren().add(new ChatMessageCell(text, true, null, 0));
+        chatScrollPane.setVvalue(1.0);
+
+        // Dispatch input event to central Java core
+        eventBus.publish(new UserInputEvent(text, UserInputEvent.InputSource.TEXT));
+    }
+
+    private void registerEventSubscriptions() {
+        // Assistant Reply -> Add to chat stream
+        eventBus.subscribe(AssistantResponseEvent.class, replyEvent -> {
+            Platform.runLater(() -> {
+                chatMessagesBox.getChildren().add(new ChatMessageCell(
+                        replyEvent.getResponseText(),
+                        false,
+                        replyEvent.getMoodContext(),
+                        replyEvent.getLatencyMs()
+                ));
+                chatScrollPane.setVvalue(1.0);
+            });
+        });
+
+        // Vision Frame -> Update camera viewport
+        eventBus.subscribe(VideoFrame.class, frame -> {
+            Platform.runLater(() -> cameraCanvas.updateFrame(frame));
+        });
+
+        // Mood Detected -> Update reticle and telemetry
+        eventBus.subscribe(MoodDetectedEvent.class, moodEvent -> {
+            Platform.runLater(() -> {
+                cameraCanvas.updateMood(moodEvent);
+                moodMeter.updateTextOnly(moodEvent.getEmotion().name() + " (" + moodEvent.getFormattedConfidence() + ")");
+            });
+        });
+
+        // Gesture Detected -> Update reticle
+        eventBus.subscribe(GestureDetectedEvent.class, gestureEvent -> {
+            Platform.runLater(() -> cameraCanvas.updateGesture(gestureEvent));
+        });
+
+        // Telemetry Update -> Update meters and audio visualizer
+        eventBus.subscribe(TelemetryUpdateEvent.class, telem -> {
+            Platform.runLater(() -> {
+                cpuMeter.update(String.format("%.1f%%", telem.getCpuUsagePercent()), telem.getCpuUsagePercent() / 100.0);
+                ramMeter.update(telem.getMemoryUsedMB() + " MB", (double) telem.getMemoryUsedMB() / telem.getMemoryTotalMB());
+                fpsMeter.update(String.format("%.0f FPS", telem.getVisionFps()), telem.getVisionFps() / 60.0);
+                audioCanvas.setAudioLevel(telem.getAudioLevel());
+            });
+        });
+
+        // User Profile Updated -> Update Adaptive Personalization Inspector
+        eventBus.subscribe(UserProfile.class, profile -> {
+            Platform.runLater(() -> {
+                userProfileLabel.setText("User: " + profile.getUserName());
+                preferredToneLabel.setText("Inferred Demeanor: " + profile.getPreferredTone());
+                topTopicsLabel.setText("Interest Clusters: " + profile.getTopTopics());
+                interactionCountLabel.setText("Interaction Turns Logged: " + profile.getTotalInteractions());
+                behavioralSummaryArea.setText(profile.getBehavioralSummary());
+            });
+        });
+    }
+}
