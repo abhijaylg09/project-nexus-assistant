@@ -16,6 +16,7 @@ public class LiveMicrophoneService {
     private TargetDataLine line;
     private Thread captureThread;
 
+    private double digitalGain = 4.5; // Digital Pre-Amp Software Boost
     private double currentVoiceLevel = 0.05; // 0.0 to 1.0
     private long lastSpeechTime = 0;
     private Consumer<byte[]> audioChunkConsumer;
@@ -43,7 +44,7 @@ public class LiveMicrophoneService {
             captureThread = new Thread(this::captureLoop, "NexusLiveMicThread");
             captureThread.setDaemon(true);
             captureThread.start();
-            System.out.println("[LiveMicrophone] Live microphone listening initiated (16kHz 16-bit PCM).");
+            System.out.println("[LiveMicrophone] Live microphone listening initiated (16kHz 16-bit PCM, 4.5x Gain Boost).");
 
         } catch (Exception e) {
             System.err.println("[LiveMicrophone] Microphone initialization note: " + e.getMessage());
@@ -71,20 +72,24 @@ public class LiveMicrophoneService {
         while (recording.get() && line != null) {
             int bytesRead = line.read(buffer, 0, buffer.length);
             if (bytesRead > 0) {
-                // Compute RMS energy level
+                // Compute RMS energy level with digital gain boost
                 double sum = 0;
                 for (int i = 0; i < bytesRead - 1; i += 2) {
                     short sample = (short) ((buffer[i + 1] << 8) | (buffer[i] & 0xFF));
-                    sum += sample * sample;
+                    double boostedSample = sample * digitalGain;
+                    // Soft knee limiter to avoid overflow
+                    if (boostedSample > 32767) boostedSample = 32767;
+                    if (boostedSample < -32768) boostedSample = -32768;
+                    sum += boostedSample * boostedSample;
                 }
                 double numSamples = bytesRead / 2.0;
                 double rms = Math.sqrt(sum / numSamples);
 
-                // Scale RMS: quiet room is ~50-200, normal speaking is ~1500-12000
-                double normalized = Math.min(1.0, Math.max(0.04, rms / 8000.0));
-                currentVoiceLevel = (currentVoiceLevel * 0.6) + (normalized * 0.4);
+                // Normal speaking with boost reaches 2000-12000
+                double normalized = Math.min(1.0, Math.max(0.04, rms / 4500.0));
+                currentVoiceLevel = (currentVoiceLevel * 0.5) + (normalized * 0.5);
 
-                if (currentVoiceLevel > 0.18) {
+                if (currentVoiceLevel > 0.12) {
                     lastSpeechTime = System.currentTimeMillis();
                 }
 
@@ -100,7 +105,15 @@ public class LiveMicrophoneService {
     }
 
     public boolean isSpeakingNow() {
-        return (System.currentTimeMillis() - lastSpeechTime) < 500;
+        return (System.currentTimeMillis() - lastSpeechTime) < 600;
+    }
+
+    public void setDigitalGain(double gain) {
+        this.digitalGain = Math.max(1.0, Math.min(10.0, gain));
+    }
+
+    public double getDigitalGain() {
+        return digitalGain;
     }
 
     public boolean isRecording() {

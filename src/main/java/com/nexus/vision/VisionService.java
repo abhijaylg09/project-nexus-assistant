@@ -158,15 +158,16 @@ public class VisionService {
             // 4. Emotion classification
             MoodDetectedEvent baseMood = emotionClassifier.classifyEmotion(faceX, faceY, faceW, faceH, frameWidth, frameHeight);
 
-            // 5. Eyes Closed & Drowsiness Tracking
-            boolean eyesClosedSimulation = (Math.sin(scanAngle * 0.15) > 0.96); // occasional subtle blink
-            eyeClassifier.evaluateEyes(eyesClosedSimulation);
+            // 5. Optical Eyes Closed & Drowsiness Tracking from Camera Frame
+            if (bImg != null) {
+                eyeClassifier.evaluateEyesFromFrame(bImg, faceX, faceY, faceW, faceH);
+            } else {
+                eyeClassifier.evaluateEyesFromFrame(null, faceX, faceY, faceW, faceH);
+            }
 
-            // 6. Gender Classification
-            MoodDetectedEvent.Gender gender = (activeTeammate.getGender() == TeammateProfile.Gender.MALE)
-                    ? MoodDetectedEvent.Gender.MALE
-                    : MoodDetectedEvent.Gender.FEMALE;
-            double genderConf = faceBiometrics.getMatchConfidence();
+            // 6. Optical Gender Classification
+            MoodDetectedEvent.Gender gender = faceBiometrics.getDetectedGender();
+            double genderConf = faceBiometrics.getGenderConfidence();
 
             // 6. Assemble Full Multimodal Perception Event
             MoodDetectedEvent fullMoodEvent = new MoodDetectedEvent(
@@ -257,6 +258,35 @@ public class VisionService {
         this.activeTeammate = teammate;
         this.faceBiometrics.forceIdentify(teammate);
         System.out.println("[VisionService] Active recognized teammate set to: " + teammate.getName());
+    }
+
+    public BufferedImage getLatestFrameSnapshot() {
+        if (physicalWebcamActive && physicalWebcam != null && physicalWebcam.isOpen()) {
+            return physicalWebcam.getImage();
+        }
+        return null;
+    }
+
+    public java.io.File captureSnapshotToFile() {
+        try {
+            BufferedImage bImg = getLatestFrameSnapshot();
+            if (bImg == null) {
+                bImg = new BufferedImage(frameWidth, frameHeight, BufferedImage.TYPE_INT_RGB);
+                java.awt.Graphics2D g2 = bImg.createGraphics();
+                g2.setColor(java.awt.Color.BLACK);
+                g2.fillRect(0, 0, frameWidth, frameHeight);
+                g2.setColor(java.awt.Color.CYAN);
+                g2.drawString("Project N.E.X.U.S Visual Snapshot", 40, 60);
+                g2.dispose();
+            }
+            java.io.File tempFile = java.io.File.createTempFile("nexus_camera_snapshot_", ".png");
+            tempFile.deleteOnExit();
+            javax.imageio.ImageIO.write(bImg, "PNG", tempFile);
+            return tempFile;
+        } catch (Exception e) {
+            System.err.println("[VisionService] Snapshot error: " + e.getMessage());
+            return null;
+        }
     }
 
     public FaceBiometricsEngine getFaceBiometrics() { return faceBiometrics; }

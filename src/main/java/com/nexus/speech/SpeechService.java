@@ -49,8 +49,8 @@ public class SpeechService {
         ttsEngine.speakAsync(text, onComplete);
     }
 
-    public void listenToVoiceChatAsync(Consumer<String> onTranscript, Runnable onStart, Runnable onEnd) {
-        windowsRecognizer.listenAsync(onTranscript, onStart, onEnd);
+    public void listenToVoiceChatAsync(Consumer<String> onTranscript, Runnable onStart, Runnable onReady, Runnable onEnd) {
+        windowsRecognizer.listenAsync(onTranscript, onStart, onReady, onEnd);
     }
 
     public double getLiveAudioLevel() {

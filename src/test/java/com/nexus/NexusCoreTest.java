@@ -167,4 +167,42 @@ public class NexusCoreTest {
         assertNotNull(com.nexus.personalization.TeammateProfile.findById("ABHISHEK"));
         assertNotNull(com.nexus.personalization.TeammateProfile.findById("DIA"));
     }
+
+    @Test
+    @DisplayName("Verify VisionReasoningEngine multimodal image analysis")
+    public void testVisionReasoningEngine() throws Exception {
+        com.nexus.reasoning.VisionReasoningEngine visionEngine = new com.nexus.reasoning.VisionReasoningEngine();
+
+        // Create temporary test image
+        java.awt.image.BufferedImage img = new java.awt.image.BufferedImage(300, 200, java.awt.image.BufferedImage.TYPE_INT_RGB);
+        java.awt.Graphics2D g = img.createGraphics();
+        g.setColor(java.awt.Color.DARK_GRAY);
+        g.fillRect(0, 0, 300, 200);
+        g.setColor(java.awt.Color.WHITE);
+        g.drawString("class QuickSort { void sort() {} }", 20, 50);
+        g.dispose();
+
+        java.io.File tempImg = java.io.File.createTempFile("test_code_img_", ".png");
+        tempImg.deleteOnExit();
+        javax.imageio.ImageIO.write(img, "PNG", tempImg);
+
+        String answer = visionEngine.analyzeImageAndAnswer(tempImg, "Explain the code in this image", "Abhijay");
+        assertNotNull(answer);
+        assertTrue(answer.contains("Multimodal Visual Analysis"));
+        assertTrue(answer.contains("Resolution to Your Doubt"));
+    }
+
+    @Test
+    @DisplayName("Verify optical gender calibration in FaceBiometricsEngine")
+    public void testOpticalGenderCalibration() {
+        com.nexus.vision.FaceBiometricsEngine fb = new com.nexus.vision.FaceBiometricsEngine();
+        assertNotNull(fb.getDetectedGender());
+
+        fb.setManualGenderOverride(com.nexus.core.events.MoodDetectedEvent.Gender.MALE);
+        assertEquals(com.nexus.core.events.MoodDetectedEvent.Gender.MALE, fb.getDetectedGender());
+        assertTrue(fb.getGenderConfidence() > 0.90);
+
+        fb.setManualGenderOverride(com.nexus.core.events.MoodDetectedEvent.Gender.FEMALE);
+        assertEquals(com.nexus.core.events.MoodDetectedEvent.Gender.FEMALE, fb.getDetectedGender());
+    }
 }

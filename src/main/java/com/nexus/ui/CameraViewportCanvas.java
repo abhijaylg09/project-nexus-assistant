@@ -96,6 +96,19 @@ public class CameraViewportCanvas extends Canvas {
             gc.strokeLine(cx - 8, cy, cx + 8, cy);
             gc.strokeLine(cx, cy - 8, cx, cy + 8);
 
+            // Optical Eye Tracking Reticles
+            double eyeY = by + (bh * 0.28);
+            double eyeLeftX = bx + (bw * 0.18);
+            double eyeRightX = bx + (bw * 0.54);
+            double eyeW = bw * 0.28;
+            double eyeH = bh * 0.18;
+
+            Color eyeColor = currentMood.isEyesClosed() ? Color.rgb(255, 75, 75, 0.85) : Color.rgb(0, 255, 135, 0.85);
+            gc.setStroke(eyeColor);
+            gc.setLineWidth(1.2);
+            gc.strokeRoundRect(eyeLeftX, eyeY, eyeW, eyeH, 3, 3);
+            gc.strokeRoundRect(eyeRightX, eyeY, eyeW, eyeH, 3, 3);
+
             // Emotion Tag Card above face
             gc.setFill(Color.rgb(13, 22, 41, 0.88));
             gc.fillRoundRect(bx, by - 26, 140, 22, 4, 4);

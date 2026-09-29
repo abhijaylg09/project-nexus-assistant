@@ -14,15 +14,21 @@ import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+
+import java.io.File;
 
 /**
  * Primary JavaFX HUD Controller for Project N.E.X.U.S.
  * Assembles chat streams, camera viewports, audio visualizer,
- * teammate identity recognition, gender detection, drowsiness alerts,
- * interactive voice chat with microphone, and live AI model settings.
+ * teammate identity recognition, optical gender detection & calibration,
+ * optical eye closure & drowsiness alerts, multimodal image doubt Q&A,
+ * and high-accuracy microphone voice chat.
  */
 public class HudController {
 
@@ -39,6 +45,12 @@ public class HudController {
     private final Button sendButton = new Button("TRANSMIT");
     private final Button voiceChatButton = new Button("🎙️ VOICE CHAT");
     private final Button micToggleButton = new Button("MIC ON");
+
+    // Image Attachment / Doubt Support
+    private File currentAttachedImageFile = null;
+    private HBox attachmentPreviewBar;
+    private ImageView attachmentThumbView;
+    private Label attachmentNameLabel;
 
     // Perceptual Viewports
     private CameraViewportCanvas cameraCanvas;
@@ -75,18 +87,23 @@ public class HudController {
         // 1. Top Header Bar
         rootPane.setTop(createHeader());
 
-        // 2. Center Chat & Audio Visualizer Pane
-        rootPane.setCenter(createChatSection());
+        // 2. Central Split: Left Chat Stream + Right Vision & Telemetry HUD
+        HBox mainSplit = new HBox(12);
+        mainSplit.setAlignment(Pos.TOP_LEFT);
 
-        // 3. Right Sidebar: Vision HUD + Teammate Selector + Personalization Inspector + Telemetry
-        rootPane.setRight(createRightSidebar());
+        Node chatSection = createChatSection();
+        Node rightSidebar = createRightSidebar();
+
+        HBox.setHgrow(chatSection, Priority.ALWAYS);
+        mainSplit.getChildren().addAll(chatSection, rightSidebar);
+        rootPane.setCenter(mainSplit);
     }
 
     private Node createHeader() {
-        HBox header = new HBox(14);
-        header.getStyleClass().add("hud-header");
+        HBox header = new HBox(12);
         header.setAlignment(Pos.CENTER_LEFT);
-        header.setPadding(new Insets(8, 14, 12, 14));
+        header.setPadding(new Insets(6, 12, 12, 12));
+        header.getStyleClass().add("hud-header");
 
         VBox titleBox = new VBox(2);
         Label title = new Label("PROJECT N.E.X.U.S");
@@ -116,13 +133,13 @@ public class HudController {
     }
 
     private Node createChatSection() {
-        VBox chatContainer = new VBox(10);
+        VBox chatContainer = new VBox(8);
         chatContainer.getStyleClass().addAll("hud-panel", "chat-container");
-        chatContainer.setPadding(new Insets(14));
+        chatContainer.setPadding(new Insets(12));
         BorderPane.setMargin(chatContainer, new Insets(8, 8, 8, 0));
 
         // Title
-        Label chatTitle = new Label("REAL-TIME CONVERSATIONAL STREAM (CHATGPT-LEVEL REASONING)");
+        Label chatTitle = new Label("REAL-TIME CONVERSATIONAL STREAM (CHATGPT-LEVEL MULTIMODAL REASONING)");
         chatTitle.getStyleClass().add("section-title");
 
         // Scrollable Chat Message Area
@@ -134,20 +151,57 @@ public class HudController {
 
         // Welcome greeting
         chatMessagesBox.getChildren().add(new ChatMessageCell(
-                "N.E.X.U.S online. Central Java Orchestrator active. Live camera perception, gender analysis, optical motion detection, and teammate recognition active. Ask me anything or press Voice Chat to speak!",
+                "N.E.X.U.S online. Central Java Orchestrator active. Live optical eye tracking, gender biometrics, and multimodal image inspection ready. Ask anything, click 'Attach Image' to send a doubt, or press 'Voice Chat' to speak!",
                 false, "FOCUSED", 18
         ));
 
         // Real-Time Audio Visualizer Canvas
         audioCanvas = new AudioVisualizerCanvas(580, 48);
 
+        // Attachment Preview Banner
+        attachmentPreviewBar = new HBox(8);
+        attachmentPreviewBar.setAlignment(Pos.CENTER_LEFT);
+        attachmentPreviewBar.setPadding(new Insets(4, 10, 4, 10));
+        attachmentPreviewBar.setStyle("-fx-background-color: #111d33; -fx-border-color: #00f2fe; -fx-border-radius: 4px; -fx-background-radius: 4px;");
+        attachmentPreviewBar.setVisible(false);
+        attachmentPreviewBar.setManaged(false);
+
+        attachmentThumbView = new ImageView();
+        attachmentThumbView.setFitWidth(48);
+        attachmentThumbView.setFitHeight(36);
+        attachmentThumbView.setPreserveRatio(true);
+
+        attachmentNameLabel = new Label();
+        attachmentNameLabel.setStyle("-fx-text-fill: #38bdf8; -fx-font-size: 11px; -fx-font-weight: bold;");
+
+        Button removeAttachBtn = new Button("✖ Remove");
+        removeAttachBtn.getStyleClass().add("hud-button-secondary");
+        removeAttachBtn.setStyle("-fx-font-size: 9px; -fx-padding: 2px 6px; -fx-border-color: #ef4444; -fx-text-fill: #f87171;");
+        removeAttachBtn.setOnAction(e -> clearAttachedImage());
+
+        Region attachSpacer = new Region();
+        HBox.setHgrow(attachSpacer, Priority.ALWAYS);
+        attachmentPreviewBar.getChildren().addAll(attachmentThumbView, attachmentNameLabel, attachSpacer, removeAttachBtn);
+
         // Input Box & Controls
-        HBox inputBar = new HBox(8);
+        HBox inputBar = new HBox(6);
         inputBar.setAlignment(Pos.CENTER);
 
-        inputTextField.setPromptText("Ask anything like ChatGPT (e.g. 'Write a quicksort in Java', 'Explain transformers', 'Status')...");
+        inputTextField.setPromptText("Ask anything like ChatGPT or ask doubts about an image...");
         inputTextField.getStyleClass().add("hud-text-field");
         HBox.setHgrow(inputTextField, Priority.ALWAYS);
+
+        Button attachImgBtn = new Button("🖼️ Image");
+        attachImgBtn.getStyleClass().add("hud-button-secondary");
+        attachImgBtn.setStyle("-fx-font-size: 10px; -fx-padding: 5px 8px;");
+        attachImgBtn.setTooltip(new Tooltip("Attach an image file to ask questions or doubts"));
+        attachImgBtn.setOnAction(e -> handleAttachImage());
+
+        Button snapCamBtn = new Button("📸 Snap");
+        snapCamBtn.getStyleClass().add("hud-button-secondary");
+        snapCamBtn.setStyle("-fx-font-size: 10px; -fx-padding: 5px 8px;");
+        snapCamBtn.setTooltip(new Tooltip("Snap current camera frame to ask doubts about it"));
+        snapCamBtn.setOnAction(e -> handleSnapCamera());
 
         sendButton.getStyleClass().add("hud-button");
         voiceChatButton.getStyleClass().addAll("hud-button", "hud-button-mic-active");
@@ -173,7 +227,7 @@ public class HudController {
             }
         });
 
-        inputBar.getChildren().addAll(inputTextField, sendButton, voiceChatButton, micToggleButton);
+        inputBar.getChildren().addAll(inputTextField, attachImgBtn, snapCamBtn, sendButton, voiceChatButton, micToggleButton);
 
         // Gesture Action Shortcut Toolbar
         HBox gestureToolbar = new HBox(8);
@@ -195,7 +249,7 @@ public class HudController {
 
         gestureToolbar.getChildren().addAll(gestLabel, btnThumbs, btnStop, btnPeace);
 
-        chatContainer.getChildren().addAll(chatTitle, chatScrollPane, audioCanvas, inputBar, gestureToolbar);
+        chatContainer.getChildren().addAll(chatTitle, chatScrollPane, audioCanvas, attachmentPreviewBar, inputBar, gestureToolbar);
         return chatContainer;
     }
 
@@ -241,35 +295,75 @@ public class HudController {
         }
         teamBox.getChildren().addAll(teamTitle, teamButtons);
 
-        // Perception & Eye Controls
-        HBox perceptionControls = new HBox(5);
-        perceptionControls.setAlignment(Pos.CENTER_LEFT);
+        // Row 1: Emotion & Optical Eye Controls
+        HBox eyeControls = new HBox(4);
+        eyeControls.setAlignment(Pos.CENTER_LEFT);
+        Label eyeCtrlLabel = new Label("EYES & EMOTION:");
+        eyeCtrlLabel.setStyle("-fx-font-size: 9px; -fx-text-fill: #64748b; -fx-font-weight: bold;");
 
         Button btnHappy = new Button("Happy");
         btnHappy.getStyleClass().add("hud-button-secondary");
-        btnHappy.setStyle("-fx-font-size: 10px; -fx-padding: 4px 6px;");
+        btnHappy.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px;");
         btnHappy.setOnAction(e -> core.getVisionService().getEmotionClassifier().setManualEmotionOverride(MoodDetectedEvent.Emotion.HAPPY, 0.94));
 
         Button btnStressed = new Button("Stressed");
         btnStressed.getStyleClass().add("hud-button-secondary");
-        btnStressed.setStyle("-fx-font-size: 10px; -fx-padding: 4px 6px;");
+        btnStressed.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px;");
         btnStressed.setOnAction(e -> core.getVisionService().getEmotionClassifier().setManualEmotionOverride(MoodDetectedEvent.Emotion.STRESSED, 0.91));
 
-        Button btnEyesOpen = new Button("Eyes Open");
-        btnEyesOpen.getStyleClass().add("hud-button-secondary");
-        btnEyesOpen.setStyle("-fx-font-size: 10px; -fx-padding: 4px 6px;");
-        btnEyesOpen.setOnAction(e -> core.getVisionService().getEyeClassifier().setManualOverride(EyeStateClassifier.EyeStatus.OPEN, 60000));
+        Button btnEyesBlink = new Button("👁️ Blink");
+        btnEyesBlink.getStyleClass().add("hud-button-secondary");
+        btnEyesBlink.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px;");
+        btnEyesBlink.setOnAction(e -> core.getVisionService().getEyeClassifier().setManualOverride(EyeStateClassifier.EyeStatus.CLOSED, 400));
 
-        Button btnEyesClosed = new Button("Drowsy Alert");
-        btnEyesClosed.getStyleClass().add("hud-button-secondary");
-        btnEyesClosed.setStyle("-fx-font-size: 10px; -fx-padding: 4px 6px; -fx-border-color: #ef4444; -fx-text-fill: #f87171;");
-        btnEyesClosed.setOnAction(e -> {
+        Button btnDrowsyAlert = new Button("⚠️ Drowsy Alert");
+        btnDrowsyAlert.getStyleClass().add("hud-button-secondary");
+        btnDrowsyAlert.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px; -fx-border-color: #ef4444; -fx-text-fill: #f87171;");
+        btnDrowsyAlert.setOnAction(e -> {
             core.getVisionService().getEyeClassifier().setManualOverride(EyeStateClassifier.EyeStatus.CLOSED, 15000);
             core.getSpeechService().speak("Attention! Drowsiness detected. Please take a rest or stretch.", null);
         });
 
-        perceptionControls.getChildren().addAll(btnHappy, btnStressed, btnEyesOpen, btnEyesClosed);
-        visionPanel.getChildren().addAll(visionHeader, cameraCanvas, teamBox, perceptionControls);
+        Button btnAutoEyes = new Button("Auto");
+        btnAutoEyes.getStyleClass().add("hud-button-secondary");
+        btnAutoEyes.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px;");
+        btnAutoEyes.setOnAction(e -> core.getVisionService().getEyeClassifier().clearOverride());
+
+        eyeControls.getChildren().addAll(eyeCtrlLabel, btnHappy, btnStressed, btnEyesBlink, btnDrowsyAlert, btnAutoEyes);
+
+        // Row 2: Optical Gender Calibration
+        HBox genderControls = new HBox(4);
+        genderControls.setAlignment(Pos.CENTER_LEFT);
+        Label genderCtrlLabel = new Label("GENDER CALIBRATION:");
+        genderCtrlLabel.setStyle("-fx-font-size: 9px; -fx-text-fill: #64748b; -fx-font-weight: bold;");
+
+        Button btnMale = new Button("♂ Male");
+        btnMale.getStyleClass().add("hud-button-secondary");
+        btnMale.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px; -fx-text-fill: #38bdf8;");
+        btnMale.setOnAction(e -> {
+            core.getVisionService().getFaceBiometrics().setManualGenderOverride(MoodDetectedEvent.Gender.MALE);
+            chatMessagesBox.getChildren().add(new ChatMessageCell("Gender calibrated to MALE.", false, "FOCUSED", 0));
+        });
+
+        Button btnFemale = new Button("♀ Female");
+        btnFemale.getStyleClass().add("hud-button-secondary");
+        btnFemale.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px; -fx-text-fill: #f472b6;");
+        btnFemale.setOnAction(e -> {
+            core.getVisionService().getFaceBiometrics().setManualGenderOverride(MoodDetectedEvent.Gender.FEMALE);
+            chatMessagesBox.getChildren().add(new ChatMessageCell("Gender calibrated to FEMALE.", false, "FOCUSED", 0));
+        });
+
+        Button btnAutoGender = new Button("Auto Optical");
+        btnAutoGender.getStyleClass().add("hud-button-secondary");
+        btnAutoGender.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px;");
+        btnAutoGender.setOnAction(e -> {
+            core.getVisionService().getFaceBiometrics().setManualGenderOverride(null);
+            chatMessagesBox.getChildren().add(new ChatMessageCell("Gender set to automatic optical analysis.", false, "FOCUSED", 0));
+        });
+
+        genderControls.getChildren().addAll(genderCtrlLabel, btnMale, btnFemale, btnAutoGender);
+
+        visionPanel.getChildren().addAll(visionHeader, cameraCanvas, teamBox, eyeControls, genderControls);
 
         // 2. Adaptive Personalization Inspector Panel
         VBox profilePanel = new VBox(6);
@@ -309,17 +403,20 @@ public class HudController {
         behavioralSummaryArea.setPrefRowCount(2);
         behavioralSummaryArea.setStyle("-fx-background-color: rgba(7, 10, 19, 0.7); -fx-text-fill: #e2e8f0; -fx-font-size: 10px;");
 
-        profilePanel.getChildren().addAll(profileHeader, userProfileLabel, preferredToneLabel, topTopicsLabel, interactionCountLabel, behavioralSummaryArea);
+        profilePanel.getChildren().addAll(
+                profileHeader, userProfileLabel, preferredToneLabel,
+                topTopicsLabel, interactionCountLabel, behavioralSummaryArea
+        );
 
-        // 3. System Telemetry Grid
+        // 3. System Telemetry Panel
         GridPane telemetryGrid = new GridPane();
-        telemetryGrid.setHgap(6);
-        telemetryGrid.setVgap(6);
+        telemetryGrid.setHgap(8);
+        telemetryGrid.setVgap(8);
 
-        cpuMeter = new TelemetryMeter("CPU LOAD", "4.8%");
-        ramMeter = new TelemetryMeter("RAM USAGE", "64 MB");
-        motionMeter = new TelemetryMeter("OPTICAL MOTION", "12% [STABLE]");
-        moodMeter = new TelemetryMeter("DETECTED MOOD", "FOCUSED");
+        cpuMeter = new TelemetryMeter("CPU LOAD", "%");
+        ramMeter = new TelemetryMeter("RAM COMMITTED", "MB");
+        motionMeter = new TelemetryMeter("OPTICAL MOTION", "%");
+        moodMeter = new TelemetryMeter("CONFIDENCE", "%");
 
         telemetryGrid.add(cpuMeter, 0, 0);
         telemetryGrid.add(ramMeter, 1, 0);
@@ -336,9 +433,70 @@ public class HudController {
         return sidebar;
     }
 
+    private void handleAttachImage() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Select Image for Visual Analysis / Doubts");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("Image Files (*.png, *.jpg, *.jpeg, *.bmp, *.gif, *.webp)", "*.png", "*.jpg", "*.jpeg", "*.bmp", "*.gif", "*.webp"),
+                new FileChooser.ExtensionFilter("All Files", "*.*")
+        );
+        File selectedFile = fileChooser.showOpenDialog(rootPane.getScene().getWindow());
+        if (selectedFile != null && selectedFile.exists()) {
+            setAttachedImage(selectedFile);
+        }
+    }
+
+    private void handleSnapCamera() {
+        File snapshot = core.getVisionService().captureSnapshotToFile();
+        if (snapshot != null && snapshot.exists()) {
+            setAttachedImage(snapshot);
+            chatMessagesBox.getChildren().add(new ChatMessageCell("📸 Captured instant webcam snapshot. Type your question or click Voice Chat to ask!", false, "FOCUSED", 0));
+            chatScrollPane.setVvalue(1.0);
+        }
+    }
+
+    private void setAttachedImage(File file) {
+        this.currentAttachedImageFile = file;
+        try {
+            Image img = new Image(file.toURI().toString(), 64, 48, true, true);
+            attachmentThumbView.setImage(img);
+            attachmentNameLabel.setText("Attached: " + file.getName() + " (" + (file.length() / 1024) + " KB)");
+            attachmentPreviewBar.setVisible(true);
+            attachmentPreviewBar.setManaged(true);
+        } catch (Exception e) {
+            System.err.println("Error displaying thumbnail: " + e.getMessage());
+        }
+    }
+
+    private void clearAttachedImage() {
+        this.currentAttachedImageFile = null;
+        attachmentThumbView.setImage(null);
+        attachmentNameLabel.setText("");
+        attachmentPreviewBar.setVisible(false);
+        attachmentPreviewBar.setManaged(false);
+    }
+
+    private void handleSendMessage() {
+        String text = inputTextField.getText().trim();
+        File imgToSend = currentAttachedImageFile;
+
+        if (text.isEmpty() && imgToSend == null) return;
+        if (text.isEmpty() && imgToSend != null) {
+            text = "Please inspect this attached image and explain any findings or answer my questions about it.";
+        }
+
+        inputTextField.clear();
+        clearAttachedImage();
+
+        chatMessagesBox.getChildren().add(new ChatMessageCell(text, imgToSend, true, null, 0));
+        chatScrollPane.setVvalue(1.0);
+
+        eventBus.publish(new UserInputEvent(text, UserInputEvent.InputSource.TEXT, imgToSend));
+    }
+
     private void handleVoiceChatButton() {
-        voiceChatButton.setText("🔴 LISTENING... SPEAK NOW!");
-        voiceChatButton.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold;");
+        voiceChatButton.setText("⏳ INITIALIZING MIC...");
+        voiceChatButton.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: black; -fx-font-weight: bold;");
 
         core.getSpeechService().listenToVoiceChatAsync(
                 transcript -> Platform.runLater(() -> {
@@ -346,12 +504,21 @@ public class HudController {
                     voiceChatButton.setStyle("");
 
                     if (transcript != null && !transcript.isBlank()) {
-                        chatMessagesBox.getChildren().add(new ChatMessageCell("🎙️ \"" + transcript + "\"", true, null, 0));
+                        File imgToSend = currentAttachedImageFile;
+                        chatMessagesBox.getChildren().add(new ChatMessageCell("🎙️ \"" + transcript + "\"", imgToSend, true, null, 0));
                         chatScrollPane.setVvalue(1.0);
-                        eventBus.publish(new UserInputEvent(transcript, UserInputEvent.InputSource.SPEECH));
+                        clearAttachedImage();
+                        eventBus.publish(new UserInputEvent(transcript, UserInputEvent.InputSource.SPEECH, imgToSend));
                     }
                 }),
-                () -> {},
+                () -> Platform.runLater(() -> {
+                    voiceChatButton.setText("⏳ INITIALIZING MIC...");
+                    voiceChatButton.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: black; -fx-font-weight: bold;");
+                }),
+                () -> Platform.runLater(() -> {
+                    voiceChatButton.setText("🔴 SPEAK NOW!");
+                    voiceChatButton.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, #ef4444, 10, 0, 0, 0);");
+                }),
                 () -> Platform.runLater(() -> {
                     voiceChatButton.setText("🎙️ VOICE CHAT");
                     voiceChatButton.setStyle("");
@@ -448,17 +615,6 @@ public class HudController {
         dialog.showAndWait();
     }
 
-    private void handleSendMessage() {
-        String text = inputTextField.getText().trim();
-        if (text.isEmpty()) return;
-
-        inputTextField.clear();
-        chatMessagesBox.getChildren().add(new ChatMessageCell(text, true, null, 0));
-        chatScrollPane.setVvalue(1.0);
-
-        eventBus.publish(new UserInputEvent(text, UserInputEvent.InputSource.TEXT));
-    }
-
     private void registerEventSubscriptions() {
         // Assistant Reply -> Add to chat stream
         eventBus.subscribe(AssistantResponseEvent.class, replyEvent -> {
@@ -478,39 +634,26 @@ public class HudController {
             Platform.runLater(() -> cameraCanvas.updateFrame(frame));
         });
 
-        // Mood / Perception Detected -> Update reticle and telemetry
-        eventBus.subscribe(MoodDetectedEvent.class, moodEvent -> {
+        // Perceptual Mood & Biometrics Event -> Update meters and labels
+        eventBus.subscribe(MoodDetectedEvent.class, mood -> {
             Platform.runLater(() -> {
-                cameraCanvas.updateMood(moodEvent);
-                moodMeter.updateTextOnly(moodEvent.getEmotion().name() + " (" + moodEvent.getFormattedConfidence() + ")");
-                double motionPercent = moodEvent.getMotionLevel() * 100;
-                String motionStatus = (motionPercent > 35) ? "ACTIVE" : "STABLE";
-                motionMeter.update(String.format("%.0f%% [%s]", motionPercent, motionStatus), moodEvent.getMotionLevel());
+                cameraCanvas.updateMood(mood);
+                moodMeter.update(String.format("%.0f%%", mood.getConfidence() * 100.0), mood.getConfidence());
+                motionMeter.update(String.format("%.0f%%", mood.getMotionLevel() * 100.0), mood.getMotionLevel());
             });
         });
 
-        // Gesture Detected -> Update reticle
-        eventBus.subscribe(GestureDetectedEvent.class, gestureEvent -> {
-            Platform.runLater(() -> cameraCanvas.updateGesture(gestureEvent));
+        // Gesture Event -> Update canvas gesture tag
+        eventBus.subscribe(GestureDetectedEvent.class, gesture -> {
+            Platform.runLater(() -> cameraCanvas.updateGesture(gesture));
         });
 
-        // Telemetry Update -> Update meters and audio visualizer
-        eventBus.subscribe(TelemetryUpdateEvent.class, telem -> {
+        // Telemetry Event -> Update CPU and RAM meters
+        eventBus.subscribe(TelemetryUpdateEvent.class, tele -> {
             Platform.runLater(() -> {
-                cpuMeter.update(String.format("%.1f%%", telem.getCpuUsagePercent()), telem.getCpuUsagePercent() / 100.0);
-                ramMeter.update(telem.getMemoryUsedMB() + " MB", (double) telem.getMemoryUsedMB() / telem.getMemoryTotalMB());
-                audioCanvas.setAudioLevel(telem.getAudioLevel());
-            });
-        });
-
-        // User Profile Updated -> Update Adaptive Personalization Inspector
-        eventBus.subscribe(UserProfile.class, profile -> {
-            Platform.runLater(() -> {
-                userProfileLabel.setText("Recognized: " + profile.getUserName());
-                preferredToneLabel.setText("Inferred Demeanor: " + profile.getPreferredTone());
-                topTopicsLabel.setText("Interest Clusters: " + profile.getTopTopics());
-                interactionCountLabel.setText("Interaction Turns Logged: " + profile.getTotalInteractions());
-                behavioralSummaryArea.setText(profile.getBehavioralSummary());
+                cpuMeter.update(String.format("%.1f%%", tele.getCpuUsagePercent()), tele.getCpuUsagePercent() / 100.0);
+                ramMeter.update(tele.getMemoryUsedMB() + " MB", (double) tele.getMemoryUsedMB() / Math.max(1, tele.getMemoryTotalMB()));
+                audioCanvas.setAudioLevel(core.getSpeechService().getLiveAudioLevel());
             });
         });
     }

@@ -33,6 +33,7 @@ public class NexusCore {
     private final VisionService visionService;
     private final SpeechService speechService;
     private final LlmService llmService;
+    private final com.nexus.reasoning.VisionReasoningEngine visionReasoningEngine;
     private final PromptContextBuilder promptBuilder;
     private final InteractionRepository interactionRepo;
     private final UserProfileRepository userProfileRepo;
@@ -53,6 +54,7 @@ public class NexusCore {
         this.interactionRepo = new InteractionRepository();
         this.userProfileRepo = new UserProfileRepository();
         this.llmService = new LlmService();
+        this.visionReasoningEngine = new com.nexus.reasoning.VisionReasoningEngine();
         this.promptBuilder = new PromptContextBuilder();
         this.personalizationEngine = new PersonalizationEngine(interactionRepo, userProfileRepo, llmService);
 
@@ -135,6 +137,40 @@ public class NexusCore {
         MoodDetectedEvent currentMood = latestMood.get();
         GestureDetectedEvent currentGesture = latestGesture.get();
         List<InteractionEntity> recentHistory = interactionRepo.getRecent(6);
+
+        // If user submitted an image doubt / inspection request
+        if (inputEvent.hasAttachedImage()) {
+            String activeName = (currentMood != null && currentMood.getRecognizedIdentity() != null)
+                    ? currentMood.getRecognizedIdentity()
+                    : personalizationEngine.getCurrentProfile().getUserName();
+
+            java.util.concurrent.CompletableFuture.supplyAsync(() -> visionReasoningEngine.analyzeImageAndAnswer(
+                    inputEvent.getAttachedImageFile(),
+                    userText,
+                    activeName
+            )).thenAccept(reply -> {
+                long latencyMs = System.currentTimeMillis() - startTime;
+                String moodName = (currentMood != null) ? currentMood.getEmotion().name() : "FOCUSED";
+                String gestureName = (currentGesture != null) ? currentGesture.getGesture().name() : "NONE";
+
+                eventBus.publishOnFxThread(AssistantResponseEvent.success(reply, moodName, latencyMs));
+                speechService.speak("Visual analysis completed. I have processed your image inquiry.", null);
+
+                personalizationEngine.processInteraction(
+                        "[Attached Image: " + inputEvent.getAttachedImageFile().getName() + "] " + userText,
+                        reply,
+                        "IMAGE_INQUIRY",
+                        moodName,
+                        gestureName,
+                        latencyMs
+                );
+            }).exceptionally(ex -> {
+                System.err.println("[NexusCore] Vision reasoning error: " + ex.getMessage());
+                eventBus.publishOnFxThread(AssistantResponseEvent.error("Visual analysis exception: " + ex.getMessage()));
+                return null;
+            });
+            return;
+        }
 
         // Build prompt with adaptive user profile and perception
         List<ChatMessage> promptPayload = promptBuilder.buildContext(
