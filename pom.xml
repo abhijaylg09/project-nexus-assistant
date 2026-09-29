@@ -49,6 +49,13 @@
             <version>${sqlite.version}</version>
         </dependency>
 
+        <!-- Hardware Webcam Capture API -->
+        <dependency>
+            <groupId>com.github.sarxos</groupId>
+            <artifactId>webcam-capture</artifactId>
+            <version>0.3.12</version>
+        </dependency>
+
         <!-- JSON Processing for LLM APIs and Configs -->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>

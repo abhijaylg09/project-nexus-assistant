@@ -54,9 +54,11 @@ public class CameraViewportCanvas extends Canvas {
         }
 
         // 2. HUD Target Reticle / Face Bounding Box
-        if (currentMood != null) {
-            double scaleX = w / 480.0;
-            double scaleY = h / 320.0;
+        if (currentMood != null && currentFrame != null) {
+            double frameW = currentFrame.getWidth() > 0 ? currentFrame.getWidth() : 640.0;
+            double frameH = currentFrame.getHeight() > 0 ? currentFrame.getHeight() : 480.0;
+            double scaleX = w / frameW;
+            double scaleY = h / frameH;
 
             double bx = currentMood.getFaceX() * scaleX;
             double by = currentMood.getFaceY() * scaleY;
