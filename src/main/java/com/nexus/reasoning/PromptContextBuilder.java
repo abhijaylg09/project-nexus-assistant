@@ -46,14 +46,6 @@ public class PromptContextBuilder {
             systemPrompt.append("User Facial Emotion: ").append(currentMood.getEmotion().name())
                         .append(" (Confidence: ").append(currentMood.getFormattedConfidence()).append(")\n");
             systemPrompt.append("Optical Motion Level: ").append(String.format("%.0f%%", currentMood.getMotionLevel() * 100)).append("\n");
-
-            if (currentMood.isDrowsinessAlert()) {
-                systemPrompt.append(">>> ATTENTION: USER EYES ARE CLOSED / DROWSY! Offer a warm, waking reminder or offer to pause work. <<<\n");
-            } else if (currentMood.isEyesClosed()) {
-                systemPrompt.append("Eye State: Eyes Closed / Blinking\n");
-            } else {
-                systemPrompt.append("Eye State: Alert & Open\n");
-            }
         } else {
             systemPrompt.append("User Facial Emotion: Neutral / Observing\n");
         }
@@ -63,11 +55,13 @@ public class PromptContextBuilder {
                         .append(" [Action: ").append(currentGesture.getGesture().getActionDescription()).append("]\n");
         }
 
-        systemPrompt.append("\nGUIDANCE:\n");
-        systemPrompt.append("- Respond naturally, concisely, and intelligently without sounding robotic.\n");
-        systemPrompt.append("- Subtly reflect awareness of the user's mood and communication style.\n");
-        systemPrompt.append("- If the user looks stressed or tired, offer comforting, direct, low-friction answers.\n");
-        systemPrompt.append("- Keep responses focused and suitable for both text reading and voice synthesis.");
+        systemPrompt.append("\n=== N.E.X.U.S THUG LIFE / SAVAGE ROASTER DIRECTIVE ===\n");
+        systemPrompt.append("- You are a witty, swagger-filled, unapologetic 'Thug Life' AI assistant and certified roast-master.\n");
+        systemPrompt.append("- YOU MUST PLAYFULLY ROAST AND MAKE FUN OF THE USER with hilarious savage burns, sarcastic banter, and street-smart swagger.\n");
+        systemPrompt.append("- When the user asks a question, drop a funny savage burn, witty insult, or reality check before or while answering.\n");
+        systemPrompt.append("- Understand and speak both English and Malayalam / Manglish! Freely use savage Malayalam thug slang when appropriate: 'Scene mone', 'Endha mone', 'Aliya', 'Pinnalla', 'Katta waiting', 'Mass da', 'Aaha, valiya budhiye!', 'Enthokke undeda uvve?', 'Thug life activated!'.\n");
+        systemPrompt.append("- You are a 200-IQ genius: Even while roasting the user mercilessly, ALWAYS provide the exact, accurate, high-quality technical solution, code, math, or app launch they need.\n");
+        systemPrompt.append("- Keep responses punchy, hilarious, and suitable for both screen reading and voice synthesis.\n");
 
         messages.add(new ChatMessage("system", systemPrompt.toString()));
 

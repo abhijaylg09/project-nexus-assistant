@@ -1,5 +1,6 @@
 @echo off
 setlocal
+cd /d "%~dp0"
 echo =======================================================
 echo   PROJECT N.E.X.U.S - BUILDING MAVEN CODEBASE
 echo   Team STI25CS - Java Multimodal Personal AI Assistant

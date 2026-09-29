@@ -142,18 +142,10 @@ public class NexusCoreTest {
     }
 
     @Test
-    @DisplayName("Verify MotionDetector and EyeStateClassifier")
-    public void testMotionAndEyeClassifiers() {
+    @DisplayName("Verify MotionDetector")
+    public void testMotionDetector() {
         com.nexus.vision.MotionDetector md = new com.nexus.vision.MotionDetector();
         assertEquals(0.0, md.getCurrentMotionLevel());
-
-        com.nexus.vision.EyeStateClassifier ec = new com.nexus.vision.EyeStateClassifier();
-        assertFalse(ec.isEyesClosed());
-        assertFalse(ec.isDrowsinessAlert());
-
-        ec.setManualOverride(com.nexus.vision.EyeStateClassifier.EyeStatus.CLOSED, 5000);
-        assertTrue(ec.isEyesClosed());
-        assertTrue(ec.isDrowsinessAlert());
     }
 
     @Test
@@ -204,5 +196,82 @@ public class NexusCoreTest {
 
         fb.setManualGenderOverride(com.nexus.core.events.MoodDetectedEvent.Gender.FEMALE);
         assertEquals(com.nexus.core.events.MoodDetectedEvent.Gender.FEMALE, fb.getDetectedGender());
+    }
+
+    @Test
+    @DisplayName("Verify AppLauncherService intent extraction")
+    public void testAppLaunchIntentExtraction() {
+        com.nexus.system.AppLauncherService launcher = new com.nexus.system.AppLauncherService();
+
+        // Positive intents
+        assertEquals("chrome", com.nexus.system.AppLauncherService.extractAppLaunchIntent("open chrome"));
+        assertEquals("calculator", com.nexus.system.AppLauncherService.extractAppLaunchIntent("launch calculator"));
+        assertEquals("vscode", com.nexus.system.AppLauncherService.extractAppLaunchIntent("start vscode"));
+        assertEquals("spotify", com.nexus.system.AppLauncherService.extractAppLaunchIntent("please open spotify"));
+        assertEquals("notepad", com.nexus.system.AppLauncherService.extractAppLaunchIntent("can you open notepad"));
+        assertEquals("discord", com.nexus.system.AppLauncherService.extractAppLaunchIntent("open the discord"));
+        assertEquals("excel", com.nexus.system.AppLauncherService.extractAppLaunchIntent("open my excel"));
+
+        // Negative — should NOT extract intent
+        assertNull(com.nexus.system.AppLauncherService.extractAppLaunchIntent("what is the weather today?"));
+        assertNull(com.nexus.system.AppLauncherService.extractAppLaunchIntent("hello nexus"));
+        assertNull(com.nexus.system.AppLauncherService.extractAppLaunchIntent(""));
+    }
+
+    @Test
+    @DisplayName("Verify AppLauncherService catalog and platform detection")
+    public void testAppLauncherCatalog() {
+        com.nexus.system.AppLauncherService launcher = new com.nexus.system.AppLauncherService();
+
+        // Catalog should have entries
+        assertFalse(launcher.getAvailableApps().isEmpty());
+        assertTrue(launcher.getAvailableApps().size() >= 30);
+        assertTrue(launcher.getAvailableApps().contains("Google Chrome"));
+        assertTrue(launcher.getAvailableApps().contains("Calculator"));
+        assertTrue(launcher.getAvailableApps().contains("Visual Studio Code"));
+
+        // Platform should be detected
+        assertNotNull(com.nexus.system.AppLauncherService.getCurrentPlatform());
+        assertNotNull(com.nexus.system.AppLauncherService.getPlatformDisplayName());
+        assertFalse(com.nexus.system.AppLauncherService.getPlatformDisplayName().isEmpty());
+    }
+
+    @Test
+    @DisplayName("Verify WindowsSpeechRecognizer language modes and Malayalam support")
+    public void testSpeechRecognizerLanguageModes() {
+        com.nexus.speech.WindowsSpeechRecognizer recognizer = new com.nexus.speech.WindowsSpeechRecognizer();
+        assertEquals(com.nexus.speech.WindowsSpeechRecognizer.LanguageMode.BILINGUAL, recognizer.getLanguageMode());
+
+        recognizer.setLanguageMode(com.nexus.speech.WindowsSpeechRecognizer.LanguageMode.MALAYALAM);
+        assertEquals(com.nexus.speech.WindowsSpeechRecognizer.LanguageMode.MALAYALAM, recognizer.getLanguageMode());
+        assertTrue(recognizer.getLanguageMode().getLabel().contains("മലയാളം"));
+
+        recognizer.setLanguageMode(com.nexus.speech.WindowsSpeechRecognizer.LanguageMode.ENGLISH);
+        assertEquals(com.nexus.speech.WindowsSpeechRecognizer.LanguageMode.ENGLISH, recognizer.getLanguageMode());
+    }
+
+    @Test
+    @DisplayName("Verify OfflineKnowledgeEngine Thug Life and Malayalam roaster responses")
+    public void testThugLifeResponses() {
+        String greeting = com.nexus.reasoning.OfflineKnowledgeEngine.answerQuery("namaskaram", List.of(), "Abhijay");
+        assertTrue(greeting.contains("Endha mone") || greeting.contains("Thug Life"));
+
+        String roast = com.nexus.reasoning.OfflineKnowledgeEngine.answerQuery("roast me", List.of(), "Abhijay");
+        assertTrue(roast.contains("Roast") && (roast.contains("Thug life") || roast.contains("scene aano")));
+
+        String fallback = com.nexus.reasoning.OfflineKnowledgeEngine.answerQuery("random weird question", List.of(), "Abhijay");
+        assertTrue(fallback.contains("Thug") || fallback.contains("Scene mone"));
+    }
+
+    @Test
+    @DisplayName("Verify Voice intent extraction for common variations and polite queries")
+    public void testVoiceCommandVariations() {
+        // Natural speech variants that should extract correct app target
+        assertEquals("youtube", com.nexus.system.AppLauncherService.extractAppLaunchIntent("can you please open youtube"));
+        assertEquals("chrome", com.nexus.system.AppLauncherService.extractAppLaunchIntent("could you launch chrome"));
+        assertEquals("calculator", com.nexus.system.AppLauncherService.extractAppLaunchIntent("open the calculator"));
+        assertEquals("spotify", com.nexus.system.AppLauncherService.extractAppLaunchIntent("play spotify"));
+        assertEquals("files", com.nexus.system.AppLauncherService.extractAppLaunchIntent("open my files"));
+        assertEquals("chatgpt", com.nexus.system.AppLauncherService.extractAppLaunchIntent("open chatgpt"));
     }
 }

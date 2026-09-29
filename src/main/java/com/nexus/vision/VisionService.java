@@ -21,8 +21,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Computer Vision Service for Project N.E.X.U.S.
  * Captures live hardware webcam stream, performs facial emotion analysis,
- * gender classification, motion estimation, eye-state/drowsiness monitoring,
- * and teammate identity recognition.
+ * gender classification, motion estimation, and teammate identity recognition.
  */
 public class VisionService {
 
@@ -158,14 +157,7 @@ public class VisionService {
             // 4. Emotion classification
             MoodDetectedEvent baseMood = emotionClassifier.classifyEmotion(faceX, faceY, faceW, faceH, frameWidth, frameHeight);
 
-            // 5. Optical Eyes Closed & Drowsiness Tracking from Camera Frame
-            if (bImg != null) {
-                eyeClassifier.evaluateEyesFromFrame(bImg, faceX, faceY, faceW, faceH);
-            } else {
-                eyeClassifier.evaluateEyesFromFrame(null, faceX, faceY, faceW, faceH);
-            }
-
-            // 6. Optical Gender Classification
+            // 5. Optical Gender Classification
             MoodDetectedEvent.Gender gender = faceBiometrics.getDetectedGender();
             double genderConf = faceBiometrics.getGenderConfidence();
 
@@ -176,8 +168,8 @@ public class VisionService {
                     faceX, faceY, faceW, faceH,
                     gender,
                     genderConf,
-                    eyeClassifier.isEyesClosed(),
-                    eyeClassifier.isDrowsinessAlert(),
+                    false,
+                    false,
                     activeTeammate.getName(),
                     activeTeammate.getRole(),
                     motionLevel

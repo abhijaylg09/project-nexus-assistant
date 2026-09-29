@@ -1,5 +1,6 @@
 @echo off
 setlocal enabledelayedexpansion
+cd /d "%~dp0"
 title PROJECT N.E.X.U.S - Personal Real-Time AI Assistant
 
 echo ================================================================

@@ -9,6 +9,7 @@ import com.nexus.reasoning.ChatMessage;
 import com.nexus.reasoning.LlmService;
 import com.nexus.reasoning.PromptContextBuilder;
 import com.nexus.speech.SpeechService;
+import com.nexus.system.AppLauncherService;
 import com.nexus.vision.VisionService;
 
 import java.lang.management.ManagementFactory;
@@ -38,6 +39,7 @@ public class NexusCore {
     private final InteractionRepository interactionRepo;
     private final UserProfileRepository userProfileRepo;
     private final PersonalizationEngine personalizationEngine;
+    private final AppLauncherService appLauncher;
 
     // Perceptual Cache
     private final AtomicReference<MoodDetectedEvent> latestMood = new AtomicReference<>();
@@ -60,6 +62,7 @@ public class NexusCore {
 
         this.visionService = new VisionService();
         this.speechService = new SpeechService();
+        this.appLauncher = new AppLauncherService();
 
         // 2. Wire Event Bus Subscriptions
         registerEventHandlers();
@@ -132,6 +135,14 @@ public class NexusCore {
 
         if (userText == null || userText.isBlank()) return;
         System.out.println("[NexusCore] Processing input: \"" + userText + "\" from " + inputEvent.getSource());
+
+        // ── App Launch Intent Detection ──
+        String appLaunchTarget = AppLauncherService.extractAppLaunchIntent(userText);
+        if (appLaunchTarget != null && !inputEvent.hasAttachedImage()) {
+            System.out.println("[NexusCore] Detected App Launch intent: \"" + appLaunchTarget + "\"");
+            handleAppLaunchRequest(appLaunchTarget, inputEvent, startTime);
+            return;
+        }
 
         // Gather real-time multimodal state
         MoodDetectedEvent currentMood = latestMood.get();
@@ -244,4 +255,68 @@ public class NexusCore {
     public PersonalizationEngine getPersonalizationEngine() { return personalizationEngine; }
     public InteractionRepository getInteractionRepo() { return interactionRepo; }
     public UserProfileRepository getUserProfileRepo() { return userProfileRepo; }
+    public AppLauncherService getAppLauncher() { return appLauncher; }
+
+    // ── App Launch Handler ──
+    private void handleAppLaunchRequest(String appName, UserInputEvent inputEvent, long startTime) {
+        java.util.concurrent.CompletableFuture.runAsync(() -> {
+            AppLauncherService.LaunchResult result = appLauncher.launchApp(appName);
+            long latencyMs = System.currentTimeMillis() - startTime;
+
+            MoodDetectedEvent currentMood = latestMood.get();
+            GestureDetectedEvent currentGesture = latestGesture.get();
+            String moodName = (currentMood != null) ? currentMood.getEmotion().name() : "FOCUSED";
+            String gestureName = (currentGesture != null) ? currentGesture.getGesture().name() : "NONE";
+
+            String responseText;
+            if (result.isSuccess()) {
+                String roast = getThugAppRoast(result.getAppName());
+                responseText = "✅ " + result.getMessage()
+                        + "\n😎 *N.E.X.U.S Thug Verdict:* " + roast
+                        + " (Running on " + AppLauncherService.getPlatformDisplayName() + ")";
+                speechService.speak(result.getAppName() + " launched. " + roast, null);
+            } else {
+                responseText = "⚠️ " + result.getMessage()
+                        + "\n\nAvailable apps I can open: "
+                        + String.join(", ", appLauncher.getAvailableApps().subList(0, Math.min(12, appLauncher.getAvailableApps().size())))
+                        + ", and more.";
+                speechService.speak("Sorry, I could not launch " + appName + ". " + result.getMessage(), null);
+            }
+
+            eventBus.publishOnFxThread(AssistantResponseEvent.success(responseText, moodName, latencyMs));
+
+            personalizationEngine.processInteraction(
+                    inputEvent.getText(),
+                    responseText,
+                    "APP_LAUNCH",
+                    moodName,
+                    gestureName,
+                    latencyMs
+            );
+        });
+    }
+
+    private String getThugAppRoast(String appName) {
+        if (appName == null) return "Even clicking an app icon was too much cardio for you, huh? Thug life!";
+        String lower = appName.toLowerCase();
+        if (lower.contains("youtube")) {
+            return "Don't waste the whole day watching brainrot reels now, okay? Scene mone!";
+        } else if (lower.contains("calc")) {
+            return "Finally decided to calculate how broke you are? Good luck with that.";
+        } else if (lower.contains("file") || lower.contains("explorer")) {
+            return "Looking for where you hid your questionable downloads? Don't worry, your secrets are safe with me.";
+        } else if (lower.contains("chrome") || lower.contains("edge") || lower.contains("browser")) {
+            return "Please don't search for 'how to get a life' again. Google can't help with that.";
+        } else if (lower.contains("camera")) {
+            return "Warning: Look at your own risk. The camera doesn't come with beauty filters!";
+        } else if (lower.contains("notepad")) {
+            return "Opening Notepad. Gonna write your groundbreaking startup idea that gets abandoned tomorrow?";
+        } else if (lower.contains("code") || lower.contains("vscode")) {
+            return "VS Code opened. Ready to write 3 lines of code and spend 4 hours debugging a missing semicolon?";
+        } else if (lower.contains("spotify")) {
+            return "Playing music to cope with your compilation errors? Respect the hustle.";
+        } else {
+            return "Even clicking an app icon was too much cardio for you, huh? Thug life!";
+        }
+    }
 }

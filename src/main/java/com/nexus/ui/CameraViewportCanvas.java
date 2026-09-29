@@ -12,7 +12,7 @@ import javafx.scene.text.FontWeight;
 /**
  * High-tech HUD Camera Viewport Canvas.
  * Renders live camera frame, target reticle, face bounding box,
- * gender detection, eye-state / drowsiness warning, teammate recognition, and optical motion.
+ * gender detection, teammate recognition, and optical motion.
  */
 public class CameraViewportCanvas extends Canvas {
 
@@ -70,9 +70,7 @@ public class CameraViewportCanvas extends Canvas {
             by = Math.max(30, Math.min(h - bh - 30, by));
 
             // Glowing corner brackets
-            Color bracketColor = currentMood.isDrowsinessAlert()
-                    ? Color.rgb(255, 75, 75, 0.95)
-                    : Color.rgb(0, 242, 254, 0.95);
+            Color bracketColor = Color.rgb(0, 242, 254, 0.95);
 
             gc.setStroke(bracketColor);
             gc.setLineWidth(2.5);
@@ -96,18 +94,7 @@ public class CameraViewportCanvas extends Canvas {
             gc.strokeLine(cx - 8, cy, cx + 8, cy);
             gc.strokeLine(cx, cy - 8, cx, cy + 8);
 
-            // Optical Eye Tracking Reticles
-            double eyeY = by + (bh * 0.28);
-            double eyeLeftX = bx + (bw * 0.18);
-            double eyeRightX = bx + (bw * 0.54);
-            double eyeW = bw * 0.28;
-            double eyeH = bh * 0.18;
 
-            Color eyeColor = currentMood.isEyesClosed() ? Color.rgb(255, 75, 75, 0.85) : Color.rgb(0, 255, 135, 0.85);
-            gc.setStroke(eyeColor);
-            gc.setLineWidth(1.2);
-            gc.strokeRoundRect(eyeLeftX, eyeY, eyeW, eyeH, 3, 3);
-            gc.strokeRoundRect(eyeRightX, eyeY, eyeW, eyeH, 3, 3);
 
             // Emotion Tag Card above face
             gc.setFill(Color.rgb(13, 22, 41, 0.88));
@@ -119,21 +106,17 @@ public class CameraViewportCanvas extends Canvas {
             gc.setFill(Color.rgb(0, 255, 135));
             gc.fillText("MOOD: " + currentMood.getEmotion().name() + " (" + currentMood.getFormattedConfidence() + ")", bx + 6, by - 11);
 
-            // Gender & Eye Status Tag below face box
+            // Gender Tag below face box
             gc.setFill(Color.rgb(13, 22, 41, 0.88));
-            gc.fillRoundRect(bx, by + bh + 4, 180, 22, 4, 4);
+            gc.fillRoundRect(bx, by + bh + 4, 140, 22, 4, 4);
             gc.setStroke(Color.rgb(56, 189, 248, 0.4));
-            gc.strokeRoundRect(bx, by + bh + 4, 180, 22, 4, 4);
+            gc.strokeRoundRect(bx, by + bh + 4, 140, 22, 4, 4);
 
             String genderSymbol = (currentMood.getGender() == MoodDetectedEvent.Gender.MALE) ? "MALE" : "FEMALE";
-            String eyeText = currentMood.isEyesClosed() ? "EYES: CLOSED" : "EYES: OPEN";
 
             gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 9));
             gc.setFill(currentMood.getGender() == MoodDetectedEvent.Gender.MALE ? Color.rgb(56, 189, 248) : Color.rgb(244, 114, 182));
             gc.fillText(genderSymbol + " (" + currentMood.getFormattedGenderConfidence() + ")", bx + 6, by + bh + 19);
-
-            gc.setFill(currentMood.isEyesClosed() ? Color.rgb(255, 75, 75) : Color.rgb(0, 255, 135));
-            gc.fillText(" | " + eyeText, bx + 96, by + bh + 19);
         }
 
         // 3. Recognized Teammate Identity Banner (Top Left)
@@ -163,18 +146,7 @@ public class CameraViewportCanvas extends Canvas {
             gc.fillText("GESTURE: " + currentGesture.getGesture().getDisplayName(), w - 167, 25);
         }
 
-        // 5. Drowsiness / Sleep Alert Banner
-        if (currentMood != null && currentMood.isDrowsinessAlert()) {
-            gc.setFill(Color.rgb(239, 68, 68, 0.92));
-            gc.fillRoundRect(w / 2.0 - 130, h / 2.0 - 18, 260, 36, 6, 6);
-            gc.setStroke(Color.WHITE);
-            gc.setLineWidth(1.5);
-            gc.strokeRoundRect(w / 2.0 - 130, h / 2.0 - 18, 260, 36, 6, 6);
 
-            gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 11));
-            gc.setFill(Color.WHITE);
-            gc.fillText("WARNING: DROWSINESS ALERT!", w / 2.0 - 95, h / 2.0 + 4);
-        }
 
         // 6. Motion Indicator & Feed Status Banner (Bottom)
         reticleAngle += 0.05;

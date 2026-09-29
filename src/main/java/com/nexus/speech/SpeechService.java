@@ -72,4 +72,7 @@ public class SpeechService {
     public WakeWordDetector getWakeWordDetector() { return wakeWordDetector; }
     public VoskSttEngine getSttEngine() { return sttEngine; }
     public PiperTtsEngine getTtsEngine() { return ttsEngine; }
+    public WindowsSpeechRecognizer getWindowsRecognizer() { return windowsRecognizer; }
+    public void setVoiceLanguageMode(WindowsSpeechRecognizer.LanguageMode mode) { windowsRecognizer.setLanguageMode(mode); }
+    public WindowsSpeechRecognizer.LanguageMode getVoiceLanguageMode() { return windowsRecognizer.getLanguageMode(); }
 }

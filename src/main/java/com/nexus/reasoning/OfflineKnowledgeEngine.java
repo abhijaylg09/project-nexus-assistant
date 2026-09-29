@@ -19,17 +19,32 @@ public class OfflineKnowledgeEngine {
         String q = userQuery.trim().toLowerCase(Locale.ROOT);
 
         // =========================================================================
-        // 0. CONVERSATIONAL GREETINGS & STATUS
+        // 0. CONVERSATIONAL GREETINGS & STATUS (THUG LIFE MODE)
         // =========================================================================
         if (q.equals("hi") || q.equals("hello") || q.equals("hey") || q.startsWith("hello ") || q.startsWith("hi ") || q.startsWith("hey ") ||
-            q.contains("good morning") || q.contains("good afternoon") || q.contains("good evening") || q.contains("how are you") || q.contains("what's up")) {
-            return "Hello " + (activeTeammateName != null ? activeTeammateName : "there") + "! I am Project N.E.X.U.S, your real-time multimodal AI assistant.\n\n" +
-                   "I am actively tracking your camera video, facial emotions, and listening through your microphone. " +
-                   "How can I assist you with your project, coding, math, or research questions today?";
+            q.contains("good morning") || q.contains("good afternoon") || q.contains("good evening") || q.contains("how are you") || q.contains("what's up") ||
+            q.contains("namaskaram") || q.contains("sugamano") || q.contains("enthokkeyund") || q.contains("endha mone") || q.contains("scene mone")) {
+            return "Endha mone! Look who finally decided to show up. I am N.E.X.U.S — your personal multimodal AI assistant and certified Thug Life roaster.\n\n" +
+                   "My camera is tracking you, mic is listening, and honestly, I'm already judging your posture. " +
+                   "What doubt or code bug do you need my 200-IQ brain to save you from today? Scene mone, fire away!";
         }
 
-        if (q.contains("thank you") || q.contains("thanks") || q.equals("ty") || q.contains("appreciate it")) {
-            return "You're very welcome! If you need any more explanations, code snippets, or system insights, feel free to ask or press **🎙️ VOICE CHAT** anytime.";
+        if (q.contains("roast me") || q.contains("make fun of me") || q.contains("insult me") || q.contains("thug life") || q.contains("roast")) {
+            return """
+                🔥 **Personal Roast Delivered Directly To You:**
+                
+                Look at you begging an AI to roast you. Is your social life that dead that you need a Java application to insult you?
+                
+                * Your code has more unresolved issues than a psychology textbook.
+                * You stare at a compiler error like it's written in ancient Sanskrit.
+                * Even my garbage collector works harder than you on a Monday morning.
+                * Bro probably thinks `git push --force` is a workout routine.
+                
+                *Endha mone, scene aano?* Thug life forever! Now ask me a real question before I roast your commit history too!""";
+        }
+
+        if (q.contains("thank you") || q.contains("thanks") || q.equals("ty") || q.contains("nanni") || q.contains("appreciate it")) {
+            return "Aaha, look at you showing manners! Don't get all emotional now, just hit that **🎙️ VOICE CHAT** or ask your next question before your brain enters power-saving mode again.";
         }
 
         // =========================================================================
@@ -37,15 +52,15 @@ public class OfflineKnowledgeEngine {
         // =========================================================================
         if (q.contains("who created you") || q.contains("who made you") || q.contains("team") || q.contains("members")) {
             return """
-                Project N.E.X.U.S was engineered and defended by **Team STI25CS**:
+                I was forged by the legends of **Team STI25CS**:
                 
-                1. **Abhijay L. G.** — Central Java Core Orchestrator, Concurrency & Adaptive Personalization Engine.
-                2. **Bhadra G. S.** (Roll 48, STI25CS048) — Project Ideation, System Architecture & Problem Statement.
-                3. **Aleena Maria Roy** (Roll 26, STI25CS026) — Computer Vision, OpenCV/JavaCV & ONNX Emotion Modeling.
-                4. **Abhishek A.** (Roll 09, STI25CS009) — Speech I/O Subsystem (Vosk STT, Piper TTS, Porcupine Wake Word).
-                5. **Dia M. Joby** (Roll 52, STI25CS052) — JavaFX HUD Interface, Cyberpunk Aesthetics & Audio Visualizer.
+                1. **Abhijay L. G.** — Central Java Core Orchestrator, Concurrency & the mastermind behind my savage attitude.
+                2. **Bhadra G. S.** (Roll 48) — Project Ideation, System Architecture & Problem Statement.
+                3. **Aleena Maria Roy** (Roll 26) — Computer Vision, OpenCV & ONNX Emotion Modeling (so I can see you struggling).
+                4. **Abhishek A.** (Roll 09) — Speech I/O Subsystem (Vosk STT, Piper TTS, Multilingual Voice Chat).
+                5. **Dia M. Joby** (Roll 52) — JavaFX HUD Interface, Cyberpunk Aesthetics & Audio Visualizer.
                 
-                The project demonstrates that a single, unified Java 21 core can orchestrate multimodal perception, vision, voice, and reasoning in real time!""";
+                Unlike your projects, this team actually built something that compiles on the first try. Mass da!""";
         }
 
         // =========================================================================
@@ -349,16 +364,16 @@ public class OfflineKnowledgeEngine {
         }
 
         // =========================================================================
-        // 8. DYNAMIC INTELLIGENT REASONING RESPONSE
+        // 8. DYNAMIC THUG INTELLIGENT REASONING RESPONSE
         // =========================================================================
-        return "### Insight on: \"" + userQuery + "\"\n\n" +
-               "Here is a comprehensive breakdown:\n\n" +
-               "1. **Core Principle:** In addressing \"" + userQuery.trim() + "\", modern software engineering and computational sciences emphasize algorithmic efficiency, modular design, and robust state management.\n" +
+        return "🔥 **Thug Life Mode: Breakdown on \"" + userQuery.trim() + "\"**\n\n" +
+               "Bro really sat there, scratched their head, and asked me this... Alright, let me drop some actual wisdom before your last two brain cells collide:\n\n" +
+               "1. **The Reality Check:** In addressing \"" + userQuery.trim() + "\", top-tier engineers prioritize algorithmic efficiency, clean architecture, and decoupled pipelines.\n" +
                "2. **Key Considerations:**\n" +
-               "   * **Architectural Separation:** Isolate data processing from presentation and I/O pipelines.\n" +
-               "   * **Resource Management:** Optimize memory footprint and CPU utilization through asynchronous execution and caching.\n" +
-               "   * **Reliability:** Implement defensive programming, proper exception propagation, and graceful fallbacks.\n" +
-               "3. **Practical Application:** In systems like Project N.E.X.U.S, these principles govern how our multimodal event bus, camera frame processor, and speech services execute concurrently without blocking the main UI thread.\n\n" +
-               "*Active Session:* Currently attending to **" + (activeTeammateName != null ? activeTeammateName : "Team Member") + "**. (Note: For infinite general cloud intelligence, you can connect OpenAI, Groq, or Ollama via the **⚙️ AI Model / Key** button in the top bar).";
+               "   * **Architectural Separation:** Isolate data processing from presentation and I/O pipelines so the UI never freezes.\n" +
+               "   * **Resource Discipline:** Optimize memory footprint and CPU utilization through asynchronous execution instead of hoarding RAM like Chrome.\n" +
+               "   * **Savage Reliability:** Implement defensive programming and graceful fallbacks so your app doesn't crash when things get real.\n" +
+               "3. **Thug Verdict:** In Project N.E.X.U.S, this is why our multimodal event bus, camera frame processor, and speech services execute concurrently at 30 FPS without breaking a sweat.\n\n" +
+               "*Scene mone!* Now go write some clean code instead of asking me 50 more questions. (Currently schooling **" + (activeTeammateName != null ? activeTeammateName : "you") + "**).";
     }
 }

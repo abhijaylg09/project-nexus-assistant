@@ -6,7 +6,8 @@ import com.nexus.core.NexusCore;
 import com.nexus.core.events.*;
 import com.nexus.personalization.TeammateProfile;
 import com.nexus.personalization.UserProfile;
-import com.nexus.vision.EyeStateClassifier;
+import com.nexus.speech.WindowsSpeechRecognizer;
+
 import com.nexus.vision.VideoFrame;
 import javafx.application.Platform;
 import javafx.geometry.Insets;
@@ -27,8 +28,7 @@ import java.io.File;
  * Primary JavaFX HUD Controller for Project N.E.X.U.S.
  * Assembles chat streams, camera viewports, audio visualizer,
  * teammate identity recognition, optical gender detection & calibration,
- * optical eye closure & drowsiness alerts, multimodal image doubt Q&A,
- * and high-accuracy microphone voice chat.
+ * multimodal image doubt Q&A, and high-accuracy microphone voice chat.
  */
 public class HudController {
 
@@ -151,7 +151,7 @@ public class HudController {
 
         // Welcome greeting
         chatMessagesBox.getChildren().add(new ChatMessageCell(
-                "N.E.X.U.S online. Central Java Orchestrator active. Live optical eye tracking, gender biometrics, and multimodal image inspection ready. Ask anything, click 'Attach Image' to send a doubt, or press 'Voice Chat' to speak!",
+                "N.E.X.U.S online. Central Java Orchestrator active. Gender biometrics and multimodal image inspection ready. Ask anything, click 'Attach Image' to send a doubt, or press 'Voice Chat' to speak!",
                 false, "FOCUSED", 18
         ));
 
@@ -207,6 +207,22 @@ public class HudController {
         voiceChatButton.getStyleClass().addAll("hud-button", "hud-button-mic-active");
         micToggleButton.getStyleClass().add("hud-button-secondary");
 
+        // Language Mode Button for Voice Chat (EN / Malayalam)
+        Button langToggleBtn = new Button("🌐 " + core.getSpeechService().getVoiceLanguageMode().getLabel());
+        langToggleBtn.getStyleClass().add("hud-button-secondary");
+        langToggleBtn.setStyle("-fx-font-size: 10px; -fx-padding: 5px 8px; -fx-border-color: #06b6d4;");
+        langToggleBtn.setTooltip(new Tooltip("Voice Recognition Language: Click to cycle Bilingual (EN + മലയാളം), മലയാളം, or English"));
+        langToggleBtn.setOnAction(e -> {
+            WindowsSpeechRecognizer.LanguageMode current = core.getSpeechService().getVoiceLanguageMode();
+            WindowsSpeechRecognizer.LanguageMode next = switch (current) {
+                case BILINGUAL -> WindowsSpeechRecognizer.LanguageMode.MALAYALAM;
+                case MALAYALAM -> WindowsSpeechRecognizer.LanguageMode.ENGLISH;
+                case ENGLISH -> WindowsSpeechRecognizer.LanguageMode.BILINGUAL;
+            };
+            core.getSpeechService().setVoiceLanguageMode(next);
+            langToggleBtn.setText("🌐 " + next.getLabel());
+        });
+
         // Transmit text action
         inputTextField.setOnAction(e -> handleSendMessage());
         sendButton.setOnAction(e -> handleSendMessage());
@@ -227,7 +243,7 @@ public class HudController {
             }
         });
 
-        inputBar.getChildren().addAll(inputTextField, attachImgBtn, snapCamBtn, sendButton, voiceChatButton, micToggleButton);
+        inputBar.getChildren().addAll(inputTextField, attachImgBtn, snapCamBtn, sendButton, langToggleBtn, voiceChatButton, micToggleButton);
 
         // Gesture Action Shortcut Toolbar
         HBox gestureToolbar = new HBox(8);
@@ -295,10 +311,10 @@ public class HudController {
         }
         teamBox.getChildren().addAll(teamTitle, teamButtons);
 
-        // Row 1: Emotion & Optical Eye Controls
+        // Row 1: Emotion Controls
         HBox eyeControls = new HBox(4);
         eyeControls.setAlignment(Pos.CENTER_LEFT);
-        Label eyeCtrlLabel = new Label("EYES & EMOTION:");
+        Label eyeCtrlLabel = new Label("EMOTION CONTROLS:");
         eyeCtrlLabel.setStyle("-fx-font-size: 9px; -fx-text-fill: #64748b; -fx-font-weight: bold;");
 
         Button btnHappy = new Button("Happy");
@@ -311,25 +327,7 @@ public class HudController {
         btnStressed.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px;");
         btnStressed.setOnAction(e -> core.getVisionService().getEmotionClassifier().setManualEmotionOverride(MoodDetectedEvent.Emotion.STRESSED, 0.91));
 
-        Button btnEyesBlink = new Button("👁️ Blink");
-        btnEyesBlink.getStyleClass().add("hud-button-secondary");
-        btnEyesBlink.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px;");
-        btnEyesBlink.setOnAction(e -> core.getVisionService().getEyeClassifier().setManualOverride(EyeStateClassifier.EyeStatus.CLOSED, 400));
-
-        Button btnDrowsyAlert = new Button("⚠️ Drowsy Alert");
-        btnDrowsyAlert.getStyleClass().add("hud-button-secondary");
-        btnDrowsyAlert.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px; -fx-border-color: #ef4444; -fx-text-fill: #f87171;");
-        btnDrowsyAlert.setOnAction(e -> {
-            core.getVisionService().getEyeClassifier().setManualOverride(EyeStateClassifier.EyeStatus.CLOSED, 15000);
-            core.getSpeechService().speak("Attention! Drowsiness detected. Please take a rest or stretch.", null);
-        });
-
-        Button btnAutoEyes = new Button("Auto");
-        btnAutoEyes.getStyleClass().add("hud-button-secondary");
-        btnAutoEyes.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px;");
-        btnAutoEyes.setOnAction(e -> core.getVisionService().getEyeClassifier().clearOverride());
-
-        eyeControls.getChildren().addAll(eyeCtrlLabel, btnHappy, btnStressed, btnEyesBlink, btnDrowsyAlert, btnAutoEyes);
+        eyeControls.getChildren().addAll(eyeCtrlLabel, btnHappy, btnStressed);
 
         // Row 2: Optical Gender Calibration
         HBox genderControls = new HBox(4);
@@ -509,6 +507,9 @@ public class HudController {
                         chatScrollPane.setVvalue(1.0);
                         clearAttachedImage();
                         eventBus.publish(new UserInputEvent(transcript, UserInputEvent.InputSource.SPEECH, imgToSend));
+                    } else {
+                        chatMessagesBox.getChildren().add(new ChatMessageCell("⚠️ No clear speech detected. Please speak closer to your mic or click '🎙️ VOICE CHAT' again.", false, "FOCUSED", 0));
+                        chatScrollPane.setVvalue(1.0);
                     }
                 }),
                 () -> Platform.runLater(() -> {
@@ -516,7 +517,7 @@ public class HudController {
                     voiceChatButton.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: black; -fx-font-weight: bold;");
                 }),
                 () -> Platform.runLater(() -> {
-                    voiceChatButton.setText("🔴 SPEAK NOW!");
+                    voiceChatButton.setText("🔴 SPEAK (" + core.getSpeechService().getVoiceLanguageMode().getLabel() + ")!");
                     voiceChatButton.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold; -fx-effect: dropshadow(gaussian, #ef4444, 10, 0, 0, 0);");
                 }),
                 () -> Platform.runLater(() -> {
