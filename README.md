@@ -17,7 +17,7 @@
 | **Aleena Maria Roy** | 26 | STI25CS026 | Computer Vision, OpenCV & ONNX Emotion Modeling |
 | **Abhishek A.** | 09 | STI25CS009 | Speech I/O (Vosk STT, Piper TTS, Porcupine Wake) |
 | **Dia M. Joby** | 52 | STI25CS052 | JavaFX HUD Interface & Audio Visualizer |
-| **Abhijay L. G.** | — | — | Central Java Orchestration & Adaptive Personalization |
+| **Abhijay L. G.** | 121 | — | Central Java Orchestration & Adaptive Personalization |
 
 ---
 
