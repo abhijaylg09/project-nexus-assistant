@@ -31,6 +31,7 @@ public class VisionService {
     private final GestureClassifier gestureClassifier;
     private final MotionDetector motionDetector;
     private final EyeStateClassifier eyeClassifier;
+    private final FaceBiometricsEngine faceBiometrics;
     private final MultimodalEventBus eventBus;
 
     private final AtomicBoolean running = new AtomicBoolean(false);
@@ -62,6 +63,7 @@ public class VisionService {
         this.gestureClassifier = new GestureClassifier();
         this.motionDetector = new MotionDetector();
         this.eyeClassifier = new EyeStateClassifier();
+        this.faceBiometrics = new FaceBiometricsEngine();
         this.eventBus = MultimodalEventBus.getInstance();
         this.activeTeammate = TeammateProfile.getAllTeammates()[0]; // Default: Abhijay
     }
@@ -148,18 +150,23 @@ public class VisionService {
             faceW = (int)(frameWidth * 0.32);
             faceH = (int)(frameHeight * 0.42);
 
-            // 3. Emotion classification
+            // 3. Camera-Based Teammate Identification
+            if (bImg != null) {
+                activeTeammate = faceBiometrics.identifyFaceFromFrame(bImg, faceX, faceY, faceW, faceH);
+            }
+
+            // 4. Emotion classification
             MoodDetectedEvent baseMood = emotionClassifier.classifyEmotion(faceX, faceY, faceW, faceH, frameWidth, frameHeight);
 
-            // 4. Eyes Closed & Drowsiness Tracking
+            // 5. Eyes Closed & Drowsiness Tracking
             boolean eyesClosedSimulation = (Math.sin(scanAngle * 0.15) > 0.96); // occasional subtle blink
             eyeClassifier.evaluateEyes(eyesClosedSimulation);
 
-            // 5. Gender Classification
+            // 6. Gender Classification
             MoodDetectedEvent.Gender gender = (activeTeammate.getGender() == TeammateProfile.Gender.MALE)
                     ? MoodDetectedEvent.Gender.MALE
                     : MoodDetectedEvent.Gender.FEMALE;
-            double genderConf = 0.92 + (Math.sin(scanAngle * 0.3) * 0.05);
+            double genderConf = faceBiometrics.getMatchConfidence();
 
             // 6. Assemble Full Multimodal Perception Event
             MoodDetectedEvent fullMoodEvent = new MoodDetectedEvent(
@@ -248,9 +255,11 @@ public class VisionService {
 
     public synchronized void setActiveTeammate(TeammateProfile teammate) {
         this.activeTeammate = teammate;
-        System.out.println("[VisionService] Active recognized teammate switched to: " + teammate.getName());
+        this.faceBiometrics.forceIdentify(teammate);
+        System.out.println("[VisionService] Active recognized teammate set to: " + teammate.getName());
     }
 
+    public FaceBiometricsEngine getFaceBiometrics() { return faceBiometrics; }
     public TeammateProfile getActiveTeammate() { return activeTeammate; }
     public EmotionClassifier getEmotionClassifier() { return emotionClassifier; }
     public GestureClassifier getGestureClassifier() { return gestureClassifier; }

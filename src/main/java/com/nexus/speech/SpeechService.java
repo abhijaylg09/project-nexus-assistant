@@ -2,6 +2,7 @@ package com.nexus.speech;
 
 import com.nexus.core.MultimodalEventBus;
 import com.nexus.core.events.UserInputEvent;
+import java.util.function.Consumer;
 
 /**
  * Centralized Speech Service orchestrating Wake Word Detection,
@@ -13,6 +14,7 @@ public class SpeechService {
     private final VoskSttEngine sttEngine;
     private final PiperTtsEngine ttsEngine;
     private final LiveMicrophoneService liveMicService;
+    private final WindowsSpeechRecognizer windowsRecognizer;
     private final MultimodalEventBus eventBus;
 
     public SpeechService() {
@@ -20,6 +22,7 @@ public class SpeechService {
         this.sttEngine = new VoskSttEngine();
         this.ttsEngine = new PiperTtsEngine();
         this.liveMicService = new LiveMicrophoneService();
+        this.windowsRecognizer = new WindowsSpeechRecognizer();
         this.eventBus = MultimodalEventBus.getInstance();
     }
 
@@ -44,6 +47,10 @@ public class SpeechService {
 
     public void speak(String text, Runnable onComplete) {
         ttsEngine.speakAsync(text, onComplete);
+    }
+
+    public void listenToVoiceChatAsync(Consumer<String> onTranscript, Runnable onStart, Runnable onEnd) {
+        windowsRecognizer.listenAsync(onTranscript, onStart, onEnd);
     }
 
     public double getLiveAudioLevel() {

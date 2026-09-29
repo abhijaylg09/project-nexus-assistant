@@ -85,6 +85,7 @@ public class LlmService {
 
     /**
      * Context-aware local response engine when external LLM is offline or no API key is specified.
+     * Delivers rich, structured ChatGPT-style answers across programming, AI, math, and architecture.
      */
     private String generateIntelligentFallback(List<ChatMessage> messages) {
         String lastUserMsg = "";
@@ -94,48 +95,15 @@ public class LlmService {
             if ("system".equalsIgnoreCase(m.getRole())) systemCtx = m.getContent();
         }
 
-        String lower = lastUserMsg.toLowerCase();
-        String moodTag = "Neutral";
-        if (systemCtx.contains("HAPPY")) moodTag = "Happy";
-        else if (systemCtx.contains("STRESSED")) moodTag = "Stressed";
-        else if (systemCtx.contains("FOCUSED")) moodTag = "Focused";
-        else if (systemCtx.contains("SURPRISED")) moodTag = "Surprised";
-
-        if (lower.contains("who are you") || lower.contains("what are you") || lower.contains("introduce")) {
-            return "I am N.E.X.U.S (Neural EXecutive User System). I am a real-time multimodal personal AI assistant built around a centralized Java core, integrating live facial mood tracking, hand gesture recognition, speech processing, and adaptive behavioral modeling.";
+        String teammateName = "User";
+        if (systemCtx.contains("User Identity Recognized:")) {
+            int start = systemCtx.indexOf("User Identity Recognized:") + "User Identity Recognized:".length();
+            int end = systemCtx.indexOf("[", start);
+            if (end > start) {
+                teammateName = systemCtx.substring(start, end).trim();
+            }
         }
 
-        if (lower.contains("status") || lower.contains("system") || lower.contains("telemetry")) {
-            return "All N.E.X.U.S systems are nominal. Java Core Orchestrator is active, Vision perceptual stream is running with current user mood evaluated as [" + moodTag + "], and SQLite interaction persistence is online.";
-        }
-
-        if (lower.contains("mood") || lower.contains("emotion") || lower.contains("feeling")) {
-            return "Based on live OpenCV face tracking and ONNX emotion classification, I observe your state as [" + moodTag + "]. My adaptive engine tunes my response demeanor accordingly.";
-        }
-
-        if (lower.contains("gesture") || lower.contains("hand")) {
-            return "My vision perception pipeline classifies hand gestures such as Thumbs-Up (Confirm/Acknowledge), Open Palm (Mute/Pause), and Peace (Summarize). Show a gesture in front of your camera!";
-        }
-
-        if (lower.contains("team") || lower.contains("members") || lower.contains("who made you")) {
-            return "Project N.E.X.U.S was designed and engineered by Team STI25CS: Bhadra G. S., Aleena Maria Roy, Abhishek A., Dia M. Joby, and Abhijay L. G.";
-        }
-
-        if (lower.contains("personalization") || lower.contains("adaptive") || lower.contains("learn")) {
-            return "My Adaptive Personalization Engine logs your communication cadence, emotional trends, and topic preferences into SQLite. Periodically, I synthesize this data into an evolving user behavioral profile that grounds all future responses.";
-        }
-
-        if (lower.contains("help") || lower.contains("command")) {
-            return "You can speak with me using your microphone, type queries into the HUD console, trigger actions via webcam gestures, or ask me to analyze code, explain concepts, or summarize topics.";
-        }
-
-        // Context-aware conversational default
-        if (moodTag.equalsIgnoreCase("Stressed")) {
-            return "I notice you might be experiencing some stress right now. I've noted: \"" + lastUserMsg + "\". I'm here to streamline your workflow and assist with whatever you need.";
-        } else if (moodTag.equalsIgnoreCase("Happy")) {
-            return "Glad to see your positive energy! Regarding \"" + lastUserMsg + "\", let's dive into it. How would you like me to assist?";
-        }
-
-        return "Acknowledged. Processed your query: \"" + lastUserMsg + "\". System telemetry is tracking your context seamlessly. (To enable cloud LLM reasoning, provide your OpenAI/Ollama API key in config/nexus-config.json).";
+        return OfflineKnowledgeEngine.answerQuery(lastUserMsg, messages, teammateName);
     }
 }

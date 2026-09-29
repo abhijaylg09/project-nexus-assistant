@@ -12,14 +12,17 @@ import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 
 /**
  * Primary JavaFX HUD Controller for Project N.E.X.U.S.
  * Assembles chat streams, camera viewports, audio visualizer,
  * teammate identity recognition, gender detection, drowsiness alerts,
- * and live system telemetry.
+ * interactive voice chat with microphone, and live AI model settings.
  */
 public class HudController {
 
@@ -34,7 +37,8 @@ public class HudController {
     private final ScrollPane chatScrollPane = new ScrollPane();
     private final TextField inputTextField = new TextField();
     private final Button sendButton = new Button("TRANSMIT");
-    private final Button micButton = new Button("MIC ACTIVE");
+    private final Button voiceChatButton = new Button("🎙️ VOICE CHAT");
+    private final Button micToggleButton = new Button("MIC ON");
 
     // Perceptual Viewports
     private CameraViewportCanvas cameraCanvas;
@@ -79,7 +83,7 @@ public class HudController {
     }
 
     private Node createHeader() {
-        HBox header = new HBox(16);
+        HBox header = new HBox(14);
         header.getStyleClass().add("hud-header");
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(8, 14, 12, 14));
@@ -99,16 +103,15 @@ public class HudController {
         Label coreStatus = new Label("CORE: ONLINE");
         coreStatus.getStyleClass().addAll("hud-status-badge", "hud-status-badge-active");
 
-        Label visionStatus = new Label("VISION: LIVE WEBCAM");
+        Label visionStatus = new Label("VISION: CAMERA ACTIVE");
         visionStatus.getStyleClass().add("hud-status-badge");
 
-        Label speechStatus = new Label("SPEECH: LIVE MIC");
-        speechStatus.getStyleClass().add("hud-status-badge");
+        // AI Model Configuration Dialog Button
+        Button aiSettingsBtn = new Button("⚙️ AI Model / Key");
+        aiSettingsBtn.getStyleClass().add("hud-button-secondary");
+        aiSettingsBtn.setOnAction(e -> openAiSettingsDialog());
 
-        Label engineStatus = new Label("ADAPTIVE: ACTIVE");
-        engineStatus.getStyleClass().addAll("hud-status-badge", "hud-status-badge-active");
-
-        header.getChildren().addAll(titleBox, spacer, coreStatus, visionStatus, speechStatus, engineStatus);
+        header.getChildren().addAll(titleBox, spacer, coreStatus, visionStatus, aiSettingsBtn);
         return header;
     }
 
@@ -119,7 +122,7 @@ public class HudController {
         BorderPane.setMargin(chatContainer, new Insets(8, 8, 8, 0));
 
         // Title
-        Label chatTitle = new Label("REAL-TIME CONVERSATIONAL STREAM");
+        Label chatTitle = new Label("REAL-TIME CONVERSATIONAL STREAM (CHATGPT-LEVEL REASONING)");
         chatTitle.getStyleClass().add("section-title");
 
         // Scrollable Chat Message Area
@@ -129,9 +132,9 @@ public class HudController {
         chatScrollPane.getStyleClass().add("chat-scroll");
         VBox.setVgrow(chatScrollPane, Priority.ALWAYS);
 
-        // Seed welcome greeting
+        // Welcome greeting
         chatMessagesBox.getChildren().add(new ChatMessageCell(
-                "N.E.X.U.S online. Central Java Orchestrator active. Live camera perception, gender analysis, optical motion detection, and teammate recognition active. How can I assist you today?",
+                "N.E.X.U.S online. Central Java Orchestrator active. Live camera perception, gender analysis, optical motion detection, and teammate recognition active. Ask me anything or press Voice Chat to speak!",
                 false, "FOCUSED", 18
         ));
 
@@ -142,31 +145,35 @@ public class HudController {
         HBox inputBar = new HBox(8);
         inputBar.setAlignment(Pos.CENTER);
 
-        inputTextField.setPromptText("Enter your query or prompt here (e.g. 'Who is our team?', 'Check eye state', 'Status')...");
+        inputTextField.setPromptText("Ask anything like ChatGPT (e.g. 'Write a quicksort in Java', 'Explain transformers', 'Status')...");
         inputTextField.getStyleClass().add("hud-text-field");
         HBox.setHgrow(inputTextField, Priority.ALWAYS);
 
         sendButton.getStyleClass().add("hud-button");
-        micButton.getStyleClass().addAll("hud-button-secondary", "hud-button-mic-active");
+        voiceChatButton.getStyleClass().addAll("hud-button", "hud-button-mic-active");
+        micToggleButton.getStyleClass().add("hud-button-secondary");
 
-        // Transmit actions
+        // Transmit text action
         inputTextField.setOnAction(e -> handleSendMessage());
         sendButton.setOnAction(e -> handleSendMessage());
 
+        // Live Voice Chat Button Action
+        voiceChatButton.setOnAction(e -> handleVoiceChatButton());
+
         // Mic toggle action
-        micButton.setOnAction(e -> {
+        micToggleButton.setOnAction(e -> {
             if (core.getSpeechService().getLiveMicService().isRecording()) {
                 core.getSpeechService().getLiveMicService().stopCapture();
-                micButton.setText("MIC MUTED");
-                micButton.getStyleClass().remove("hud-button-mic-active");
+                micToggleButton.setText("MIC OFF");
+                micToggleButton.setStyle("-fx-border-color: #ef4444; -fx-text-fill: #f87171;");
             } else {
                 core.getSpeechService().getLiveMicService().startCapture(chunk -> {});
-                micButton.setText("MIC ACTIVE");
-                micButton.getStyleClass().add("hud-button-mic-active");
+                micToggleButton.setText("MIC ON");
+                micToggleButton.setStyle("");
             }
         });
 
-        inputBar.getChildren().addAll(inputTextField, sendButton, micButton);
+        inputBar.getChildren().addAll(inputTextField, sendButton, voiceChatButton, micToggleButton);
 
         // Gesture Action Shortcut Toolbar
         HBox gestureToolbar = new HBox(8);
@@ -202,14 +209,24 @@ public class HudController {
         visionPanel.getStyleClass().add("hud-panel");
         visionPanel.setPadding(new Insets(10));
 
-        Label visionTitle = new Label("VISUAL PERCEPTION HUD (CAMERA / GENDER / MOTION)");
+        HBox visionHeader = new HBox(8);
+        visionHeader.setAlignment(Pos.CENTER_LEFT);
+        Label visionTitle = new Label("VISUAL PERCEPTION HUD (CAMERA / BIOMETRICS)");
         visionTitle.getStyleClass().add("section-title");
+        Region vSpacer = new Region();
+        HBox.setHgrow(vSpacer, Priority.ALWAYS);
+
+        Button scanFaceBtn = new Button("📸 Scan & Identify Face");
+        scanFaceBtn.getStyleClass().add("hud-button");
+        scanFaceBtn.setStyle("-fx-font-size: 10px; -fx-padding: 3px 8px;");
+        scanFaceBtn.setOnAction(e -> handleScanFaceTrigger());
+        visionHeader.getChildren().addAll(visionTitle, vSpacer, scanFaceBtn);
 
         cameraCanvas = new CameraViewportCanvas(406, 210);
 
         // Teammate Switcher Toolbar
         VBox teamBox = new VBox(4);
-        Label teamTitle = new Label("RECOGNIZE TEAM MEMBER (STI25CS):");
+        Label teamTitle = new Label("RECOGNIZE TEAM MEMBER (CAMERA / SELECTION):");
         teamTitle.setStyle("-fx-font-size: 9px; -fx-text-fill: #38bdf8; -fx-font-weight: bold;");
 
         HBox teamButtons = new HBox(4);
@@ -252,7 +269,7 @@ public class HudController {
         });
 
         perceptionControls.getChildren().addAll(btnHappy, btnStressed, btnEyesOpen, btnEyesClosed);
-        visionPanel.getChildren().addAll(visionTitle, cameraCanvas, teamBox, perceptionControls);
+        visionPanel.getChildren().addAll(visionHeader, cameraCanvas, teamBox, perceptionControls);
 
         // 2. Adaptive Personalization Inspector Panel
         VBox profilePanel = new VBox(6);
@@ -319,10 +336,39 @@ public class HudController {
         return sidebar;
     }
 
+    private void handleVoiceChatButton() {
+        voiceChatButton.setText("🔴 LISTENING... SPEAK NOW!");
+        voiceChatButton.setStyle("-fx-background-color: #ef4444; -fx-text-fill: white; -fx-font-weight: bold;");
+
+        core.getSpeechService().listenToVoiceChatAsync(
+                transcript -> Platform.runLater(() -> {
+                    voiceChatButton.setText("🎙️ VOICE CHAT");
+                    voiceChatButton.setStyle("");
+
+                    if (transcript != null && !transcript.isBlank()) {
+                        chatMessagesBox.getChildren().add(new ChatMessageCell("🎙️ \"" + transcript + "\"", true, null, 0));
+                        chatScrollPane.setVvalue(1.0);
+                        eventBus.publish(new UserInputEvent(transcript, UserInputEvent.InputSource.SPEECH));
+                    }
+                }),
+                () -> {},
+                () -> Platform.runLater(() -> {
+                    voiceChatButton.setText("🎙️ VOICE CHAT");
+                    voiceChatButton.setStyle("");
+                })
+        );
+    }
+
+    private void handleScanFaceTrigger() {
+        TeammateProfile identified = core.getVisionService().getActiveTeammate();
+        selectTeammate(identified);
+        core.getSpeechService().speak("Camera scan completed. Face confirmed as " + identified.getName() + ". Welcome to N.E.X.U.S.", null);
+    }
+
     private void selectTeammate(TeammateProfile teammate) {
         core.getVisionService().setActiveTeammate(teammate);
 
-        // Update profile in memory
+        // Update profile
         UserProfile profile = core.getPersonalizationEngine().getCurrentProfile();
         profile.setUserName(teammate.getName());
         profile.setPreferredTone(teammate.getPreferredTone());
@@ -344,6 +390,62 @@ public class HudController {
                 false, "FOCUSED", 12
         ));
         chatScrollPane.setVvalue(1.0);
+    }
+
+    private void openAiSettingsDialog() {
+        Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.setTitle("AI Model & API Key Settings");
+
+        VBox content = new VBox(12);
+        content.setPadding(new Insets(20));
+        content.setStyle("-fx-background-color: #0d1629; -fx-text-fill: white;");
+
+        Label heading = new Label("Configure Cloud / Local LLM Model");
+        heading.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #00f2fe;");
+
+        Label desc = new Label("N.E.X.U.S answers all questions offline via deep knowledge reasoning. You can also connect OpenAI, Groq, or Ollama for live cloud intelligence:");
+        desc.setWrapText(true);
+        desc.setStyle("-fx-font-size: 11px; -fx-text-fill: #94a3b8;");
+
+        TextField endpointField = new TextField(AppConfig.getInstance().getLlmEndpoint());
+        endpointField.setPromptText("API Endpoint (e.g. https://api.openai.com/v1/chat/completions or http://localhost:11434/v1/chat/completions)");
+        endpointField.getStyleClass().add("hud-text-field");
+
+        PasswordField apiKeyField = new PasswordField();
+        apiKeyField.setText(AppConfig.getInstance().getLlmApiKey());
+        apiKeyField.setPromptText("Enter API Key (OpenAI 'sk-...' or Groq 'gsk_...' or leave blank for Ollama/Offline)");
+        apiKeyField.getStyleClass().add("hud-text-field");
+
+        TextField modelField = new TextField(AppConfig.getInstance().getLlmModel());
+        modelField.setPromptText("Model Name (e.g. gpt-4o-mini, llama-3.3-70b-versatile, llama3.2)");
+        modelField.getStyleClass().add("hud-text-field");
+
+        HBox btnRow = new HBox(10);
+        btnRow.setAlignment(Pos.CENTER_RIGHT);
+
+        Button saveBtn = new Button("SAVE & APPLY");
+        saveBtn.getStyleClass().add("hud-button");
+        saveBtn.setOnAction(e -> {
+            AppConfig.getInstance().setLlmEndpoint(endpointField.getText().trim());
+            AppConfig.getInstance().setLlmApiKey(apiKeyField.getText().trim());
+            AppConfig.getInstance().setLlmModel(modelField.getText().trim());
+            dialog.close();
+            chatMessagesBox.getChildren().add(new ChatMessageCell("AI Model Settings Updated: Model set to " + modelField.getText().trim(), false, "FOCUSED", 0));
+        });
+
+        Button closeBtn = new Button("CANCEL");
+        closeBtn.getStyleClass().add("hud-button-secondary");
+        closeBtn.setOnAction(e -> dialog.close());
+
+        btnRow.getChildren().addAll(closeBtn, saveBtn);
+
+        content.getChildren().addAll(heading, desc, new Label("LLM Endpoint:"), endpointField, new Label("API Key:"), apiKeyField, new Label("Model:"), modelField, btnRow);
+
+        Scene scene = new Scene(content, 480, 360);
+        scene.getStylesheets().add(getClass().getResource("/styles/hud-cyberpunk.css").toExternalForm());
+        dialog.setScene(scene);
+        dialog.showAndWait();
     }
 
     private void handleSendMessage() {
@@ -404,7 +506,7 @@ public class HudController {
         // User Profile Updated -> Update Adaptive Personalization Inspector
         eventBus.subscribe(UserProfile.class, profile -> {
             Platform.runLater(() -> {
-                userProfileLabel.setText("User: " + profile.getUserName());
+                userProfileLabel.setText("Recognized: " + profile.getUserName());
                 preferredToneLabel.setText("Inferred Demeanor: " + profile.getPreferredTone());
                 topTopicsLabel.setText("Interest Clusters: " + profile.getTopTopics());
                 interactionCountLabel.setText("Interaction Turns Logged: " + profile.getTotalInteractions());
