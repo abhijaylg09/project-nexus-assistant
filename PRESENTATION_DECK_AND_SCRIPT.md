@@ -16,20 +16,13 @@
 |:---:|---|---|---|
 | **01** | Title & Project Overview | **Bhadra G. S.** (48) | Welcome, problem scope & project identity |
 | **02** | The Problem Statement | **Bhadra G. S.** (48) | Fragmented stacks, GIL bottlenecks, memory amnesia |
-| **03** | Proposed Solution: The Java Orchestrator | **Bhadra G. S. / Abhijay L. G.** | Why Java 21, zero GIL, 3 core pillars |
-| **04** | 3-Tier System Architecture | **Bhadra G. S. / Abhijay L. G.** | Input perception, central brain, output actions |
-| **05** | Concurrency Model & Multimodal Event Bus | **Abhijay L. G. / Dia M. Joby** | Thread isolation, zero UI freezing, Platform.runLater |
 | **06** | Computer Vision: Face Detection & ONNX FER+ | **Aleena Maria Roy** (26) | OpenCV Haar cascade, 6 emotion classes, temporal smoothing |
 | **07** | Hand Gesture Recognition & Shortcuts | **Aleena Maria Roy** (26) | Convexity defect classification, touchless shortcuts (Thumbs-up, Palm) |
 | **08** | Speech I/O Subsystem | **Abhishek A.** (09) | Porcupine wake word, offline Vosk STT, Piper neural TTS + SAPI |
-| **09** | Language Reasoning & Prompt Builder | **Abhijay L. G.** (121) | Async HTTP/2 client, multi-backend, heuristic fallback |
-| **10** | Adaptive Personalization Engine | **Abhijay L. G.** (121) | Closed-loop behavioral learning, SQLite persistence |
-| **11** | Token Efficiency & Mathematical Model | **Abhijay L. G.** (121) | Sentiment valence equation, bounded 6-turn history vs naive blowup |
 | **12** | JavaFX 21 Cyberpunk HUD Interface | **Dia M. Joby** (52) | Glassmorphic HUD, live audio visualizer, telemetry meters |
 | **13** | Performance Benchmarks & Experimental Results | **Dia M. Joby / Abhishek A.** | 60 FPS refresh, 12 ms ONNX inference, 165 MB heap |
 | **14** | Team STI25CS Role Allocation & Contributions | **Bhadra G. S.** (48) | Detailed individual contribution matrix |
 | **15** | Viva Defense Guide & Evaluator Q&A | **All Team Members** | Top 3 examination questions and model answers |
-| **16** | Conclusion, Future Scope & Live Demo | **Bhadra G. S. / Abhijay L. G.** | Project summary, future roadmap, live demonstration |
 
 ---
 
@@ -54,14 +47,14 @@
 
 ### Slide 03: Proposed Solution & Architectural Philosophy
 * **Visual Elements:** Two-column comparison: "Why Java 21 as the Central Brain?" (Zero GIL, JVM resource management, JNI acceleration) vs "Three Core Pillars of N.E.X.U.S".
-* **Speaker Script (Bhadra G. S. & Abhijay L. G.):**
+* **Speaker Script (Bhadra G. S. & Team STI25CS):**
   > "Instead of treating Java merely as an enterprise backend language, we leverage Java 21 LTS as a high-throughput multimodal orchestrator. By utilizing JNI wrappers around native C++ runtimes like ONNX Runtime and OpenCV, Java manages concurrency deterministically while eliminating Python's GIL bottlenecks. This architectural pivot enables rock-solid 60 FPS HUD animation while running live video and acoustic models in parallel."
 
 ---
 
 ### Slide 04: System Architecture: 3-Tier Multimodal Subsystems
 * **Visual Elements:** Input Perception Tier $\rightarrow$ Central Brain & Control $\rightarrow$ Output & Action Tier.
-* **Speaker Script (Bhadra G. S. & Abhijay L. G.):**
+* **Speaker Script (Bhadra G. S. & Team STI25CS):**
   > "Here you see our 3-tier architecture:  
   > On the left, Input Perception captures video and audio streams at native speeds.  
   > In the center, the Central Brain coordinates lifecycle, context assembly, and behavioral learning via our thread-safe EventBus.  
@@ -72,7 +65,7 @@
 
 ### Slide 05: Concurrency Model & Multimodal Event Bus
 * **Visual Elements:** Thread Allocation Architecture (Vision daemon, Audio daemon, LLM worker, FX UI thread) & Thread Safety Guarantees.
-* **Speaker Script (Abhijay L. G. & Dia M. Joby):**
+* **Speaker Script (Team STI25CS & Dia M. Joby):**
   > "Evaluators often ask: 'How do you guarantee the UI doesn't stutter when doing AI inference?'  
   > Our answer is strict thread isolation. The camera runs at 30 FPS on its own scheduled executor. The audio capture runs on a daemon thread. LLM requests execute asynchronously on HTTP/2 workers. Only UI layout and canvas repaints touch the JavaFX Application Thread via `Platform.runLater()`. This completely prevents deadlocks and guarantees 60 FPS HUD responsiveness."
 
@@ -101,21 +94,21 @@
 
 ### Slide 09: Reasoning Layer: Asynchronous LLM Client & Context Injection
 * **Visual Elements:** Asynchronous HTTP/2 Client (OpenAI, Ollama, Groq) & Prompt Context Assembly Architecture.
-* **Speaker Script (Abhijay L. G.):**
+* **Speaker Script (Team STI25CS):**
   > "Our language reasoning layer connects to state-of-the-art LLMs using Java 21's asynchronous HttpClient over HTTP/2. The PromptContextBuilder dynamically combines the core system instructions, the evolving user profile, the current environmental mood from the camera, and a bounded 6-turn chat window. If the user is detected as 'Stressed', the prompt instructs the model to be extra concise and supportive."
 
 ---
 
 ### Slide 10: Adaptive Personalization: Closed-Loop Learning
 * **Visual Elements:** 4-Step Process: Log Turn $\rightarrow$ Periodic Batch Trigger ($N=10$) $\rightarrow$ LLM Profile Store $\rightarrow$ Context Injection.
-* **Speaker Script (Abhijay L. G.):**
+* **Speaker Script (Team STI25CS):**
   > "This is one of our key novelties: Closed-Loop Qualitative Behavioral Synthesis. Rather than using brittle hand-crafted rule counters, we periodically ask the LLM itself to analyze batches of interactions, moods, and sentiment to synthesize a natural-language profile of the user's communication style. This allows N.E.X.U.S to adapt naturally over time without token bloat."
 
 ---
 
 ### Slide 11: Token Efficiency & Mathematical Formulation
 * **Visual Elements:** Mathematical Equations ($S(t)$ lexical sentiment, moving average $\bar{S}_K$) and Token Economics comparison (Naive 8,000+ tokens vs N.E.X.U.S ~720 tokens constant).
-* **Speaker Script (Abhijay L. G.):**
+* **Speaker Script (Team STI25CS):**
   > "In academic reviews, professors often ask how we prevent token costs from skyrocketing. A naive chatbot that keeps appending chat history blows up its token budget after 20-30 turns. N.E.X.U.S caps the chat window to the latest 6 turns and distills long-term memory into a 2-sentence summary. This means whether the user has interacted 10 times or 1,000 times, the prompt size remains bounded at ~720 tokens, saving over 90% in token costs."
 
 ---
@@ -147,7 +140,7 @@
   > - Aleena: OpenCV, ONNX emotion modeling, and gesture vision.  
   > - Abhishek: Vosk speech-to-text and dual-path speech synthesis.  
   > - Dia: JavaFX interface, audio visualizer, and telemetry.  
-  > - Abhijay: Central Java orchestrator, event bus, SQLite storage, and adaptive personalization."
+  > - Team STI25CS: Central Java orchestrator, event bus, SQLite storage, and adaptive personalization."
 
 ---
 
@@ -163,5 +156,5 @@
 
 ### Slide 16: Conclusion, Future Scope & Live Demonstration
 * **Visual Elements:** Major Achievements summary, Future Roadmap (On-device SLMs, Multi-user face profiles, OS automation), and Live Demo invitation.
-* **Speaker Script (Bhadra G. S. & Abhijay L. G.):**
+* **Speaker Script (Bhadra G. S. & Team STI25CS):**
   > "In conclusion, Project N.E.X.U.S successfully demonstrates that Java 21 can power a real-time, multimodal, adaptive AI assistant with rock-solid concurrency and responsive cyberpunk aesthetics. We now invite our respected evaluators to observe the live HUD demonstration and ask any questions. Thank you!"

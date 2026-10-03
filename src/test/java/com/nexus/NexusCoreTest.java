@@ -75,7 +75,7 @@ public class NexusCoreTest {
     @DisplayName("Verify PromptContextBuilder builds rich contextual prompt")
     public void testPromptContextBuilder() {
         PromptContextBuilder builder = new PromptContextBuilder();
-        UserProfile profile = new UserProfile("Abhijay", "User is focused on AI development", "Technical", "Java, AI", 12);
+        UserProfile profile = new UserProfile("Nexus User", "User is focused on AI development", "Technical", "Java, AI", 12);
         MoodDetectedEvent mood = new MoodDetectedEvent(MoodDetectedEvent.Emotion.FOCUSED, 0.92, 100, 100, 50, 50);
 
         List<ChatMessage> messages = builder.buildContext("How does N.E.X.U.S operate?", profile, mood, null, List.of());
@@ -84,7 +84,7 @@ public class NexusCoreTest {
 
         // System prompt contains profile and mood
         String systemContent = messages.get(0).getContent();
-        assertTrue(systemContent.contains("Abhijay"));
+        assertTrue(systemContent.contains("Nexus User"));
         assertTrue(systemContent.contains("FOCUSED"));
     }
 
@@ -152,8 +152,7 @@ public class NexusCoreTest {
     @DisplayName("Verify TeammateProfile catalog for STI25CS")
     public void testTeammates() {
         com.nexus.personalization.TeammateProfile[] list = com.nexus.personalization.TeammateProfile.getAllTeammates();
-        assertEquals(5, list.length);
-        assertNotNull(com.nexus.personalization.TeammateProfile.findById("ABHIJAY"));
+        assertEquals(4, list.length);
         assertNotNull(com.nexus.personalization.TeammateProfile.findById("BHADRA"));
         assertNotNull(com.nexus.personalization.TeammateProfile.findById("ALEENA"));
         assertNotNull(com.nexus.personalization.TeammateProfile.findById("ABHISHEK"));
@@ -178,7 +177,7 @@ public class NexusCoreTest {
         tempImg.deleteOnExit();
         javax.imageio.ImageIO.write(img, "PNG", tempImg);
 
-        String answer = visionEngine.analyzeImageAndAnswer(tempImg, "Explain the code in this image", "Abhijay");
+        String answer = visionEngine.analyzeImageAndAnswer(tempImg, "Explain the code in this image", "Bhadra");
         assertNotNull(answer);
         assertTrue(answer.contains("Multimodal Visual Analysis"));
         assertTrue(answer.contains("Resolution to Your Doubt"));
@@ -253,13 +252,13 @@ public class NexusCoreTest {
     @Test
     @DisplayName("Verify OfflineKnowledgeEngine Thug Life and Malayalam roaster responses")
     public void testThugLifeResponses() {
-        String greeting = com.nexus.reasoning.OfflineKnowledgeEngine.answerQuery("namaskaram", List.of(), "Abhijay");
+        String greeting = com.nexus.reasoning.OfflineKnowledgeEngine.answerQuery("namaskaram", List.of(), "Bhadra");
         assertTrue(greeting.contains("Endha mone") || greeting.contains("Thug Life"));
 
-        String roast = com.nexus.reasoning.OfflineKnowledgeEngine.answerQuery("roast me", List.of(), "Abhijay");
+        String roast = com.nexus.reasoning.OfflineKnowledgeEngine.answerQuery("roast me", List.of(), "Bhadra");
         assertTrue(roast.contains("Roast") && (roast.contains("Thug life") || roast.contains("scene aano")));
 
-        String fallback = com.nexus.reasoning.OfflineKnowledgeEngine.answerQuery("random weird question", List.of(), "Abhijay");
+        String fallback = com.nexus.reasoning.OfflineKnowledgeEngine.answerQuery("random weird question", List.of(), "Bhadra");
         assertTrue(fallback.contains("Thug") || fallback.contains("Scene mone"));
     }
 

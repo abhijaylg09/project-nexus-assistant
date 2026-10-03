@@ -1,0 +1,6 @@
+# PROJECT N.E.X.U.S - Python AI Perception & Multimodal Intelligence Core
+opencv-python>=4.8.0
+onnxruntime>=1.17.0
+numpy>=1.24.0
+pillow>=10.0.0
+huggingface_hub>=0.20.0

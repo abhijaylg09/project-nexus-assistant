@@ -533,7 +533,7 @@ Project N.E.X.U.S is a real-time, desktop AI assistant built around a centralize
         </div>
 
         <div style="margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; color: var(--text-muted);">
-          <strong style="color: var(--cyan);">Team Members:</strong> Bhadra G. S. (48) • Aleena Maria Roy (26) • Abhishek A. (09) • Dia M. Joby (52) • Abhijay L. G. (121)
+          <strong style="color: var(--cyan);">Team Members:</strong> Bhadra G. S. (48) • Aleena Maria Roy (26) • Abhishek A. (09) • Dia M. Joby (52) • Team STI25CS (121)
         </div>
       </div>
 
@@ -573,7 +573,7 @@ N.E.X.U.S directly solves these bottlenecks with a compiled, multithreaded Java 
       </div>
 
       <!-- SLIDE 3: PROPOSED SOLUTION -->
-      <div class="slide" data-notes="CORE IDEATION (Presented by Bhadra G. S. & Abhijay L. G.):
+      <div class="slide" data-notes="CORE IDEATION (Presented by Bhadra G. S. & Team STI25CS):
 Instead of treating Java as merely an enterprise backend language, we leverage Java 21 LTS as a high-throughput multimodal orchestrator.
 By utilizing JNI wrappers around native C++ runtimes like ONNX Runtime and OpenCV, Java manages concurrency deterministically while eliminating Python's GIL bottlenecks.
 This architectural pivot enables rock-solid 60 FPS HUD animation while running live video and acoustic models in parallel.">
@@ -619,7 +619,7 @@ This architectural pivot enables rock-solid 60 FPS HUD animation while running l
       </div>
 
       <!-- SLIDE 4: SYSTEM ARCHITECTURE -->
-      <div class="slide" data-notes="SYSTEM ARCHITECTURE (Presented by Bhadra G. S. & Abhijay L. G.):
+      <div class="slide" data-notes="SYSTEM ARCHITECTURE (Presented by Bhadra G. S. & Team STI25CS):
 Here you see our 3-tier architecture:
 - Left: Input Perception captures vision and speech.
 - Center: The Central Brain manages events, context injection, and behavioral updates.
@@ -660,7 +660,7 @@ All data exchanges occur over strongly typed Java events, preventing coupling be
       </div>
 
       <!-- SLIDE 5: CONCURRENCY MODEL -->
-      <div class="slide" data-notes="CONCURRENCY ARCHITECTURE (Presented by Abhijay L. G. & Dia M. Joby):
+      <div class="slide" data-notes="CONCURRENCY ARCHITECTURE (Presented by Team STI25CS & Dia M. Joby):
 Evaluators often ask: 'How do you guarantee the UI doesn't stutter when doing AI inference?'
 Our answer is strict thread isolation. The camera runs at 30 FPS on its own scheduled executor.
 The audio capture runs on a daemon thread. LLM requests execute asynchronously on HTTP/2 workers.
@@ -801,7 +801,7 @@ while Windows SAPI acts as an automatic zero-dependency fallback, guaranteeing v
       </div>
 
       <!-- SLIDE 9: REASONING & PROMPTING -->
-      <div class="slide" data-notes="REASONING & PROMPTING (Presented by Abhijay L. G.):
+      <div class="slide" data-notes="REASONING & PROMPTING (Presented by Team STI25CS):
 Our language reasoning layer connects to state-of-the-art LLMs using Java 21's asynchronous HttpClient over HTTP/2.
 The PromptContextBuilder dynamically combines the core system instructions, the evolving user profile,
 the current environmental mood from the camera, and a bounded 6-turn chat window.
@@ -832,7 +832,7 @@ If the user is detected as 'Stressed', the prompt instructs the model to be extr
       </div>
 
       <!-- SLIDE 10: ADAPTIVE PERSONALIZATION -->
-      <div class="slide" data-notes="ADAPTIVE PERSONALIZATION (Presented by Abhijay L. G.):
+      <div class="slide" data-notes="ADAPTIVE PERSONALIZATION (Presented by Team STI25CS):
 This is one of our key novelties: Closed-Loop Qualitative Behavioral Synthesis.
 Rather than using brittle hand-crafted rule counters, we periodically ask the LLM itself to analyze batches of interactions,
 moods, and sentiment to synthesize a natural-language profile of the user's communication style.
@@ -873,7 +873,7 @@ This allows N.E.X.U.S to adapt naturally over time without token bloat.">
       </div>
 
       <!-- SLIDE 11: TOKEN EFFICIENCY & MATH -->
-      <div class="slide" data-notes="MATHEMATICAL & TOKEN FORMULATION (Presented by Abhijay L. G.):
+      <div class="slide" data-notes="MATHEMATICAL & TOKEN FORMULATION (Presented by Team STI25CS):
 In academic reviews, professors often ask how we prevent token costs from skyrocketing.
 A naive chatbot that keeps appending chat history blows up its token budget after 20-30 turns.
 N.E.X.U.S caps the chat window to the latest 6 turns and distills long-term memory into a 2-sentence summary.
@@ -988,7 +988,7 @@ Our team divided responsibilities according to specialized computer science doma
 - Aleena: OpenCV, ONNX emotion modeling, and gesture vision.
 - Abhishek: Vosk speech-to-text and dual-path speech synthesis.
 - Dia: JavaFX interface, audio visualizer, and telemetry.
-- Abhijay: Central Java orchestrator, event bus, SQLite storage, and adaptive personalization.">
+- Team STI25CS: Central Java orchestrator, event bus, SQLite storage, and adaptive personalization.">
         <div class="slide-badge">◈ TEAM CONTRIBUTIONS</div>
         <div class="slide-title">Team STI25CS: Role Allocation & Module Ownership</div>
         <div class="slide-divider"></div>
@@ -1018,7 +1018,7 @@ Our team divided responsibilities according to specialized computer science doma
             <div class="card-content" style="font-size: 0.8rem;">Engineered cyberpunk glassmorphic JavaFX UI, real-time Canvas audio visualizer, chat viewports, and telemetry gauges.</div>
           </div>
           <div class="card">
-            <div class="card-title">Abhijay L. G.</div>
+            <div class="card-title">Team STI25CS</div>
             <div style="font-size: 0.75rem; color: var(--cyan); margin-bottom: 6px; font-weight: 700;">STI25CS121</div>
             <div style="font-size: 0.85rem; font-weight: 600; color: #fff; margin-bottom: 6px;">Central Core & Personalization</div>
             <div class="card-content" style="font-size: 0.8rem;">Architected NexusCore, MultimodalEventBus, SQLite JDBC storage, and the closed-loop Adaptive Personalization Engine.</div>
@@ -1058,7 +1058,7 @@ Evaluators often focus on three key areas:
       </div>
 
       <!-- SLIDE 16: CONCLUSION & DEMO -->
-      <div class="slide" data-notes="CONCLUSION & LIVE DEMO (Presented by Bhadra G. S. & Abhijay L. G.):
+      <div class="slide" data-notes="CONCLUSION & LIVE DEMO (Presented by Bhadra G. S. & Team STI25CS):
 In conclusion, Project N.E.X.U.S successfully demonstrates that Java 21 can power a real-time, multimodal, adaptive AI assistant with rock-solid concurrency and responsive cyberpunk aesthetics.
 We now invite our respected evaluators to observe the live HUD demonstration and ask any questions.
 Thank you!">

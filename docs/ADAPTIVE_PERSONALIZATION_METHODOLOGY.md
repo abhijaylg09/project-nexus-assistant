@@ -1,7 +1,7 @@
 # ADAPTIVE PERSONALIZATION METHODOLOGY & CLOSED-LOOP LEARNING
 ## PROJECT N.E.X.U.S: Research & Implementation Report
 
-**Team STI25CS:** Bhadra G. S., Aleena Maria Roy, Abhishek A., Dia M. Joby, Abhijay L. G.
+**Team STI25CS:** Bhadra G. S., Aleena Maria Roy, Abhishek A., Dia M. Joby, Team STI25CS
 
 ---
 
@@ -106,7 +106,7 @@ Interactions batch:
 When building the prompt for a new query, `PromptContextBuilder` automatically injects:
 ```text
 === ADAPTIVE USER PROFILE (LEARNED FROM INTERACTION HISTORY) ===
-User Name: Abhijay
+User Name: Team STI25CS
 Communication Style & Tone: Technical & Direct
 Synthesized Behavioral Summary: User values clear, high-velocity technical execution, structured multi-modal workflows, and prompt responses.
 Frequent Interest Clusters: Computer Vision, Java Architecture

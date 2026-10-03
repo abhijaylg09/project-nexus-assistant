@@ -2,7 +2,7 @@
 **Academic / Seminar Evaluation Q&A Handbook**
 
 * **Project:** PROJECT N.E.X.U.S (Neural EXecutive User System)
-* **Team STI25CS:** Bhadra G. S., Aleena Maria Roy, Abhishek A., Dia M. Joby, Abhijay L. G.
+* **Team STI25CS:** Bhadra G. S., Aleena Maria Roy, Abhishek A., Dia M. Joby, Team STI25CS
 * **Core Language:** Java 21 LTS
 
 ---
@@ -64,4 +64,3 @@
 | **Aleena Maria Roy** | Computer Vision (OpenCV/JavaCV & ONNX Runtime) | Discuss face detection cascade, ONNX emotion inference, and gesture shortcuts |
 | **Abhishek A.** | Speech I/O Subsystem (Vosk STT, Piper TTS, Porcupine) | Detail low-latency wake word triggers and dual-path speech synthesis |
 | **Dia M. Joby** | Frontend HUD Interface & JavaFX Architecture | Showcase the HUD design, audio visualizer canvas, and real-time telemetry |
-| **Abhijay L. G.** | Central Orchestrator, LLM Reasoning, & Adaptive Personalization | Demonstrate the closed-loop learning engine, prompt injection, and SQLite storage |

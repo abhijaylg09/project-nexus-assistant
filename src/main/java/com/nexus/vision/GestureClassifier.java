@@ -2,52 +2,43 @@ package com.nexus.vision;
 
 import com.nexus.core.events.GestureDetectedEvent;
 
-import java.util.Random;
-
 /**
- * Hand gesture recognition module.
- * Maps classified gestures into assistant shortcut triggers.
+ * Hand Gesture Classifier.
+ * Powered by Python OpenCV contour convex hull analysis,
+ * detecting THUMBS_UP (Confirm), STOP_PALM (Pause/Mute), PEACE (Summarize).
  */
 public class GestureClassifier {
 
-    private final Random random = new Random();
-    private GestureDetectedEvent.Gesture lastGesture = GestureDetectedEvent.Gesture.NONE;
-    private double lastConfidence = 0.0;
-    private long lastTriggerTime = 0;
+    private PythonGenderBridge pythonBridge;
+    private GestureDetectedEvent.Gesture manualGesture = GestureDetectedEvent.Gesture.NONE;
+    private double manualConfidence = 0.0;
+    private long manualHoldUntil = 0;
 
     public GestureClassifier() {}
 
+    public void setPythonBridge(PythonGenderBridge bridge) {
+        this.pythonBridge = bridge;
+    }
+
     public GestureDetectedEvent evaluateGesture(boolean gestureDetectedInFrame) {
-        if (!gestureDetectedInFrame) {
-            lastGesture = GestureDetectedEvent.Gesture.NONE;
-            lastConfidence = 0.0;
-            return new GestureDetectedEvent(lastGesture, lastConfidence);
-        }
-
         long now = System.currentTimeMillis();
-        // Limit gesture re-triggering spam
-        if (now - lastTriggerTime > 4000) {
-            lastTriggerTime = now;
-            int pick = random.nextInt(3);
-            if (pick == 0) {
-                lastGesture = GestureDetectedEvent.Gesture.THUMBS_UP;
-                lastConfidence = 0.91;
-            } else if (pick == 1) {
-                lastGesture = GestureDetectedEvent.Gesture.PEACE;
-                lastConfidence = 0.88;
-            } else {
-                lastGesture = GestureDetectedEvent.Gesture.STOP_PALM;
-                lastConfidence = 0.94;
-            }
+        if (manualGesture != GestureDetectedEvent.Gesture.NONE && now < manualHoldUntil) {
+            return new GestureDetectedEvent(manualGesture, manualConfidence);
         }
 
-        return new GestureDetectedEvent(lastGesture, lastConfidence);
+        if (pythonBridge != null && pythonBridge.isPythonServiceReady()) {
+            GestureDetectedEvent.Gesture pyGest = pythonBridge.getLatestGesture();
+            double conf = pythonBridge.getLatestGestureConfidence();
+            return new GestureDetectedEvent(pyGest, conf);
+        }
+
+        return new GestureDetectedEvent(GestureDetectedEvent.Gesture.NONE, 0.0);
     }
 
     public GestureDetectedEvent triggerManualGesture(GestureDetectedEvent.Gesture gesture) {
-        this.lastGesture = gesture;
-        this.lastConfidence = 0.95;
-        this.lastTriggerTime = System.currentTimeMillis();
-        return new GestureDetectedEvent(gesture, lastConfidence);
+        this.manualGesture = gesture;
+        this.manualConfidence = 0.95;
+        this.manualHoldUntil = System.currentTimeMillis() + 4000;
+        return new GestureDetectedEvent(gesture, manualConfidence);
     }
 }

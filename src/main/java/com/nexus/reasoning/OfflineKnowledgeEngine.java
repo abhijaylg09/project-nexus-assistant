@@ -52,15 +52,14 @@ public class OfflineKnowledgeEngine {
         // =========================================================================
         if (q.contains("who created you") || q.contains("who made you") || q.contains("team") || q.contains("members")) {
             return """
-                I was forged by the legends of **Team STI25CS**:
+                I was engineered by the members of **Team STI25CS**:
                 
-                1. **Abhijay L. G.** — Central Java Core Orchestrator, Concurrency & the mastermind behind my savage attitude.
-                2. **Bhadra G. S.** (Roll 48) — Project Ideation, System Architecture & Problem Statement.
-                3. **Aleena Maria Roy** (Roll 26) — Computer Vision, OpenCV & ONNX Emotion Modeling (so I can see you struggling).
-                4. **Abhishek A.** (Roll 09) — Speech I/O Subsystem (Vosk STT, Piper TTS, Multilingual Voice Chat).
-                5. **Dia M. Joby** (Roll 52) — JavaFX HUD Interface, Cyberpunk Aesthetics & Audio Visualizer.
+                1. **Bhadra G. S.** (Roll 48) — Project Ideation, System Architecture & Problem Statement.
+                2. **Aleena Maria Roy** (Roll 26) — Computer Vision, OpenCV & ONNX Emotion Modeling.
+                3. **Abhishek A.** (Roll 09) — Speech I/O Subsystem (Vosk STT, Piper TTS, Multilingual Voice Chat).
+                4. **Dia M. Joby** (Roll 52) — JavaFX Futuristic HUD, Visualizer Canvas & Cyberpunk Styling.
                 
-                Unlike your projects, this team actually built something that compiles on the first try. Mass da!""";
+                Together they engineered my unified multimodal perception and orchestration engine!""";
         }
 
         // =========================================================================

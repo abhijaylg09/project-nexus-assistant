@@ -179,7 +179,7 @@ def create_presentation(output_path="PROJECT_NEXUS_PRESENTATION.pptx"):
     pt1.font.name = "Segoe UI"
     
     pt2 = tf_team.add_paragraph()
-    pt2.text = "Bhadra G. S. (48)   •   Aleena Maria Roy (26)   •   Abhishek A. (09)   •   Dia M. Joby (52)   •   Abhijay L. G. (121)"
+    pt2.text = "Bhadra G. S. (48)   •   Aleena Maria Roy (26)   •   Abhishek A. (09)   •   Dia M. Joby (52)   •   Team STI25CS (121)"
     pt2.font.size = Pt(12)
     pt2.font.bold = True
     pt2.font.color.rgb = TEXT_WHITE
@@ -327,7 +327,7 @@ def create_presentation(output_path="PROJECT_NEXUS_PRESENTATION.pptx"):
         pp2.font.name = "Segoe UI"
 
     s3.notes_slide.notes_text_frame.text = (
-        "CORE IDEATION (Presented by Bhadra G. S. & Abhijay L. G.):\n"
+        "CORE IDEATION (Presented by Bhadra G. S. & Team STI25CS):\n"
         "Instead of treating Java as merely an enterprise backend language, we leverage Java 21 LTS as a high-throughput multimodal orchestrator. "
         "By utilizing JNI wrappers around native C++ runtimes like ONNX Runtime and OpenCV, Java manages concurrency deterministically while eliminating Python's GIL bottlenecks. "
         "This architectural pivot enables rock-solid 60 FPS HUD animation while running live video and acoustic models in parallel."
@@ -391,7 +391,7 @@ def create_presentation(output_path="PROJECT_NEXUS_PRESENTATION.pptx"):
             pi2.font.name = "Segoe UI"
 
     s4.notes_slide.notes_text_frame.text = (
-        "SYSTEM ARCHITECTURE (Presented by Bhadra G. S. & Abhijay L. G.):\n"
+        "SYSTEM ARCHITECTURE (Presented by Bhadra G. S. & Team STI25CS):\n"
         "Here you see our 3-tier architecture:\n"
         "- Left: Input Perception captures vision and speech.\n"
         "- Center: The Central Brain manages events, context injection, and behavioral updates.\n"
@@ -479,7 +479,7 @@ def create_presentation(output_path="PROJECT_NEXUS_PRESENTATION.pptx"):
         p2.font.name = "Segoe UI"
 
     s5.notes_slide.notes_text_frame.text = (
-        "CONCURRENCY ARCHITECTURE (Presented by Abhijay L. G. & Dia M. Joby):\n"
+        "CONCURRENCY ARCHITECTURE (Presented by Team STI25CS & Dia M. Joby):\n"
         "Evaluators often ask: 'How do you guarantee the UI doesn't stutter when doing AI inference?'\n"
         "Our answer is strict thread isolation. The camera runs at 30 FPS on its own scheduled executor. "
         "The audio capture runs on a daemon thread. LLM requests execute asynchronously on HTTP/2 workers. "
@@ -775,7 +775,7 @@ def create_presentation(output_path="PROJECT_NEXUS_PRESENTATION.pptx"):
         p2.font.name = "Segoe UI"
 
     s9.notes_slide.notes_text_frame.text = (
-        "REASONING & PROMPTING (Presented by Abhijay L. G.):\n"
+        "REASONING & PROMPTING (Presented by Team STI25CS):\n"
         "Our language reasoning layer connects to state-of-the-art LLMs using Java 21's asynchronous HttpClient over HTTP/2. "
         "The PromptContextBuilder dynamically combines the core system instructions, the evolving user profile, "
         "the current environmental mood from the camera, and a bounded 6-turn chat window. "
@@ -833,7 +833,7 @@ def create_presentation(output_path="PROJECT_NEXUS_PRESENTATION.pptx"):
         p2.font.name = "Segoe UI"
 
     s10.notes_slide.notes_text_frame.text = (
-        "ADAPTIVE PERSONALIZATION (Presented by Abhijay L. G.):\n"
+        "ADAPTIVE PERSONALIZATION (Presented by Team STI25CS):\n"
         "This is one of our key novelties: Closed-Loop Qualitative Behavioral Synthesis. "
         "Rather than using brittle hand-crafted rule counters, we periodically ask the LLM itself to analyze batches of interactions, "
         "moods, and sentiment to synthesize a natural-language profile of the user's communication style. "
@@ -914,7 +914,7 @@ def create_presentation(output_path="PROJECT_NEXUS_PRESENTATION.pptx"):
         p2.font.name = "Segoe UI"
 
     s11.notes_slide.notes_text_frame.text = (
-        "MATHEMATICAL & TOKEN FORMULATION (Presented by Abhijay L. G.):\n"
+        "MATHEMATICAL & TOKEN FORMULATION (Presented by Team STI25CS):\n"
         "In academic reviews, professors often ask how we prevent token costs from skyrocketing. "
         "A naive chatbot that keeps appending chat history blows up its token budget after 20-30 turns. "
         "N.E.X.U.S caps the chat window to the latest 6 turns and distills long-term memory into a 2-sentence summary. "
@@ -1081,7 +1081,7 @@ def create_presentation(output_path="PROJECT_NEXUS_PRESENTATION.pptx"):
         ("Dia M. Joby", "STI25CS052", "JavaFX HUD & Visualizer",
          "Engineered cyberpunk glassmorphic JavaFX UI, real-time Canvas audio visualizer, chat viewports, and system telemetry meters.",
          BORDER_AMBER),
-        ("Abhijay L. G.", "STI25CS121", "Central Orchestration & Learning",
+        ("Team STI25CS", "STI25CS121", "Central Orchestration & Learning",
          "Architected NexusCore, MultimodalEventBus, SQLite JDBC persistence, and the Closed-Loop Adaptive Personalization Engine.",
          BORDER_CYAN)
     ]
@@ -1128,7 +1128,7 @@ def create_presentation(output_path="PROJECT_NEXUS_PRESENTATION.pptx"):
         "- Aleena: OpenCV, ONNX emotion modeling, and gesture vision.\n"
         "- Abhishek: Vosk speech-to-text and dual-path speech synthesis.\n"
         "- Dia: JavaFX interface, audio visualizer, and telemetry.\n"
-        "- Abhijay: Central Java orchestrator, event bus, SQLite storage, and adaptive personalization."
+        "- Team STI25CS: Central Java orchestrator, event bus, SQLite storage, and adaptive personalization."
     )
 
     # =========================================================================
@@ -1229,7 +1229,7 @@ def create_presentation(output_path="PROJECT_NEXUS_PRESENTATION.pptx"):
     p_demo.space_before = Pt(16)
 
     s16.notes_slide.notes_text_frame.text = (
-        "CONCLUSION & LIVE DEMO (Presented by Bhadra G. S. & Abhijay L. G.):\n"
+        "CONCLUSION & LIVE DEMO (Presented by Bhadra G. S. & Team STI25CS):\n"
         "In conclusion, Project N.E.X.U.S successfully demonstrates that Java 21 can power a real-time, "
         "multimodal, adaptive AI assistant with rock-solid concurrency and responsive cyberpunk aesthetics. "
         "We now invite our respected evaluators to observe the live HUD demonstration and ask any questions. "

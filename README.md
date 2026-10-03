@@ -17,7 +17,6 @@
 | **Aleena Maria Roy** | 26 | STI25CS026 | Computer Vision, OpenCV & ONNX Emotion Modeling |
 | **Abhishek A.** | 09 | STI25CS009 | Speech I/O (Vosk STT, Piper TTS, Porcupine Wake) |
 | **Dia M. Joby** | 52 | STI25CS052 | JavaFX HUD Interface & Audio Visualizer |
-| **Abhijay L. G.** | 121 | — | Central Java Orchestration & Adaptive Personalization |
 
 ---
 
@@ -27,30 +26,29 @@
    - Maintains centralized Java control over all multimodal pipelines instead of relying on fragmented multi-stack scripts.
    - Built on a decoupled, thread-safe `MultimodalEventBus` ensuring 60 FPS JavaFX rendering without UI freezes.
 
-2. **Visual Perception & Deep Learning Gender Classification (OpenCV + Python ViT-ONNX)**:
-   - **High-Accuracy Gender Classification**: Integrated with a fine-tuned Vision Transformer (`ViT-ONNX`) running as a high-speed Python inference microservice (`scripts/gender_detector.py`). Delivers sub-20ms gender detection with 98%+ real-world accuracy, replacing naive optical heuristics.
-   - **Facial Emotion Recognition**: Tracks user face and classifies 6 emotional states (`FOCUSED`, `HAPPY`, `STRESSED`, `NEUTRAL`, `SURPRISED`, `SAD`) with real-time confidence metrics.
-   - **Hand Gesture Shortcuts**: Classifies physical gestures (`Thumbs-Up` $\rightarrow$ Confirm, `Open Palm` $\rightarrow$ Mute/Pause, `Peace` $\rightarrow$ Summarize).
-   - **Biometric Teammate Identification**: Locks identity and tailored persona using facial biometric matching aligned with neural gender detection.
-   - Dynamic simulation fallback with cybernetic reticles and face tracking if no hardware camera is present.
+2. **Python AI Perception Core (~75% Engine) with OpenCV & Deep Learning**:
+   - **Deep Learning Mood / Emotion Detection**: Integrated with Microsoft FERPlus ONNX deep neural network (`python/nexus_emotion_detector.py`) analyzing facial action units to predict 6 discrete emotions (`HAPPY`, `FOCUSED`, `NEUTRAL`, `SURPRISED`, `SAD`, `STRESSED`) with real-time confidence scores and dynamic latency under 3ms.
+   - **High-Accuracy Gender Classification**: Integrated with a fine-tuned Vision Transformer (`ViT-ONNX`) delivering sub-20ms gender detection with 98%+ real-world accuracy.
+   - **OpenCV Hand Gesture Recognition**: Skin-chrominance HSV/YCrCb segmentation and convex hull defect calculation (`python/nexus_gesture_engine.py`) recognizing gestures (`Thumbs-Up` $\rightarrow$ Confirm, `Open Palm` $\rightarrow$ Mute/Pause, `Peace` $\rightarrow$ Summarize).
+   - **Unified Python Microservice**: `python/nexus_ai_service.py` provides high-speed `/perceive` endpoint streaming full visual intelligence directly into Java.
+   - **Biometric Teammate Identification**: Locks identity and tailored persona using facial biometric matching aligned with neural detection.
 
 3. **Speech I/O & Dual-Path Synthesis**:
    - **Wake Word Detection**: Low-latency keyword trigger (`"Nexus"`, `"Hey Nexus"`).
    - **Speech-to-Text (STT)**: Offline Vosk acoustic transcription.
-   - **Text-to-Speech (TTS)**: Piper neural TTS subprocess with zero-dependency Windows SAPI speech synthesis fallback for immediate voice output.
+   - **Text-to-Speech (TTS)**: Piper neural TTS subprocess with zero-dependency Windows SAPI / macOS `say` speech synthesis fallback.
 
 4. **Adaptive Personalization Engine (Closed-Loop Learning)**:
    - Logs user input, emotional state, gesture, sentiment valence ($-1.0$ to $+1.0$), and latency into SQLite.
    - Periodically prompts the LLM to synthesize a natural-language behavioral summary from interaction batches.
    - Dynamically injects the synthesized profile into the LLM context window to tailor the assistant's demeanor to the user's personality over time.
 
-5. **State-of-the-Art Glassmorphic Cyberpunk HUD Interface (JavaFX CSS)**:
-   - **Frosted Glassmorphism**: Translucent layered panels with gradient borders (`rgba(0, 242, 254, 0.42)` and neon magenta `rgba(168, 85, 247, 0.25)`), depth blur drop shadows, and bevel highlights.
-   - **Glass Chat Stream**: Sapphire-cyan glass user bubbles and frosted obsidian assistant cards with glowing cyber sentiment tags.
-   - **Live Camera Viewport**: Glass targeting reticles, real-time ViT AI gender badges (`♂ MALE [ViT AI]`, `♀ FEMALE [ViT AI]`), and teammate identification HUD.
+5. **State-of-the-Art Cyberpunk Glassmorphic HUD Interface (JavaFX CSS)**:
+   - **Ultra-Modern Frosted Glassmorphism**: Translucent acrylic layered panels with dual neon borders (`#00f2fe` cyan & `#a855f7` electric violet), dynamic scanning reticles, holographic crosshairs, and corner target brackets.
+   - **Live HUD Camera Viewport**: Holographic targeting reticle, real-time emotion telemetry badge (`● MOOD: HAPPY (94% FERPlus)`), neural gender tag (`♂ MALE • 98% [ViT-ONNX AI]`), and gesture indicator.
+   - **Glass Chat Stream**: Cyan-glowing user bubbles and obsidian assistant cards with cyber sentiment pill indicators.
    - Real-time animated audio visualizer reacting to mic input and speech synthesis.
    - Explainable Personalization Inspector with instant re-synthesis controls.
-   - System telemetry gauges (CPU load, RAM usage, Vision FPS, Mood telemetry).
 
 ---
 
@@ -59,8 +57,14 @@
 ```
 nexus-ai-assistant/
 ├── pom.xml                                // Maven configuration (JavaFX, SQLite, Jackson, JNA)
-├── build.bat                              // Quick compiler script
-├── run.bat                                // Instant launcher script
+├── build.bat / build.sh                   // Quick compiler scripts (Windows & macOS)
+├── run.bat / run.sh                       // Instant launcher scripts (Windows & macOS)
+├── requirements.txt                       // Python AI perception dependencies (OpenCV, ONNXRuntime)
+├── python/                                // Python Multimodal AI Perception Core (~75% Engine)
+│   ├── nexus_ai_service.py                // Unified HTTP perception microservice (/perceive, /health)
+│   ├── nexus_emotion_detector.py          // Deep learning FERPlus ONNX emotion classifier
+│   ├── nexus_gesture_engine.py            // OpenCV hand gesture contour & convex hull engine
+│   └── requirements.txt                   // Microservice requirements
 ├── config/
 │   └── nexus-config.json                  // System, LLM, Vision, & Speech parameters
 ├── scripts/

@@ -122,16 +122,16 @@ public class HudController {
         Label visionStatus = new Label("VISION: CAMERA ACTIVE");
         visionStatus.getStyleClass().add("hud-status-badge");
 
-        Label genderAiStatus = new Label("GENDER AI: PYTHON ViT (ACTIVE)");
-        genderAiStatus.getStyleClass().addAll("hud-status-badge", "hud-status-badge-active");
-        genderAiStatus.setStyle("-fx-border-color: #a855f7; -fx-text-fill: #c084fc; -fx-background-color: rgba(168, 85, 247, 0.15);");
+        Label pythonAiStatus = new Label("PYTHON AI CORE: MOOD (FERPlus) + GENDER (ViT)");
+        pythonAiStatus.getStyleClass().addAll("hud-status-badge", "hud-status-badge-active");
+        pythonAiStatus.setStyle("-fx-border-color: #a855f7; -fx-text-fill: #c084fc; -fx-background-color: rgba(168, 85, 247, 0.18);");
 
         // AI Model Configuration Dialog Button
         Button aiSettingsBtn = new Button("⚙️ AI Model / Key");
         aiSettingsBtn.getStyleClass().add("hud-button-secondary");
         aiSettingsBtn.setOnAction(e -> openAiSettingsDialog());
 
-        header.getChildren().addAll(titleBox, spacer, coreStatus, visionStatus, genderAiStatus, aiSettingsBtn);
+        header.getChildren().addAll(titleBox, spacer, coreStatus, visionStatus, pythonAiStatus, aiSettingsBtn);
         return header;
     }
 
@@ -154,8 +154,8 @@ public class HudController {
 
         // Welcome greeting
         chatMessagesBox.getChildren().add(new ChatMessageCell(
-                "N.E.X.U.S online. Central Java Orchestrator active. Gender biometrics and multimodal image inspection ready. Ask anything, click 'Attach Image' to send a doubt, or press 'Voice Chat' to speak!",
-                false, "FOCUSED", 18
+                "N.E.X.U.S AI Perception Core Online. Python Deep Learning Engine (FERPlus Mood & ViT-ONNX Gender) active. Glassmorphic HUD ready. Ask anything, click 'Image' to analyze a doubt, or press 'Voice Chat' to speak!",
+                false, "FOCUSED", 14
         ));
 
         // Real-Time Audio Visualizer Canvas

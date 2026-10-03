@@ -61,7 +61,7 @@ public class DatabaseManager {
 
         String initDefaultProfile = """
             INSERT OR IGNORE INTO user_profile (id, user_name, behavioral_summary, preferred_tone, top_topics, total_interactions)
-            VALUES (1, 'Abhijay', 'Initial profile: Responsive user interested in multi-modal systems, engineering, and concise AI collaboration.', 'Technical & Direct', 'AI, Architecture, Multimodal', 0);
+            VALUES (1, 'Nexus User', 'Initial profile: Responsive user interested in multi-modal systems, engineering, and concise AI collaboration.', 'Technical & Direct', 'AI, Architecture, Multimodal', 0);
         """;
 
         try (Connection conn = getConnection();

@@ -27,3 +27,12 @@ Desktop.ini
 
 # Large Deep Learning Model Binaries (auto-downloaded)
 models/*.onnx
+
+# Python bytecode and environments
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.venv/
+env/
+

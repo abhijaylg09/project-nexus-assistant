@@ -31,12 +31,6 @@ public class TeammateProfile {
     public static TeammateProfile[] getAllTeammates() {
         return new TeammateProfile[] {
             new TeammateProfile(
-                "ABHIJAY", "Abhijay L. G.", "—", "STI25CS",
-                Gender.MALE, "Central Java Orchestration & Personalization",
-                "Technical, Precise, & Proactive", "Java Core, LLM Integration, Multi-Threading",
-                "Welcome back Abhijay. Central Orchestrator and adaptive systems are fully operational."
-            ),
-            new TeammateProfile(
                 "BHADRA", "Bhadra G. S.", "48", "STI25CS048",
                 Gender.FEMALE, "Project Ideation, Architecture & Problem Statement",
                 "Analytical, Visionary, & Structured", "System Architecture, Multi-modal AI, Research",

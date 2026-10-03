@@ -7,7 +7,7 @@
   - Aleena Maria Roy (STI25CS026)
   - Abhishek A. (STI25CS009)
   - Dia M. Joby (STI25CS052)
-  - Abhijay L. G.
+  - Team STI25CS
 * **Target Version:** 1.0.0
 * **Date:** 2026-09-29
 

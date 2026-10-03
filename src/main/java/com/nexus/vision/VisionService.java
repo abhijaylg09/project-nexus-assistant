@@ -58,13 +58,15 @@ public class VisionService {
 
     public VisionService() {
         this.config = AppConfig.getInstance();
+        this.faceBiometrics = new FaceBiometricsEngine();
         this.emotionClassifier = new EmotionClassifier();
+        this.emotionClassifier.setPythonBridge(this.faceBiometrics.getPythonBridge());
         this.gestureClassifier = new GestureClassifier();
+        this.gestureClassifier.setPythonBridge(this.faceBiometrics.getPythonBridge());
         this.motionDetector = new MotionDetector();
         this.eyeClassifier = new EyeStateClassifier();
-        this.faceBiometrics = new FaceBiometricsEngine();
         this.eventBus = MultimodalEventBus.getInstance();
-        this.activeTeammate = TeammateProfile.getAllTeammates()[0]; // Default: Abhijay
+        this.activeTeammate = TeammateProfile.getAllTeammates()[0]; // Default: Bhadra G. S.
     }
 
     public synchronized void start() {
@@ -142,22 +144,30 @@ public class VisionService {
             // 2. Optical Motion Detection
             double motionLevel = motionDetector.evaluateMotion(bImg);
 
-            // Update face tracking box coordinates
-            scanAngle += 0.05;
-            faceX = (int)(frameWidth * 0.35) + (int)(Math.sin(scanAngle * 0.7) * 20);
-            faceY = (int)(frameHeight * 0.25) + (int)(Math.cos(scanAngle * 0.5) * 15);
-            faceW = (int)(frameWidth * 0.32);
-            faceH = (int)(frameHeight * 0.42);
+            // Update face tracking box coordinates (use Python OpenCV face localization when available)
+            int[] pyFace = faceBiometrics.getPythonBridge().getLatestFaceBox();
+            if (pyFace != null && pyFace.length == 4 && pyFace[2] > 0) {
+                faceX = pyFace[0];
+                faceY = pyFace[1];
+                faceW = pyFace[2];
+                faceH = pyFace[3];
+            } else {
+                scanAngle += 0.05;
+                faceX = (int)(frameWidth * 0.35) + (int)(Math.sin(scanAngle * 0.7) * 20);
+                faceY = (int)(frameHeight * 0.25) + (int)(Math.cos(scanAngle * 0.5) * 15);
+                faceW = (int)(frameWidth * 0.32);
+                faceH = (int)(frameHeight * 0.42);
+            }
 
             // 3. Camera-Based Teammate Identification
             if (bImg != null) {
                 activeTeammate = faceBiometrics.identifyFaceFromFrame(bImg, faceX, faceY, faceW, faceH);
             }
 
-            // 4. Emotion classification
+            // 4. Emotion classification (Directly from Python FERPlus neural network)
             MoodDetectedEvent baseMood = emotionClassifier.classifyEmotion(faceX, faceY, faceW, faceH, frameWidth, frameHeight);
 
-            // 5. Optical Gender Classification
+            // 5. Optical Gender Classification (Directly from Python ViT-ONNX)
             MoodDetectedEvent.Gender gender = faceBiometrics.getDetectedGender();
             double genderConf = faceBiometrics.getGenderConfidence();
 
@@ -176,8 +186,8 @@ public class VisionService {
             );
             eventBus.publish(fullMoodEvent);
 
-            // 7. Gesture classification (only active when triggered)
-            GestureDetectedEvent gestureEvent = gestureClassifier.evaluateGesture(false);
+            // 7. Gesture classification (Directly from Python OpenCV hand contour engine)
+            GestureDetectedEvent gestureEvent = gestureClassifier.evaluateGesture(true);
             if (gestureEvent.getGesture() != GestureDetectedEvent.Gesture.NONE) {
                 eventBus.publish(gestureEvent);
             }

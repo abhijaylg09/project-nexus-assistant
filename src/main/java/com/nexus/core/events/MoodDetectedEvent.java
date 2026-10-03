@@ -49,7 +49,7 @@ public class MoodDetectedEvent {
 
     // Backwards-compatible constructor
     public MoodDetectedEvent(Emotion emotion, double confidence, int x, int y, int w, int h) {
-        this(emotion, confidence, x, y, w, h, Gender.MALE, 0.92, false, false, "Abhijay L. G.", "Central Orchestrator & Personalization", 0.05);
+        this(emotion, confidence, x, y, w, h, Gender.FEMALE, 0.95, false, false, "Bhadra G. S.", "Project Ideation & Architecture", 0.05);
     }
 
     public Emotion getEmotion() { return emotion; }

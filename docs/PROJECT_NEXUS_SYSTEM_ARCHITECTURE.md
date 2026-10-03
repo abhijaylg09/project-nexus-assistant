@@ -8,7 +8,7 @@
   - Aleena Maria Roy (Roll No: 26, ID: STI25CS026)
   - Abhishek A. (Roll No: 09, ID: STI25CS009)
   - Dia M. Joby (Roll No: 52, ID: STI25CS052)
-  - Abhijay L. G.
+  - Team STI25CS
 * **Core Technology:** Java 21 LTS (Central Orchestrator)
 
 ---

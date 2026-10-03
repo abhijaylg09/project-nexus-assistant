@@ -20,7 +20,7 @@ public class FaceBiometricsEngine {
     private long lastSwitchTime = System.currentTimeMillis();
 
     // Optical & Deep Learning Gender Detection State
-    private double smoothedMaleProb = 0.88; // Default initial bias for Abhijay
+    private double smoothedMaleProb = 0.50; // Neutral initial probability
     private MoodDetectedEvent.Gender manualGenderOverride = null;
     private boolean pythonEngineActive = false;
 
