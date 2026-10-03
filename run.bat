@@ -8,9 +8,14 @@ echo       PROJECT N.E.X.U.S (Neural EXecutive User System)
 echo    Centralized Java Orchestrator - Team STI25CS Assistant
 echo ================================================================
 
-set "JAVA_HOME=C:\Program Files\Microsoft\jdk-21.0.12.101-hotspot"
-set "MAVEN_HOME=C:\Users\abhij\.gemini\antigravity-ide\scratch\tools\apache-maven-3.9.6"
-set "PATH=%JAVA_HOME%\bin;%MAVEN_HOME%\bin;%PATH%"
+if exist "C:\Program Files\Microsoft\jdk-21.0.12.101-hotspot" (
+    set "JAVA_HOME=C:\Program Files\Microsoft\jdk-21.0.12.101-hotspot"
+    set "PATH=!JAVA_HOME!\bin;!PATH!"
+)
+if exist "C:\Users\abhij\.gemini\antigravity-ide\scratch\tools\apache-maven-3.9.6" (
+    set "MAVEN_HOME=C:\Users\abhij\.gemini\antigravity-ide\scratch\tools\apache-maven-3.9.6"
+    set "PATH=!MAVEN_HOME!\bin;!PATH!"
+)
 
 if exist "target\nexus-ai-assistant-1.0.0.jar" (
     echo [N.E.X.U.S] Launching packaged executable JAR...

@@ -118,31 +118,107 @@ nexus-ai-assistant/
 
 ---
 
-## ⚡ Quick Start & Execution
+---
 
-### 1. Requirements
-- **JDK 21** (Pre-installed: Microsoft Build of OpenJDK 21)
-- **Apache Maven 3.9+** (Configured in tools folder)
+## ⚡ Step-by-Step Installation Guide (Cloning on Another PC)
 
-### 2. Run with One Click
-Simply double-click:
-```bat
-run.bat
+Project N.E.X.U.S is fully cross-platform and runs natively on **Windows 10/11**, **macOS (Apple Silicon M1/M2/M3/M4 & Intel)**, and **Linux**.
+
+### 📋 Prerequisites
+
+| Tool | Version | Purpose | Download Link |
+|---|---|---|---|
+| **Git** | 2.30+ | Clone repository | [git-scm.com](https://git-scm.com/) |
+| **Java JDK** | **21 LTS** | Core orchestrator runtime | [Adoptium Temurin 21](https://adoptium.net/temurin/releases/?version=21) or [Microsoft OpenJDK 21](https://learn.microsoft.com/en-us/java/openjdk/download) |
+| **Apache Maven** | 3.9+ | Build and dependency manager | [maven.apache.org](https://maven.apache.org/download.cgi) |
+| **Python** | 3.10 – 3.12 | Deep learning vision AI engine | [python.org](https://www.python.org/downloads/) |
+
+---
+
+### 🪟 Windows Setup (Step-by-Step)
+
+#### Step 1: Clone Repository
+Open **PowerShell** or **Command Prompt** and run:
+```powershell
+git clone https://github.com/abhijaylg09/project-nexus-assistant.git
+cd project-nexus-assistant
 ```
-Or execute in PowerShell / Terminal:
+
+#### Step 2: Install Python Vision Dependencies
+Install the required packages (`OpenCV`, `ONNX Runtime`, `Pillow`, `NumPy`, `HuggingFace Hub`):
+```powershell
+python -m pip install -r requirements.txt
+```
+
+#### Step 3: Build the Project
+Compile the Java 21 codebase and package the executable JAR:
+```powershell
+.\build.bat
+```
+*(Alternatively, via Maven: `mvn clean package -DskipTests`)*
+
+#### Step 4: Launch N.E.X.U.S
+Double-click `run.bat` or run:
 ```powershell
 .\run.bat
 ```
+*(Or execute directly: `java -jar target\nexus-ai-assistant-1.0.0.jar`)*
 
-### 3. Compile from Source
-```bat
-build.bat
+---
+
+### 🍎 macOS Setup (Apple Silicon M1/M2/M3/M4 & Intel)
+
+#### Step 1: Install Tools via Homebrew
+If Homebrew is installed, set up Java 21, Maven, and Python with one command:
+```bash
+brew install openjdk@21 maven python
 ```
-Or using Maven:
-```powershell
-mvn clean compile
-mvn javafx:run
+
+Set up your Java 21 environment path:
+```bash
+sudo ln -sfn /opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk /Library/Java/JavaVirtualMachines/openjdk-21.jdk
+export JAVA_HOME=$(/usr/libexec/java_home -v 21)
 ```
+
+#### Step 2: Clone Repository
+```bash
+git clone https://github.com/abhijaylg09/project-nexus-assistant.git
+cd project-nexus-assistant
+```
+
+#### Step 3: Install Python AI Dependencies
+```bash
+python3 -m pip install -r requirements.txt
+```
+
+#### Step 4: Grant Execute Permissions & Build
+```bash
+chmod +x build.sh run.sh
+./build.sh
+```
+
+#### Step 5: Launch N.E.X.U.S
+```bash
+./run.sh
+```
+*(Or run via Maven JavaFX runner: `mvn javafx:run`)*
+
+> [!TIP]
+> **macOS Permissions Note**: On the first launch, macOS will ask for permission to access the **Camera** and **Microphone**. Click **"Allow"** to enable real-time visual biometrics and speech recognition.
+
+---
+
+### 🌐 Cross-Platform Capability Matrix
+
+| System Component | Windows 10 / 11 | macOS (Apple Silicon & Intel) | Linux (Ubuntu / Debian / Fedora) |
+|---|---|---|---|
+| **Glassmorphic HUD UI** | ✅ Native JavaFX 21 | ✅ Native JavaFX 21 (Retina Display) | ✅ Native JavaFX 21 |
+| **ViT-ONNX Gender Detection** | ✅ High-Speed CPU | ✅ High-Speed CPU (Apple Silicon optimized) | ✅ High-Speed CPU |
+| **Hardware Camera Feed** | ✅ DirectShow / MediaFoundation | ✅ AVFoundation | ✅ V4L2 |
+| **Voice Speech Synthesis** | ✅ Piper + Windows SAPI | ✅ Piper + macOS native `say` | ✅ Piper + `spd-say` |
+| **App & Browser Launcher** | ✅ PowerShell / Explorer | ✅ macOS `open -a` | ✅ `xdg-open` |
+| **Closed-Loop Personalization** | ✅ Embedded SQLite | ✅ Embedded SQLite | ✅ Embedded SQLite |
+| **Offline Reasoning Engine** | ✅ Full Local Fallback | ✅ Full Local Fallback | ✅ Full Local Fallback |
 
 ---
 

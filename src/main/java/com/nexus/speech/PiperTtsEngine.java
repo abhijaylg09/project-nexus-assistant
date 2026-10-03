@@ -49,7 +49,7 @@ public class PiperTtsEngine {
                 if (piperAvailable) {
                     executePiperProcess(text);
                 } else {
-                    executeWindowsSapi(text);
+                    executeNativeVoiceSynthesis(text);
                 }
             } catch (Exception e) {
                 System.err.println("[PiperTtsEngine] TTS execution error: " + e.getMessage());
@@ -75,8 +75,49 @@ public class PiperTtsEngine {
             process.getOutputStream().close();
             process.waitFor();
         } catch (Exception e) {
-            System.err.println("[PiperTtsEngine] Piper process failed, falling back to SAPI: " + e.getMessage());
+            System.err.println("[PiperTtsEngine] Piper process failed, falling back to OS native TTS: " + e.getMessage());
+            executeNativeVoiceSynthesis(text);
+        }
+    }
+
+    private void executeNativeVoiceSynthesis(String text) {
+        String os = System.getProperty("os.name", "").toLowerCase();
+        if (os.contains("mac") || os.contains("darwin")) {
+            executeMacSay(text);
+        } else if (os.contains("win")) {
             executeWindowsSapi(text);
+        } else {
+            executeLinuxSpeech(text);
+        }
+    }
+
+    private void executeMacSay(String text) {
+        try {
+            String safeText = text.replace("\"", "\\\"").replace("\n", " ").trim();
+            if (safeText.length() > 250) {
+                safeText = safeText.substring(0, 250) + "...";
+            }
+            ProcessBuilder pb = new ProcessBuilder("say", safeText);
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            p.waitFor(15, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (Exception e) {
+            System.err.println("[PiperTtsEngine] macOS 'say' TTS error: " + e.getMessage());
+        }
+    }
+
+    private void executeLinuxSpeech(String text) {
+        try {
+            String safeText = text.replace("\"", "\\\"").replace("\n", " ").trim();
+            if (safeText.length() > 250) {
+                safeText = safeText.substring(0, 250) + "...";
+            }
+            ProcessBuilder pb = new ProcessBuilder("spd-say", safeText);
+            pb.redirectErrorStream(true);
+            Process p = pb.start();
+            p.waitFor(10, java.util.concurrent.TimeUnit.SECONDS);
+        } catch (Exception e) {
+            System.err.println("[PiperTtsEngine] Linux speech synthesis notice: " + e.getMessage());
         }
     }
 

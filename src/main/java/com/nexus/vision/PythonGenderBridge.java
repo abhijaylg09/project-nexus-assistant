@@ -125,8 +125,9 @@ public class PythonGenderBridge {
                 return;
             }
 
+            String pythonExe = resolvePythonExecutable();
             ProcessBuilder pb = new ProcessBuilder(
-                    "python",
+                    pythonExe,
                     scriptFile.getAbsolutePath(),
                     "--server",
                     "--port",
@@ -139,6 +140,22 @@ public class PythonGenderBridge {
         } catch (Exception e) {
             System.err.println("[PythonGenderBridge] Failed to launch Python process: " + e.getMessage());
         }
+    }
+
+    private String resolvePythonExecutable() {
+        String[] candidates = System.getProperty("os.name", "").toLowerCase().contains("win")
+                ? new String[]{"python", "python3", "py"}
+                : new String[]{"python3", "python"};
+
+        for (String candidate : candidates) {
+            try {
+                Process testProc = new ProcessBuilder(candidate, "--version").start();
+                if (testProc.waitFor(2, TimeUnit.SECONDS) && testProc.exitValue() == 0) {
+                    return candidate;
+                }
+            } catch (Exception ignored) {}
+        }
+        return candidates[0];
     }
 
     /**
