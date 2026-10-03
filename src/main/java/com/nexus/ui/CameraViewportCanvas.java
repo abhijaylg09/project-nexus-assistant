@@ -97,44 +97,51 @@ public class CameraViewportCanvas extends Canvas {
 
 
             // Emotion Tag Card above face
-            gc.setFill(Color.rgb(13, 22, 41, 0.88));
-            gc.fillRoundRect(bx, by - 26, 140, 22, 4, 4);
-            gc.setStroke(Color.rgb(0, 242, 254, 0.6));
-            gc.strokeRoundRect(bx, by - 26, 140, 22, 4, 4);
+            gc.setFill(Color.rgb(13, 22, 41, 0.85));
+            gc.fillRoundRect(bx, by - 26, 160, 22, 6, 6);
+            gc.setStroke(Color.rgb(0, 242, 254, 0.7));
+            gc.setLineWidth(1.2);
+            gc.strokeRoundRect(bx, by - 26, 160, 22, 6, 6);
 
             gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 10));
             gc.setFill(Color.rgb(0, 255, 135));
-            gc.fillText("MOOD: " + currentMood.getEmotion().name() + " (" + currentMood.getFormattedConfidence() + ")", bx + 6, by - 11);
+            gc.fillText("● MOOD: " + currentMood.getEmotion().name() + " (" + currentMood.getFormattedConfidence() + ")", bx + 8, by - 11);
 
-            // Gender Tag below face box
-            gc.setFill(Color.rgb(13, 22, 41, 0.88));
-            gc.fillRoundRect(bx, by + bh + 4, 140, 22, 4, 4);
-            gc.setStroke(Color.rgb(56, 189, 248, 0.4));
-            gc.strokeRoundRect(bx, by + bh + 4, 140, 22, 4, 4);
+            // Glassmorphic Gender Tag below face box
+            boolean isMale = currentMood.getGender() == MoodDetectedEvent.Gender.MALE;
+            Color genderBg = isMale ? Color.rgb(10, 24, 48, 0.88) : Color.rgb(45, 12, 38, 0.88);
+            Color genderBorder = isMale ? Color.rgb(56, 189, 248, 0.75) : Color.rgb(244, 114, 182, 0.75);
+            Color genderText = isMale ? Color.rgb(56, 189, 248) : Color.rgb(244, 114, 182);
 
-            String genderSymbol = (currentMood.getGender() == MoodDetectedEvent.Gender.MALE) ? "MALE" : "FEMALE";
+            gc.setFill(genderBg);
+            gc.fillRoundRect(bx, by + bh + 4, 168, 24, 6, 6);
+            gc.setStroke(genderBorder);
+            gc.setLineWidth(1.2);
+            gc.strokeRoundRect(bx, by + bh + 4, 168, 24, 6, 6);
 
-            gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 9));
-            gc.setFill(currentMood.getGender() == MoodDetectedEvent.Gender.MALE ? Color.rgb(56, 189, 248) : Color.rgb(244, 114, 182));
-            gc.fillText(genderSymbol + " (" + currentMood.getFormattedGenderConfidence() + ")", bx + 6, by + bh + 19);
+            String genderSymbol = isMale ? "♂ MALE" : "♀ FEMALE";
+            gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 10));
+            gc.setFill(genderText);
+            gc.fillText(genderSymbol + " • " + currentMood.getFormattedGenderConfidence() + " [ViT AI]", bx + 8, by + bh + 20);
         }
 
         // 3. Recognized Teammate Identity Banner (Top Left)
         if (currentMood != null && currentMood.getRecognizedIdentity() != null) {
-            gc.setFill(Color.rgb(13, 22, 41, 0.9));
-            gc.fillRoundRect(8, 8, 240, 32, 6, 6);
-            gc.setStroke(Color.rgb(0, 242, 254, 0.7));
-            gc.strokeRoundRect(8, 8, 240, 32, 6, 6);
+            gc.setFill(Color.rgb(13, 22, 41, 0.85));
+            gc.fillRoundRect(8, 8, 255, 36, 8, 8);
+            gc.setStroke(Color.rgb(0, 242, 254, 0.75));
+            gc.setLineWidth(1.2);
+            gc.strokeRoundRect(8, 8, 255, 36, 8, 8);
 
-            gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 10));
+            gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 11));
             gc.setFill(Color.rgb(0, 242, 254));
-            gc.fillText("TEAMMATE: " + currentMood.getRecognizedIdentity(), 16, 22);
+            gc.fillText("👤 " + currentMood.getRecognizedIdentity(), 16, 23);
 
-            gc.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 8));
+            gc.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 9));
             gc.setFill(Color.rgb(148, 163, 184));
             String roleText = currentMood.getIdentityRole();
-            if (roleText.length() > 36) roleText = roleText.substring(0, 36) + "...";
-            gc.fillText(roleText, 16, 33);
+            if (roleText.length() > 38) roleText = roleText.substring(0, 38) + "...";
+            gc.fillText(roleText, 16, 36);
         }
 
         // 4. Gesture Status Badge (Top Right)

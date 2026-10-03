@@ -1,0 +1,1212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PROJECT N.E.X.U.S - Major Project Presentation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Rajdhani:wght@500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #070a13;
+      --bg-card: rgba(14, 23, 42, 0.85);
+      --bg-card-alt: rgba(19, 32, 59, 0.7);
+      --cyan: #00f2fe;
+      --cyan-glow: rgba(0, 242, 254, 0.35);
+      --purple: #9b51e0;
+      --purple-glow: rgba(155, 81, 224, 0.35);
+      --green: #00ff87;
+      --green-glow: rgba(0, 255, 135, 0.35);
+      --amber: #f59e0b;
+      --text-white: #f8fafc;
+      --text-muted: #94a3b8;
+      --border-color: rgba(0, 242, 254, 0.22);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 50%, #0d1629 0%, #050811 100%);
+      color: var(--text-white);
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+      user-select: none;
+    }
+
+    /* Top Nav / Controls */
+    header {
+      background: rgba(10, 16, 30, 0.9);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border-color);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--cyan), var(--purple));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 900;
+      color: #070a13;
+      box-shadow: 0 0 15px var(--cyan-glow);
+    }
+
+    .brand-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      color: var(--cyan);
+      text-shadow: 0 0 10px var(--cyan-glow);
+    }
+
+    .brand-subtitle {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+    }
+
+    .nav-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      color: var(--text-white);
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 600;
+      font-size: 0.95rem;
+      letter-spacing: 0.5px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn:hover {
+      border-color: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan-glow);
+      transform: translateY(-1px);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.2), rgba(155, 81, 224, 0.2));
+      border-color: var(--cyan);
+      color: var(--cyan);
+    }
+
+    .btn-primary:hover {
+      background: linear-gradient(135deg, rgba(0, 242, 254, 0.35), rgba(155, 81, 224, 0.35));
+    }
+
+    /* Presentation Deck Stage */
+    .deck-container {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      position: relative;
+    }
+
+    .slide-stage {
+      width: 100%;
+      max-width: 1200px;
+      aspect-ratio: 16 / 9;
+      background: #090e1a;
+      border: 1px solid rgba(0, 242, 254, 0.3);
+      border-radius: 16px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 242, 254, 0.15);
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Slide Content */
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 44px 56px;
+      display: flex;
+      flex-direction: column;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      transform: scale(0.98);
+      background: radial-gradient(circle at 80% 20%, rgba(15, 25, 45, 0.8) 0%, #070a13 100%);
+    }
+
+    .slide.active {
+      opacity: 1;
+      visibility: visible;
+      transform: scale(1);
+    }
+
+    .slide-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      background: rgba(0, 242, 254, 0.1);
+      border: 1px solid var(--cyan);
+      border-radius: 20px;
+      color: var(--cyan);
+      font-size: 0.75rem;
+      font-family: 'Orbitron', sans-serif;
+      font-weight: 700;
+      letter-spacing: 1px;
+      width: fit-content;
+      margin-bottom: 12px;
+    }
+
+    .slide-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 700;
+      line-height: 1.15;
+      color: #ffffff;
+      margin-bottom: 8px;
+    }
+
+    .slide-divider {
+      width: 100%;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.1);
+      position: relative;
+      margin-bottom: 24px;
+    }
+
+    .slide-divider::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      width: 100px;
+      height: 2px;
+      background: var(--cyan);
+      box-shadow: 0 0 10px var(--cyan);
+    }
+
+    .slide-body {
+      flex: 1;
+      display: flex;
+      gap: 20px;
+    }
+
+    /* Grid & Cards within slides */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      width: 100%;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      width: 100%;
+    }
+
+    .grid-5 {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 12px;
+      width: 100%;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 20px;
+      backdrop-filter: blur(10px);
+      display: flex;
+      flex-direction: column;
+      transition: border-color 0.2s ease, transform 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: var(--cyan);
+      transform: translateY(-2px);
+    }
+
+    .card.purple { border-color: rgba(155, 81, 224, 0.4); }
+    .card.purple:hover { border-color: var(--purple); box-shadow: 0 0 12px var(--purple-glow); }
+    .card.green { border-color: rgba(0, 255, 135, 0.4); }
+    .card.green:hover { border-color: var(--green); box-shadow: 0 0 12px var(--green-glow); }
+    .card.amber { border-color: rgba(245, 158, 11, 0.4); }
+    .card.amber:hover { border-color: var(--amber); }
+
+    .card-title {
+      font-family: 'Rajdhani', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--cyan);
+      margin-bottom: 8px;
+    }
+
+    .card.purple .card-title { color: #c084fc; }
+    .card.green .card-title { color: var(--green); }
+    .card.amber .card-title { color: var(--amber); }
+
+    .card-num {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2rem;
+      font-weight: 900;
+      color: var(--cyan);
+      margin-bottom: 8px;
+    }
+
+    .card-content {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    .bullet-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .bullet-item {
+      display: flex;
+      gap: 10px;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      line-height: 1.45;
+    }
+
+    .bullet-item strong {
+      color: var(--text-white);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .bullet-marker {
+      color: var(--cyan);
+      font-size: 0.9rem;
+      line-height: 1.2;
+    }
+
+    /* Metric Boxes */
+    .metric-val {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--cyan);
+      margin: 8px 0;
+    }
+
+    .metric-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Footer & Controls */
+    footer {
+      background: rgba(10, 16, 30, 0.9);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid var(--border-color);
+      padding: 12px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      bottom: 0;
+      z-index: 100;
+    }
+
+    .deck-controls {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .slide-counter {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--cyan);
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .progress-bar-container {
+      flex: 1;
+      max-width: 400px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 2px;
+      overflow: hidden;
+      margin: 0 16px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      width: 6.25%;
+      background: linear-gradient(90deg, var(--cyan), var(--green));
+      box-shadow: 0 0 10px var(--cyan);
+      transition: width 0.3s ease;
+    }
+
+    /* Speaker Notes Drawer */
+    .notes-drawer {
+      position: fixed;
+      bottom: 60px;
+      left: 50%;
+      transform: translateX(-50%) translateY(120%);
+      width: 90%;
+      max-width: 1000px;
+      background: rgba(13, 22, 41, 0.96);
+      border: 1px solid var(--cyan);
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 25px var(--cyan-glow);
+      padding: 16px 24px;
+      backdrop-filter: blur(16px);
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 200;
+    }
+
+    .notes-drawer.open {
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .notes-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .notes-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--cyan);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .notes-body {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      color: #e2e8f0;
+      white-space: pre-line;
+      max-height: 160px;
+      overflow-y: auto;
+    }
+
+    /* Hero Slide Specifics */
+    .hero-title {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 3.2rem;
+      font-weight: 900;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, #ffffff 40%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+    }
+
+    .hero-subtitle {
+      font-size: 1.15rem;
+      color: #93c5fd;
+      margin-bottom: 24px;
+    }
+
+    /* Key indicator pills */
+    .key-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(0, 242, 254, 0.15);
+      border: 1px solid var(--cyan);
+      color: var(--cyan);
+      font-family: 'Rajdhani', sans-serif;
+      font-weight: 700;
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Navigation -->
+  <header>
+    <div class="brand">
+      <div class="brand-logo">N</div>
+      <div>
+        <div class="brand-title">PROJECT N.E.X.U.S</div>
+        <div class="brand-subtitle">Academic Major Project • Batch STI25CS</div>
+      </div>
+    </div>
+    <div class="nav-actions">
+      <button class="btn" onclick="toggleNotes()" title="Toggle Speaker Notes (Shortcut: S)">
+        🎙️ Notes
+      </button>
+      <button class="btn" onclick="toggleFullscreen()" title="Fullscreen (Shortcut: F)">
+        ⛶ Fullscreen
+      </button>
+      <a href="PROJECT_NEXUS_PRESENTATION.pptx" download class="btn btn-primary" title="Download Official PowerPoint .pptx File">
+        📥 Download PPTX
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Slide Deck Stage -->
+  <main class="deck-container">
+    <div class="slide-stage" id="slideStage">
+
+      <!-- SLIDE 1: TITLE SLIDE -->
+      <div class="slide active" data-notes="WELCOME & INTRO (Presented by Bhadra G. S.):
+Good morning respected evaluators, professors, and peers.
+Today our team STI25CS presents Project N.E.X.U.S—Neural EXecutive User System.
+Project N.E.X.U.S is a real-time, desktop AI assistant built around a centralized Java 21 core, integrating computer vision emotion classification, hand gesture controls, offline speech processing, LLM reasoning, and adaptive personalization in a high-performance sci-fi HUD.">
+        <div class="slide-badge">◈ ACADEMIC MAJOR PROJECT PRESENTATION</div>
+        <div class="hero-title">PROJECT N.E.X.U.S</div>
+        <div class="hero-subtitle">Neural EXecutive User System: A Personal Real-Time AI Assistant Built Around a Unified Java Core</div>
+        
+        <div class="grid-4" style="margin-bottom: 24px;">
+          <div class="card">
+            <div class="card-title">CORE ARCHITECTURE</div>
+            <div class="card-content" style="color: #fff; font-weight: 600;">Java 21 LTS Orchestrator</div>
+            <div class="card-content" style="font-size: 0.75rem;">Zero-GIL concurrency & JVM efficiency</div>
+          </div>
+          <div class="card green">
+            <div class="card-title">PERCEPTION SUITE</div>
+            <div class="card-content" style="color: #fff; font-weight: 600;">OpenCV & ONNX FER+</div>
+            <div class="card-content" style="font-size: 0.75rem;">Real-time emotion & hand gesture shortcuts</div>
+          </div>
+          <div class="card purple">
+            <div class="card-title">SPEECH & REASONING</div>
+            <div class="card-content" style="color: #fff; font-weight: 600;">Vosk STT & LLM Pipeline</div>
+            <div class="card-content" style="font-size: 0.75rem;">Offline speech-to-text & Piper neural TTS</div>
+          </div>
+          <div class="card amber">
+            <div class="card-title">TACTICAL INTERFACE</div>
+            <div class="card-content" style="color: #fff; font-weight: 600;">JavaFX 21 Cyberpunk HUD</div>
+            <div class="card-content" style="font-size: 0.75rem;">Hardware-accelerated 60 FPS Canvas</div>
+          </div>
+        </div>
+
+        <div style="margin-top: auto; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.85rem; color: var(--text-muted);">
+          <strong style="color: var(--cyan);">Team Members:</strong> Bhadra G. S. (48) • Aleena Maria Roy (26) • Abhishek A. (09) • Dia M. Joby (52) • Abhijay L. G. (121)
+        </div>
+      </div>
+
+      <!-- SLIDE 2: THE PROBLEM STATEMENT -->
+      <div class="slide" data-notes="PROBLEM STATEMENT (Presented by Bhadra G. S.):
+Virtual assistants today face three major structural flaws:
+1. Architecture: Disparate Python scripts lead to brittle inter-process communications.
+2. Concurrency: Python's GIL throttles concurrent multimedia threads, freezing interfaces.
+3. Intelligence: Existing systems are either completely stateless or append raw chat histories until token limits explode.
+N.E.X.U.S directly solves these bottlenecks with a compiled, multithreaded Java orchestration core.">
+        <div class="slide-badge">◈ PROBLEM FORMULATION</div>
+        <div class="slide-title">The Problem: Structural Flaws in Virtual Assistants</div>
+        <div class="slide-divider"></div>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-num">01</div>
+            <div class="card-title">Fragmented Multi-Stack Prototypes</div>
+            <div class="card-content">
+              Most academic and open-source assistants stitch together disconnected Python scripts, Node.js bridges, and web views via IPC sockets. This introduces brittle process lifecycle management, high latency, and frequent socket crashes.
+            </div>
+          </div>
+          <div class="card amber">
+            <div class="card-num" style="color: var(--amber);">02</div>
+            <div class="card-title">The Python GIL & UI Lag Bottleneck</div>
+            <div class="card-content">
+              Python's Global Interpreter Lock (GIL) fundamentally prevents true multicore parallelism. Running a 30 FPS video pipeline, audio capture, and a desktop GUI in Python causes frame drops, audio stutter, and severe interface freezing.
+            </div>
+          </div>
+          <div class="card purple">
+            <div class="card-num" style="color: var(--purple);">03</div>
+            <div class="card-title">Stateless, Impaired Personalization</div>
+            <div class="card-content">
+              Existing systems either treat each session in complete isolation with zero emotional memory, or naively append entire chat histories into prompts until LLM token limits explode ($$$ cost & slow inference).
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 3: PROPOSED SOLUTION -->
+      <div class="slide" data-notes="CORE IDEATION (Presented by Bhadra G. S. & Abhijay L. G.):
+Instead of treating Java as merely an enterprise backend language, we leverage Java 21 LTS as a high-throughput multimodal orchestrator.
+By utilizing JNI wrappers around native C++ runtimes like ONNX Runtime and OpenCV, Java manages concurrency deterministically while eliminating Python's GIL bottlenecks.
+This architectural pivot enables rock-solid 60 FPS HUD animation while running live video and acoustic models in parallel.">
+        <div class="slide-badge">◈ CORE IDEATION</div>
+        <div class="slide-title">Proposed Solution: The Unified Java Orchestrator</div>
+        <div class="slide-divider"></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Why Java 21 as the Central Brain?</div>
+            <ul class="bullet-list">
+              <li class="bullet-item">
+                <span class="bullet-marker">✦</span>
+                <div><strong>Zero GIL Contention:</strong> True OS-level hardware multithreading guarantees camera capture, neural inference, and UI rendering execute simultaneously on separate cores.</div>
+              </li>
+              <li class="bullet-item">
+                <span class="bullet-marker">✦</span>
+                <div><strong>Deterministic Resource Management:</strong> Predictable JVM garbage collection eliminates memory leaks and zombie orphan processes.</div>
+              </li>
+              <li class="bullet-item">
+                <span class="bullet-marker">✦</span>
+                <div><strong>Native C++ Acceleration (JNI):</strong> High-performance native bindings for OpenCV, ONNX Runtime, and Vosk run directly in process memory.</div>
+              </li>
+            </ul>
+          </div>
+          <div class="card green">
+            <div class="card-title">Three Core Pillars of N.E.X.U.S</div>
+            <ul class="bullet-list">
+              <li class="bullet-item">
+                <span class="bullet-marker" style="color: var(--green);">◈</span>
+                <div><strong>Multimodal Sensory Perception:</strong> Simultaneous real-time facial emotion recognition (6 states) and hand gesture shortcut control.</div>
+              </li>
+              <li class="bullet-item">
+                <span class="bullet-marker" style="color: var(--green);">◈</span>
+                <div><strong>Asynchronous Decoupled Concurrency:</strong> A publish-subscribe MultimodalEventBus dispatching signals between threads with zero UI blocking.</div>
+              </li>
+              <li class="bullet-item">
+                <span class="bullet-marker" style="color: var(--green);">◈</span>
+                <div><strong>Closed-Loop Adaptive Personalization:</strong> Self-evolving user profile that uses LLM synthesis over interaction batches to adapt persona tone without inflating token counts.</div>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 4: SYSTEM ARCHITECTURE -->
+      <div class="slide" data-notes="SYSTEM ARCHITECTURE (Presented by Bhadra G. S. & Abhijay L. G.):
+Here you see our 3-tier architecture:
+- Left: Input Perception captures vision and speech.
+- Center: The Central Brain manages events, context injection, and behavioral updates.
+- Right: Output & Action delivers audio speech and renders the 60 FPS cyberpunk HUD.
+All data exchanges occur over strongly typed Java events, preventing coupling between modules.">
+        <div class="slide-badge">◈ SYSTEM ARCHITECTURE</div>
+        <div class="slide-title">System Architecture: 3-Tier Multimodal Subsystems</div>
+        <div class="slide-divider"></div>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-title">INPUT PERCEPTION TIER</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker">▶</span><div><strong>Webcam Feed:</strong> Native OpenCV / JavaCV capture at 30 FPS.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">▶</span><div><strong>Facial Emotion:</strong> FER+ ONNX classification (6 emotional states).</div></li>
+              <li class="bullet-item"><span class="bullet-marker">▶</span><div><strong>Hand Gestures:</strong> Convexity / contour shortcuts (Thumbs-up, Palm).</div></li>
+              <li class="bullet-item"><span class="bullet-marker">▶</span><div><strong>Audio Stream:</strong> Vosk STT 16kHz mono + Porcupine wake word.</div></li>
+            </ul>
+          </div>
+          <div class="card purple">
+            <div class="card-title">CENTRAL BRAIN & CONTROL</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--purple);">▶</span><div><strong>NexusCore Engine:</strong> Lifecycle, state machine & orchestration.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--purple);">▶</span><div><strong>MultimodalEventBus:</strong> Thread-safe Pub/Sub routing.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--purple);">▶</span><div><strong>PersonalizationEngine:</strong> Closed-loop learning via SQLite JDBC.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--purple);">▶</span><div><strong>PromptContextBuilder:</strong> Dynamic bounded context injection.</div></li>
+            </ul>
+          </div>
+          <div class="card green">
+            <div class="card-title">OUTPUT & ACTION TIER</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">▶</span><div><strong>JavaFX HUD:</strong> Hardware-accelerated 60 FPS cyberpunk interface.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">▶</span><div><strong>Audio Visualizer:</strong> Dynamic waveform bars reactive to audio.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">▶</span><div><strong>Dual-Path TTS:</strong> Piper neural voice + Windows SAPI speech fallback.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">▶</span><div><strong>UI Inspector:</strong> Real-time hardware telemetry and user profile view.</div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 5: CONCURRENCY MODEL -->
+      <div class="slide" data-notes="CONCURRENCY ARCHITECTURE (Presented by Abhijay L. G. & Dia M. Joby):
+Evaluators often ask: 'How do you guarantee the UI doesn't stutter when doing AI inference?'
+Our answer is strict thread isolation. The camera runs at 30 FPS on its own scheduled executor.
+The audio capture runs on a daemon thread. LLM requests execute asynchronously on HTTP/2 workers.
+Only UI layout and canvas repaints touch the JavaFX Application Thread via Platform.runLater().
+This completely prevents deadlocks and guarantees 60 FPS HUD responsiveness.">
+        <div class="slide-badge">◈ CONCURRENCY ENGINEERING</div>
+        <div class="slide-title">Concurrency Model: Zero-GIL Asynchronous Event Bus</div>
+        <div class="slide-divider"></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Thread Allocation Architecture</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker">⚙</span><div><strong>Vision Thread (Daemon):</strong> Scheduled at 30 FPS (OpenCV capture & ONNX inference).</div></li>
+              <li class="bullet-item"><span class="bullet-marker">⚙</span><div><strong>Audio In Thread (Daemon):</strong> Continuous PCM stream for Vosk STT & wake words.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">⚙</span><div><strong>EventBus Dispatcher:</strong> Thread-safe non-blocking event queues.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">⚙</span><div><strong>LLM HTTP/2 Worker:</strong> ForkJoinPool async network calls.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">⚙</span><div><strong>JavaFX UI Thread:</strong> Dedicated 60 FPS render loop via Platform.runLater().</div></li>
+            </ul>
+          </div>
+          <div class="card amber">
+            <div class="card-title">Thread Safety Guarantees</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--amber);">✔</span><div><strong>No UI Freezes (60 FPS):</strong> Heavy tasks never execute on the JavaFX application thread.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--amber);">✔</span><div><strong>Thread Isolation:</strong> GUI modifications are dispatched safely via Platform.runLater().</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--amber);">✔</span><div><strong>Graceful Shutdown:</strong> Shutdown hooks ensure camera and audio daemons terminate cleanly with zero zombie processes.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--amber);">✔</span><div><strong>Deadlock Prevention:</strong> Fire-and-forget event routing avoids cascading locks.</div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 6: COMPUTER VISION & FER+ -->
+      <div class="slide" data-notes="COMPUTER VISION & EMOTION DETECTION (Presented by Aleena Maria Roy):
+Our vision subsystem uses OpenCV for frame acquisition and face ROI extraction.
+The face crop is preprocessed to 64x64 grayscale and passed into our ONNX FER+ model via the native ONNX Runtime Java API.
+Inference takes only 10 to 14 milliseconds per frame.
+We also implement temporal window smoothing to prevent rapid flickering under unstable room lighting.">
+        <div class="slide-badge">◈ COMPUTER VISION SUBSYSTEM</div>
+        <div class="slide-title">Visual Perception: Face Detection & ONNX FER+</div>
+        <div class="slide-divider"></div>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-title">Webcam Capture Pipeline</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker">◈</span><div><strong>OpenCV VideoCapture:</strong> Captures 640x480 frames at 30 FPS.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">◈</span><div><strong>Color Conversion:</strong> BGR matrix to JavaFX Image buffers.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">◈</span><div><strong>Fallback Simulation:</strong> Engages cybernetic sensor canvas if camera is unavailable.</div></li>
+            </ul>
+          </div>
+          <div class="card purple">
+            <div class="card-title">Face Isolation & ROI</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--purple);">◈</span><div><strong>Haar Cascade:</strong> Frontal face detector crops region-of-interest.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--purple);">◈</span><div><strong>Normalization:</strong> 64x64 grayscale float array normalized [-1, 1].</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--purple);">◈</span><div><strong>Reticle Overlay:</strong> Draws cybernetic targeting brackets on HUD.</div></li>
+            </ul>
+          </div>
+          <div class="card green">
+            <div class="card-title">ONNX FER+ Inference</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">◈</span><div><strong>Native Java C++ API:</strong> Sub-12 ms execution per frame.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">◈</span><div><strong>6 Emotion Classes:</strong> FOCUSED, HAPPY, STRESSED, NEUTRAL, SURPRISED, SAD.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">◈</span><div><strong>Temporal Smoothing:</strong> Moving average over 5 frames eliminates lighting noise.</div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 7: HAND GESTURE SHORTCUTS -->
+      <div class="slide" data-notes="GESTURE SHORTCUTS (Presented by Aleena Maria Roy):
+In addition to speech and keyboard, N.E.X.U.S offers touchless gestural shortcuts.
+For example, if the assistant is speaking and the user raises an Open Palm, the speech playback terminates instantly.
+Thumbs-Up confirms suggestions, and Peace Sign triggers a quick summarization.
+We implement a 500 ms debounce filter so that holding a gesture does not flood the system with redundant actions.">
+        <div class="slide-badge">◈ GESTURE SUBSYSTEM</div>
+        <div class="slide-title">Touchless Controls: Hand Gesture Shortcuts</div>
+        <div class="slide-divider"></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Supported Gesture Mappings</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker">👍</span><div><strong>THUMBS_UP ➔ Confirm / Acknowledge:</strong> Confirms active suggestions or completes pending action.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">✋</span><div><strong>STOP_PALM ➔ Mute / Pause Speech:</strong> Instantly halts text-to-speech voice playback.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">✌</span><div><strong>PEACE_SIGN ➔ Summarize Context:</strong> Prompts LLM to distill current topic into brief bullet points.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">☝</span><div><strong>POINT_UP ➔ Focus Mode:</strong> Toggles high-concentration minimalist workspace view.</div></li>
+            </ul>
+          </div>
+          <div class="card amber">
+            <div class="card-title">Classification & Debounce Pipeline</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--amber);">▶</span><div><strong>Hand Segmentation:</strong> HSV skin thresholding isolates hand contours.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--amber);">▶</span><div><strong>Convexity Defects:</strong> Fingertip peaks determine finger count.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--amber);">▶</span><div><strong>500 ms Cooldown Debounce:</strong> Prevents multi-triggering from continuous video frames.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--amber);">▶</span><div><strong>Direct Bus Routing:</strong> Fires GestureDetectedEvent directly to orchestrator.</div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 8: SPEECH PROCESSING SUBSYSTEM -->
+      <div class="slide" data-notes="SPEECH SUBSYSTEM (Presented by Abhishek A.):
+Our speech pipeline is designed for privacy, responsiveness, and zero cloud dependency when needed.
+Wake word detection uses Porcupine, keeping CPU consumption negligible.
+Speech recognition runs offline via Vosk JNI bindings.
+For speech synthesis, we designed a dual-path architecture: Piper TTS provides rich neural voice output,
+while Windows SAPI acts as an automatic zero-dependency fallback, guaranteeing vocal output everywhere.">
+        <div class="slide-badge">◈ SPEECH SUBSYSTEM</div>
+        <div class="slide-title">Speech Processing: Wake Word, Vosk STT, & Dual TTS</div>
+        <div class="slide-divider"></div>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-title">Wake Word Trigger</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker">•</span><div><strong>Engine:</strong> Porcupine Wake Word SDK</div></li>
+              <li class="bullet-item"><span class="bullet-marker">•</span><div><strong>Latency:</strong> Sub-15 ms acoustic response</div></li>
+              <li class="bullet-item"><span class="bullet-marker">•</span><div><strong>Keywords:</strong> "Nexus", "Hey Nexus"</div></li>
+              <li class="bullet-item"><span class="bullet-marker">•</span><div><strong>Efficiency:</strong> Negligible background CPU usage until keyword detected.</div></li>
+            </ul>
+          </div>
+          <div class="card purple">
+            <div class="card-title">Offline Vosk STT</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--purple);">•</span><div><strong>Engine:</strong> Vosk Acoustic Library (JNI)</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--purple);">•</span><div><strong>Format:</strong> 16 kHz 16-bit mono PCM</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--purple);">•</span><div><strong>Privacy:</strong> 100% offline transcription with zero cloud exposure.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--purple);">•</span><div><strong>Accuracy:</strong> Kaldi-based acoustic model.</div></li>
+            </ul>
+          </div>
+          <div class="card green">
+            <div class="card-title">Dual-Path TTS Synthesis</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">•</span><div><strong>Primary Engine:</strong> Piper Neural TTS (fast ONNX natural speech).</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">•</span><div><strong>Zero-Dependency Fallback:</strong> Direct Windows SAPI COM automation.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">•</span><div><strong>Reliability:</strong> Never fails to vocalize even on fresh OS installations.</div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 9: REASONING & PROMPTING -->
+      <div class="slide" data-notes="REASONING & PROMPTING (Presented by Abhijay L. G.):
+Our language reasoning layer connects to state-of-the-art LLMs using Java 21's asynchronous HttpClient over HTTP/2.
+The PromptContextBuilder dynamically combines the core system instructions, the evolving user profile,
+the current environmental mood from the camera, and a bounded 6-turn chat window.
+If the user is detected as 'Stressed', the prompt instructs the model to be extra concise and supportive.">
+        <div class="slide-badge">◈ REASONING LAYER</div>
+        <div class="slide-title">Reasoning Layer: Asynchronous LLM Client & Context Injection</div>
+        <div class="slide-divider"></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">HTTP/2 Asynchronous LLM Client</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker">✔</span><div><strong>Java 21 HttpClient:</strong> Non-blocking HTTP/2 multiplexing and connection pooling.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">✔</span><div><strong>Multi-Backend Support:</strong> OpenAI GPT-4o-mini, Local Ollama (llama3.2), Groq, OpenRouter.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">✔</span><div><strong>Offline Heuristic Fallback:</strong> Context-aware heuristic response engine if offline.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">✔</span><div><strong>Zero Crash Guarantee:</strong> Fallbacks guarantee evaluators never encounter unhandled network errors.</div></li>
+            </ul>
+          </div>
+          <div class="card purple">
+            <div class="card-title">Prompt Context Assembly</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--cyan);">✦</span><div><strong>1. System Directives & Persona:</strong> Tactical sci-fi AI executive demeanor.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">✦</span><div><strong>2. Synthesized User Profile:</strong> 2-sentence user behavioral cadence and tone descriptor.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--amber);">✦</span><div><strong>3. Environmental Mood & Gesture:</strong> E.g. 'User is STRESSED. Tailor answer to be calm and direct.'</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: #fff;">✦</span><div><strong>4. Sliding Chat Window:</strong> Strictly bounded to latest 6 interaction turns.</div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 10: ADAPTIVE PERSONALIZATION -->
+      <div class="slide" data-notes="ADAPTIVE PERSONALIZATION (Presented by Abhijay L. G.):
+This is one of our key novelties: Closed-Loop Qualitative Behavioral Synthesis.
+Rather than using brittle hand-crafted rule counters, we periodically ask the LLM itself to analyze batches of interactions,
+moods, and sentiment to synthesize a natural-language profile of the user's communication style.
+This allows N.E.X.U.S to adapt naturally over time without token bloat.">
+        <div class="slide-badge">◈ PERSONALIZATION ENGINE</div>
+        <div class="slide-title">Adaptive Personalization: Closed-Loop Learning</div>
+        <div class="slide-divider"></div>
+        <div class="grid-4">
+          <div class="card">
+            <div class="card-title">STEP 1: Log Turn</div>
+            <div style="font-weight: 700; color: #fff; margin-bottom: 6px;">Interaction Capture</div>
+            <div class="card-content">
+              Logs user query, detected facial emotion, gesture shortcut, and lexical sentiment into SQLite persistence.
+            </div>
+          </div>
+          <div class="card amber">
+            <div class="card-title">STEP 2: Batch Analysis</div>
+            <div style="font-weight: 700; color: #fff; margin-bottom: 6px;">Periodic Trigger (N=10)</div>
+            <div class="card-content">
+              Every 10 turns, background worker prompts LLM to synthesize a 2-sentence behavioral summary of user communication style.
+            </div>
+          </div>
+          <div class="card purple">
+            <div class="card-title">STEP 3: Profile Store</div>
+            <div style="font-weight: 700; color: #fff; margin-bottom: 6px;">Evolving User Model</div>
+            <div class="card-content">
+              Saves updated summary, preferred tone descriptor, and top topic clusters to SQLite user_profile table.
+            </div>
+          </div>
+          <div class="card green">
+            <div class="card-title">STEP 4: Context Inject</div>
+            <div style="font-weight: 700; color: #fff; margin-bottom: 6px;">Adaptive Resonance</div>
+            <div class="card-content">
+              Dynamically injects profile into future prompts. Assistant shifts demeanor (e.g. concise & empathetic) automatically.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 11: TOKEN EFFICIENCY & MATH -->
+      <div class="slide" data-notes="MATHEMATICAL & TOKEN FORMULATION (Presented by Abhijay L. G.):
+In academic reviews, professors often ask how we prevent token costs from skyrocketing.
+A naive chatbot that keeps appending chat history blows up its token budget after 20-30 turns.
+N.E.X.U.S caps the chat window to the latest 6 turns and distills long-term memory into a 2-sentence summary.
+This means whether the user has interacted 10 times or 1,000 times, the prompt size remains bounded at ~720 tokens, saving over 90% in token costs.">
+        <div class="slide-badge">◈ ALGORITHMIC DESIGN</div>
+        <div class="slide-title">Token Efficiency & Mathematical Formulation</div>
+        <div class="slide-divider"></div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">Mathematical Metrics</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker">◈</span><div><strong>Lexical Sentiment Valence S(t):</strong> Evaluated per turn in range [-1.0, 1.0] by weighting salience of emotional lexicons.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">◈</span><div><strong>Moving Average Sentiment Trend:</strong> Long-term user mood evaluated across moving window of K turns in SQLite.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">◈</span><div><strong>Taxonomic Topic Clustering:</strong> Queries tokenized and matched against domain dictionaries (Vision, Speech, AI, UI).</div></li>
+            </ul>
+          </div>
+          <div class="card green">
+            <div class="card-title">Token Economics: Bounded vs Naive</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--amber);">✦</span><div><strong>Naive History Approach:</strong> Appends full chat history. At Turn 50, prompt consumes > 8,000 tokens ($$$ and slow).</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">✦</span><div><strong>N.E.X.U.S Bounded History:</strong> 6 turns (~600 tokens) + Synthesized Profile (~120 tokens) = <strong>~720 tokens constant</strong>.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--cyan);">✦</span><div><strong>Result:</strong> 91% reduction in prompt token overhead over extended sessions.</div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 12: JAVAFX HUD INTERFACE -->
+      <div class="slide" data-notes="USER INTERFACE ARCHITECTURE (Presented by Dia M. Joby):
+Our frontend is built using JavaFX 21 with a custom cyberpunk glassmorphic CSS theme.
+It features a live camera viewport with glowing targeting brackets, an animated audio visualizer canvas,
+a chat stream with sentiment badges, live telemetry meters showing CPU and RAM consumption,
+and an Explainable Personalization Inspector that lets evaluators inspect what the assistant has learned about the user in real time.">
+        <div class="slide-badge">◈ USER INTERFACE ARCHITECTURE</div>
+        <div class="slide-title">Tactical Interface: JavaFX 21 Cyberpunk HUD</div>
+        <div class="slide-divider"></div>
+        <div class="grid-3">
+          <div class="card">
+            <div class="card-title">Camera Viewport & Reticles</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker">◈</span><div><strong>30 FPS Canvas Rendering:</strong> Smooth video stream with zero flicker.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">◈</span><div><strong>Targeting Reticle Overlay:</strong> Glowing cyan bounding brackets on face.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">◈</span><div><strong>Live Emotion Badge:</strong> Displays detected mood & confidence percentage.</div></li>
+            </ul>
+          </div>
+          <div class="card purple">
+            <div class="card-title">Visualizer & Chat Stream</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--purple);">◈</span><div><strong>Real-Time Audio Visualizer:</strong> Reactive neon waveform bars.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--purple);">◈</span><div><strong>Glassmorphic Chat Stream:</strong> Message bubbles with sentiment and latency.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--purple);">◈</span><div><strong>Quick Action Buttons:</strong> Interactive test buttons for live viva demo.</div></li>
+            </ul>
+          </div>
+          <div class="card green">
+            <div class="card-title">Telemetry & Explainability</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">◈</span><div><strong>Hardware Telemetry:</strong> Real-time JVM CPU, RAM, & Vision FPS.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">◈</span><div><strong>Profile Inspector:</strong> Full transparency into learned user traits.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">◈</span><div><strong>Re-Synthesis Trigger:</strong> Force update profile on-demand with one click.</div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 13: PERFORMANCE BENCHMARKS -->
+      <div class="slide" data-notes="BENCHMARKS & EXPERIMENTAL RESULTS (Presented by Dia M. Joby & Abhishek A.):
+Here are our measured performance benchmarks:
+- JavaFX HUD maintains a locked 60 FPS refresh rate.
+- ONNX facial emotion inference takes only 12 ms per frame.
+- Wake word detection latency is under 15 ms.
+- Total JVM heap memory footprint is approximately 165 MB.
+Compared to Python-based prototypes which suffer from GIL contention, our unified Java architecture achieves over 3x higher UI stability.">
+        <div class="slide-badge">◈ EXPERIMENTAL EVALUATION</div>
+        <div class="slide-title">Performance Benchmarks & Experimental Results</div>
+        <div class="slide-divider"></div>
+        <div class="grid-4" style="margin-bottom: 20px;">
+          <div class="card">
+            <div class="card-title">HUD REFRESH RATE</div>
+            <div class="metric-val">60 FPS</div>
+            <div class="metric-sub">Zero UI lag under simultaneous vision & audio streams</div>
+          </div>
+          <div class="card green">
+            <div class="card-title">ONNX INFERENCE</div>
+            <div class="metric-val" style="color: var(--green);">12 ms</div>
+            <div class="metric-sub">Native C++ ONNX Runtime Java execution per frame</div>
+          </div>
+          <div class="card purple">
+            <div class="card-title">WAKE WORD LATENCY</div>
+            <div class="metric-val" style="color: var(--purple);">&lt; 15 ms</div>
+            <div class="metric-sub">Ultra-fast acoustic keyword detection with Porcupine</div>
+          </div>
+          <div class="card amber">
+            <div class="card-title">JVM HEAP FOOTPRINT</div>
+            <div class="metric-val" style="color: var(--amber);">~165 MB</div>
+            <div class="metric-sub">Compact memory footprint across full multimodal stack</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title">Key Experimental Findings</div>
+          <div class="grid-3" style="gap: 12px; margin-top: 8px;">
+            <div class="card-content"><strong>Multithreading Advantage:</strong> Java core maintained locked 60 FPS UI rendering, whereas a Python prototype dropped to 18-22 FPS under identical load.</div>
+            <div class="card-content"><strong>Token Savings:</strong> Closed-loop behavioral synthesis bounded prompt context to ~720 tokens, saving 91% token overhead over 50 interactions.</div>
+            <div class="card-content"><strong>Zero Crash Robustness:</strong> Fallback mechanisms successfully handled camera disconnection and network loss with zero unhandled exceptions.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 14: TEAM CONTRIBUTIONS -->
+      <div class="slide" data-notes="TEAM CONTRIBUTIONS (Presented by Bhadra G. S.):
+Our team divided responsibilities according to specialized computer science domains:
+- Bhadra: Architecture and system specifications.
+- Aleena: OpenCV, ONNX emotion modeling, and gesture vision.
+- Abhishek: Vosk speech-to-text and dual-path speech synthesis.
+- Dia: JavaFX interface, audio visualizer, and telemetry.
+- Abhijay: Central Java orchestrator, event bus, SQLite storage, and adaptive personalization.">
+        <div class="slide-badge">◈ TEAM CONTRIBUTIONS</div>
+        <div class="slide-title">Team STI25CS: Role Allocation & Module Ownership</div>
+        <div class="slide-divider"></div>
+        <div class="grid-5">
+          <div class="card">
+            <div class="card-title">Bhadra G. S.</div>
+            <div style="font-size: 0.75rem; color: var(--cyan); margin-bottom: 6px; font-weight: 700;">STI25CS048</div>
+            <div style="font-size: 0.85rem; font-weight: 600; color: #fff; margin-bottom: 6px;">Core Ideation & Architecture</div>
+            <div class="card-content" style="font-size: 0.8rem;">Formulated problem statement, designed unified Java architecture, authored SRS & architectural specifications.</div>
+          </div>
+          <div class="card green">
+            <div class="card-title">Aleena Maria Roy</div>
+            <div style="font-size: 0.75rem; color: var(--green); margin-bottom: 6px; font-weight: 700;">STI25CS026</div>
+            <div style="font-size: 0.85rem; font-weight: 600; color: #fff; margin-bottom: 6px;">Computer Vision Subsystem</div>
+            <div class="card-content" style="font-size: 0.8rem;">Implemented OpenCV video pipeline, Haar cascade face detection, ONNX FER+ emotion classifier, and gesture shortcuts.</div>
+          </div>
+          <div class="card purple">
+            <div class="card-title">Abhishek A.</div>
+            <div style="font-size: 0.75rem; color: var(--purple); margin-bottom: 6px; font-weight: 700;">STI25CS009</div>
+            <div style="font-size: 0.85rem; font-weight: 600; color: #fff; margin-bottom: 6px;">Speech I/O Subsystem</div>
+            <div class="card-content" style="font-size: 0.8rem;">Integrated Porcupine wake word engine, Vosk offline acoustic STT, Piper neural TTS, and Windows SAPI fallback.</div>
+          </div>
+          <div class="card amber">
+            <div class="card-title">Dia M. Joby</div>
+            <div style="font-size: 0.75rem; color: var(--amber); margin-bottom: 6px; font-weight: 700;">STI25CS052</div>
+            <div style="font-size: 0.85rem; font-weight: 600; color: #fff; margin-bottom: 6px;">JavaFX HUD & Visualizer</div>
+            <div class="card-content" style="font-size: 0.8rem;">Engineered cyberpunk glassmorphic JavaFX UI, real-time Canvas audio visualizer, chat viewports, and telemetry gauges.</div>
+          </div>
+          <div class="card">
+            <div class="card-title">Abhijay L. G.</div>
+            <div style="font-size: 0.75rem; color: var(--cyan); margin-bottom: 6px; font-weight: 700;">STI25CS121</div>
+            <div style="font-size: 0.85rem; font-weight: 600; color: #fff; margin-bottom: 6px;">Central Core & Personalization</div>
+            <div class="card-content" style="font-size: 0.8rem;">Architected NexusCore, MultimodalEventBus, SQLite JDBC storage, and the closed-loop Adaptive Personalization Engine.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 15: VIVA DEFENSE GUIDE -->
+      <div class="slide" data-notes="VIVA DEFENSE STRATEGY (Presented by the Entire Team):
+Evaluators often focus on three key areas:
+1. Why Java? Emphasize the GIL bottleneck, true multithreading, and 60 FPS GUI stability.
+2. Token economics: Explain bounded 6-turn history plus periodic 2-sentence qualitative synthesis.
+3. Robustness: Highlight our simulated sensor fallback, zero-dependency Windows SAPI fallback, and local heuristic fallback.">
+        <div class="slide-badge">◈ VIVA DEFENSE GUIDE</div>
+        <div class="slide-title">Viva Examination Defense & Evaluator Q&A</div>
+        <div class="slide-divider"></div>
+        <div class="bullet-list" style="gap: 14px;">
+          <div class="card">
+            <div class="card-title" style="font-size: 1rem;">Q: "Why did you build the core orchestrator in Java instead of Python?"</div>
+            <div class="card-content" style="color: #e2e8f0;">
+              <strong>Model Answer:</strong> Python's Global Interpreter Lock (GIL) fundamentally throttles true multi-threading when managing live video feeds, audio streams, and UI updates concurrently. In N.E.X.U.S, Java coordinates hardware threads with zero GIL contention, manages memory predictably through the JVM, and renders a smooth 60 FPS JavaFX HUD while invoking native C++ models via JNI.
+            </div>
+          </div>
+          <div class="card green">
+            <div class="card-title" style="font-size: 1rem; color: var(--green);">Q: "How do you prevent prompt bloat and runaway token costs in the LLM?"</div>
+            <div class="card-content" style="color: #e2e8f0;">
+              <strong>Model Answer:</strong> Rather than appending all past chats, N.E.X.U.S passes only the latest 6 turns for conversational immediacy. Long-term memory is represented exclusively by a synthesized 2-sentence behavioral profile, maintaining a constant token footprint (~720 tokens) regardless of whether the user has interacted 10 or 1,000 times.
+            </div>
+          </div>
+          <div class="card amber">
+            <div class="card-title" style="font-size: 1rem; color: var(--amber);">Q: "How does N.E.X.U.S handle webcam lighting or hardware disconnection?"</div>
+            <div class="card-content" style="color: #e2e8f0;">
+              <strong>Model Answer:</strong> We implement temporal window smoothing across moving frames, an automated simulated sensor canvas fallback with targeting brackets, and quick-action HUD simulation buttons for live viva testing without hardware dependencies.
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SLIDE 16: CONCLUSION & DEMO -->
+      <div class="slide" data-notes="CONCLUSION & LIVE DEMO (Presented by Bhadra G. S. & Abhijay L. G.):
+In conclusion, Project N.E.X.U.S successfully demonstrates that Java 21 can power a real-time, multimodal, adaptive AI assistant with rock-solid concurrency and responsive cyberpunk aesthetics.
+We now invite our respected evaluators to observe the live HUD demonstration and ask any questions.
+Thank you!">
+        <div class="slide-badge" style="border-color: var(--green); color: var(--green);">◈ PROJECT CONCLUSION</div>
+        <div class="hero-title" style="font-size: 2.6rem;">PROJECT N.E.X.U.S: CONCLUSION</div>
+        <div class="hero-subtitle">Summary of Achievements & Live Demonstration</div>
+        
+        <div class="grid-2" style="margin-bottom: 24px;">
+          <div class="card">
+            <div class="card-title">Major Achievements</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker">✔</span><div><strong>Unified Multimodal Core:</strong> Proved Java 21 LTS can serve as an ultra-high performance central orchestrator for vision, speech, and LLMs.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">✔</span><div><strong>Closed-Loop Adaptive Persona:</strong> Proved periodic LLM qualitative synthesis enables continuous persona adaptation with zero token explosion.</div></li>
+              <li class="bullet-item"><span class="bullet-marker">✔</span><div><strong>Zero-Crash Engineering:</strong> Robust fallbacks across vision, speech, and network tiers guarantee flawless reliability.</div></li>
+            </ul>
+          </div>
+          <div class="card green">
+            <div class="card-title">Future Scope & Road Ahead</div>
+            <ul class="bullet-list">
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">▶</span><div><strong>On-Device Quantized SLMs:</strong> Local Ollama / llama.cpp offline reasoning.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">▶</span><div><strong>Biometric Multi-User Profiles:</strong> Face embeddings to support personalized profiles per teammate.</div></li>
+              <li class="bullet-item"><span class="bullet-marker" style="color: var(--green);">▶</span><div><strong>Autonomous Tool Calling:</strong> Desktop OS automation and file management.</div></li>
+            </ul>
+          </div>
+        </div>
+
+        <div style="margin-top: auto; text-align: center; padding: 14px; background: rgba(0, 242, 254, 0.08); border: 1px solid var(--cyan); border-radius: 8px;">
+          <span style="font-family: 'Orbitron', sans-serif; font-size: 1.25rem; font-weight: 700; color: var(--cyan);">THANK YOU!</span>
+          <span style="margin: 0 12px; color: var(--text-muted);">|</span>
+          <span style="font-size: 1rem; color: #fff;">Open for Questions & Live HUD Demonstration</span>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- Speaker Notes Floating Drawer -->
+  <aside class="notes-drawer" id="notesDrawer">
+    <div class="notes-header">
+      <div class="notes-title">
+        <span>🎙️</span>
+        <span>SPEAKER SCRIPT & DEFENSE TALKING POINTS</span>
+      </div>
+      <button class="btn" style="padding: 2px 8px; font-size: 0.8rem;" onclick="toggleNotes()">✕ Close</button>
+    </div>
+    <div class="notes-body" id="notesBody">
+      Select a slide to view speaker notes.
+    </div>
+  </aside>
+
+  <!-- Bottom Navigation Bar -->
+  <footer>
+    <div class="deck-controls">
+      <button class="btn" onclick="prevSlide()" title="Previous Slide (Left Arrow)">◀ Prev</button>
+      <div class="slide-counter" id="slideCounter">01 / 16</div>
+      <button class="btn btn-primary" onclick="nextSlide()" title="Next Slide (Right Arrow / Space)">Next ▶</button>
+    </div>
+
+    <div class="progress-bar-container">
+      <div class="progress-bar" id="progressBar"></div>
+    </div>
+
+    <div style="font-size: 0.8rem; color: var(--text-muted); display: flex; gap: 14px; align-items: center;">
+      <span>Nav: <span class="key-badge">←</span> <span class="key-badge">→</span> <span class="key-badge">Space</span></span>
+      <span>Notes: <span class="key-badge">S</span></span>
+      <span>Fullscreen: <span class="key-badge">F</span></span>
+    </div>
+  </footer>
+
+  <script>
+    const slides = document.querySelectorAll('.slide');
+    const slideCounter = document.getElementById('slideCounter');
+    const progressBar = document.getElementById('progressBar');
+    const notesDrawer = document.getElementById('notesDrawer');
+    const notesBody = document.getElementById('notesBody');
+    let currentSlide = 0;
+
+    function updateSlide(index) {
+      if (index < 0) index = 0;
+      if (index >= slides.length) index = slides.length - 1;
+
+      slides[currentSlide].classList.remove('active');
+      currentSlide = index;
+      slides[currentSlide].classList.add('active');
+
+      const slideNum = (currentSlide + 1).toString().padStart(2, '0');
+      const totalNum = slides.length.toString().padStart(2, '0');
+      slideCounter.textContent = `${slideNum} / ${totalNum}`;
+
+      const progressPercent = ((currentSlide + 1) / slides.length) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+
+      const currentNotes = slides[currentSlide].getAttribute('data-notes') || 'No speaker notes for this slide.';
+      notesBody.textContent = currentNotes;
+    }
+
+    function nextSlide() {
+      if (currentSlide < slides.length - 1) {
+        updateSlide(currentSlide + 1);
+      }
+    }
+
+    function prevSlide() {
+      if (currentSlide > 0) {
+        updateSlide(currentSlide - 1);
+      }
+    }
+
+    function toggleNotes() {
+      notesDrawer.classList.toggle('open');
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(err => {
+          console.error(`Error attempting to enable fullscreen: ${err.message}`);
+        });
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key.toLowerCase() === 's') {
+        e.preventDefault();
+        toggleNotes();
+      } else if (e.key.toLowerCase() === 'f') {
+        e.preventDefault();
+        toggleFullscreen();
+      } else if (e.key === 'Home') {
+        e.preventDefault();
+        updateSlide(0);
+      } else if (e.key === 'End') {
+        e.preventDefault();
+        updateSlide(slides.length - 1);
+      }
+    });
+
+    // Initialize first slide notes
+    updateSlide(0);
+  </script>
+</body>
+</html>

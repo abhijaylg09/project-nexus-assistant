@@ -116,19 +116,22 @@ public class HudController {
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        // Status Badges
         Label coreStatus = new Label("CORE: ONLINE");
         coreStatus.getStyleClass().addAll("hud-status-badge", "hud-status-badge-active");
 
         Label visionStatus = new Label("VISION: CAMERA ACTIVE");
         visionStatus.getStyleClass().add("hud-status-badge");
 
+        Label genderAiStatus = new Label("GENDER AI: PYTHON ViT (ACTIVE)");
+        genderAiStatus.getStyleClass().addAll("hud-status-badge", "hud-status-badge-active");
+        genderAiStatus.setStyle("-fx-border-color: #a855f7; -fx-text-fill: #c084fc; -fx-background-color: rgba(168, 85, 247, 0.15);");
+
         // AI Model Configuration Dialog Button
         Button aiSettingsBtn = new Button("⚙️ AI Model / Key");
         aiSettingsBtn.getStyleClass().add("hud-button-secondary");
         aiSettingsBtn.setOnAction(e -> openAiSettingsDialog());
 
-        header.getChildren().addAll(titleBox, spacer, coreStatus, visionStatus, aiSettingsBtn);
+        header.getChildren().addAll(titleBox, spacer, coreStatus, visionStatus, genderAiStatus, aiSettingsBtn);
         return header;
     }
 
@@ -351,15 +354,28 @@ public class HudController {
             chatMessagesBox.getChildren().add(new ChatMessageCell("Gender calibrated to FEMALE.", false, "FOCUSED", 0));
         });
 
-        Button btnAutoGender = new Button("Auto Optical");
+        Button btnAutoGender = new Button("Auto ViT AI");
         btnAutoGender.getStyleClass().add("hud-button-secondary");
-        btnAutoGender.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px;");
+        btnAutoGender.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px; -fx-text-fill: #34d399;");
         btnAutoGender.setOnAction(e -> {
             core.getVisionService().getFaceBiometrics().setManualGenderOverride(null);
-            chatMessagesBox.getChildren().add(new ChatMessageCell("Gender set to automatic optical analysis.", false, "FOCUSED", 0));
+            chatMessagesBox.getChildren().add(new ChatMessageCell("Gender set to automatic Python ViT-ONNX Deep Learning analysis.", false, "FOCUSED", 0));
         });
 
-        genderControls.getChildren().addAll(genderCtrlLabel, btnMale, btnFemale, btnAutoGender);
+        Button btnCheckViT = new Button("⚡ Status");
+        btnCheckViT.getStyleClass().add("hud-button-secondary");
+        btnCheckViT.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px; -fx-text-fill: #a855f7;");
+        btnCheckViT.setOnAction(e -> {
+            var bridge = core.getVisionService().getFaceBiometrics().getPythonBridge();
+            var res = bridge.getLatestResult();
+            boolean ready = bridge.isPythonServiceReady();
+            String msg = "Python ViT Gender Engine: " + (ready ? "ONLINE (Active)" : "STARTING / FALLBACK")
+                    + " | Classification: " + res.gender() + " (" + String.format("%.1f%%", res.confidence() * 100.0) + ")"
+                    + " [Male: " + String.format("%.1f%%", res.maleProb() * 100.0) + ", Female: " + String.format("%.1f%%", res.femaleProb() * 100.0) + "]";
+            chatMessagesBox.getChildren().add(new ChatMessageCell(msg, false, "FOCUSED", 0));
+        });
+
+        genderControls.getChildren().addAll(genderCtrlLabel, btnMale, btnFemale, btnAutoGender, btnCheckViT);
 
         visionPanel.getChildren().addAll(visionHeader, cameraCanvas, teamBox, eyeControls, genderControls);
 

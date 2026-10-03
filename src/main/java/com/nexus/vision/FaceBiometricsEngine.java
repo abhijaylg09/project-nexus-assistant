@@ -14,13 +14,15 @@ import java.util.Random;
 public class FaceBiometricsEngine {
 
     private final Random random = new Random();
+    private final PythonGenderBridge pythonBridge = new PythonGenderBridge();
     private TeammateProfile currentIdentified = TeammateProfile.getAllTeammates()[0];
     private double matchConfidence = 0.94;
     private long lastSwitchTime = System.currentTimeMillis();
 
-    // Optical Gender Detection State
+    // Optical & Deep Learning Gender Detection State
     private double smoothedMaleProb = 0.88; // Default initial bias for Abhijay
     private MoodDetectedEvent.Gender manualGenderOverride = null;
+    private boolean pythonEngineActive = false;
 
     /**
      * Biometric teammate identification from optical face frame.
@@ -31,8 +33,18 @@ public class FaceBiometricsEngine {
         }
 
         try {
-            // Update optical gender from face
-            evaluateOpticalGender(frame, faceX, faceY, faceW, faceH);
+            // 1. Submit asynchronous ViT inference to Python service
+            pythonBridge.predictAsync(frame, faceX, faceY, faceW, faceH, res -> {
+                if (res != null && res.success() && manualGenderOverride == null) {
+                    this.smoothedMaleProb = res.maleProb();
+                    this.pythonEngineActive = true;
+                }
+            });
+
+            // 2. Optical fallback / heuristic update if Python service still launching
+            if (!isPythonEngineActive()) {
+                evaluateOpticalGender(frame, faceX, faceY, faceW, faceH);
+            }
 
             int maxX = Math.min(frame.getWidth(), faceX + faceW);
             int maxY = Math.min(frame.getHeight(), faceY + faceH);
@@ -219,8 +231,23 @@ public class FaceBiometricsEngine {
     }
 
     public double getGenderConfidence() {
+        if (isPythonEngineActive() && pythonBridge.getLatestResult() != null && pythonBridge.getLatestResult().success()) {
+            return pythonBridge.getLatestResult().confidence();
+        }
         double diff = Math.abs(smoothedMaleProb - 0.50);
         return 0.70 + (diff * 0.58); // yields 70% to 99% confidence
+    }
+
+    public boolean isPythonEngineActive() {
+        return pythonEngineActive && pythonBridge.isPythonServiceReady();
+    }
+
+    public PythonGenderBridge getPythonBridge() {
+        return pythonBridge;
+    }
+
+    public String getGenderEngineName() {
+        return isPythonEngineActive() ? "Python ViT-ONNX AI" : "Optical Heuristic Fallback";
     }
 
     public void setManualGenderOverride(MoodDetectedEvent.Gender gender) {
