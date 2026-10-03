@@ -75,7 +75,7 @@ public class NexusCoreTest {
     @DisplayName("Verify PromptContextBuilder builds rich contextual prompt")
     public void testPromptContextBuilder() {
         PromptContextBuilder builder = new PromptContextBuilder();
-        UserProfile profile = new UserProfile("Nexus User", "User is focused on AI development", "Technical", "Java, AI", 12);
+        UserProfile profile = new UserProfile("Abhijay", "User is focused on AI development", "Technical", "Java, AI", 12);
         MoodDetectedEvent mood = new MoodDetectedEvent(MoodDetectedEvent.Emotion.FOCUSED, 0.92, 100, 100, 50, 50);
 
         List<ChatMessage> messages = builder.buildContext("How does N.E.X.U.S operate?", profile, mood, null, List.of());
@@ -84,7 +84,7 @@ public class NexusCoreTest {
 
         // System prompt contains profile and mood
         String systemContent = messages.get(0).getContent();
-        assertTrue(systemContent.contains("Nexus User"));
+        assertTrue(systemContent.contains("Abhijay"));
         assertTrue(systemContent.contains("FOCUSED"));
     }
 
@@ -152,7 +152,8 @@ public class NexusCoreTest {
     @DisplayName("Verify TeammateProfile catalog for STI25CS")
     public void testTeammates() {
         com.nexus.personalization.TeammateProfile[] list = com.nexus.personalization.TeammateProfile.getAllTeammates();
-        assertEquals(4, list.length);
+        assertEquals(5, list.length);
+        assertNotNull(com.nexus.personalization.TeammateProfile.findById("ABHIJAY"));
         assertNotNull(com.nexus.personalization.TeammateProfile.findById("BHADRA"));
         assertNotNull(com.nexus.personalization.TeammateProfile.findById("ALEENA"));
         assertNotNull(com.nexus.personalization.TeammateProfile.findById("ABHISHEK"));

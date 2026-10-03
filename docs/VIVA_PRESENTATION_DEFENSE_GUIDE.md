@@ -2,8 +2,8 @@
 **Academic / Seminar Evaluation Q&A Handbook**
 
 * **Project:** PROJECT N.E.X.U.S (Neural EXecutive User System)
-* **Team STI25CS:** Bhadra G. S., Aleena Maria Roy, Abhishek A., Dia M. Joby, Team STI25CS
-* **Core Language:** Java 21 LTS
+* **Team STI25CS:** Abhijay L. G., Bhadra G. S., Aleena Maria Roy, Abhishek A., Dia M. Joby
+* **Core Language:** Java 21 LTS + Python Deep Learning AI Core
 
 ---
 
@@ -60,7 +60,8 @@
 
 | Team Member | Presentation Focus / Slide Topics | Key Technical Talking Point |
 |---|---|---|
+| **Abhijay L. G.** | Python AI Core, Central Orchestrator & Adaptive Personalization | Explain FERPlus & ViT neural microservice, event bus thread safety, and closed-loop personalization |
 | **Bhadra G. S.** | Introduction, Project Ideation, & Problem Statement | Explain how unified Java core eliminates fragmented architectures |
-| **Aleena Maria Roy** | Computer Vision (OpenCV/JavaCV & ONNX Runtime) | Discuss face detection cascade, ONNX emotion inference, and gesture shortcuts |
+| **Aleena Maria Roy** | Computer Vision (OpenCV & ONNX Runtime) | Discuss face detection cascade, ONNX emotion inference, and gesture shortcuts |
 | **Abhishek A.** | Speech I/O Subsystem (Vosk STT, Piper TTS, Porcupine) | Detail low-latency wake word triggers and dual-path speech synthesis |
 | **Dia M. Joby** | Frontend HUD Interface & JavaFX Architecture | Showcase the HUD design, audio visualizer canvas, and real-time telemetry |

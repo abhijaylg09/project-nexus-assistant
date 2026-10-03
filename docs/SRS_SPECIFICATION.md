@@ -3,11 +3,11 @@
 
 * **Standard:** Conforms to IEEE Std 830-1998 (Recommended Practice for Software Requirements Specifications)
 * **Project Team:** Team STI25CS
-  - Bhadra G. S. (STI25CS048)
-  - Aleena Maria Roy (STI25CS026)
-  - Abhishek A. (STI25CS009)
-  - Dia M. Joby (STI25CS052)
-  - Team STI25CS
+  - Abhijay L. G. (STI25CS121) — Python AI Perception Core & Orchestration
+  - Bhadra G. S. (STI25CS048) — Core Ideation & Architecture
+  - Aleena Maria Roy (STI25CS026) — Computer Vision Subsystem
+  - Abhishek A. (STI25CS009) — Speech I/O Subsystem
+  - Dia M. Joby (STI25CS052) — JavaFX HUD & Visualizer
 * **Target Version:** 1.0.0
 * **Date:** 2026-09-29
 

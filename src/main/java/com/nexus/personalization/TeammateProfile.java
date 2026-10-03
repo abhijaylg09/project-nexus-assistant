@@ -31,6 +31,12 @@ public class TeammateProfile {
     public static TeammateProfile[] getAllTeammates() {
         return new TeammateProfile[] {
             new TeammateProfile(
+                "ABHIJAY", "Abhijay L. G.", "121", "STI25CS",
+                Gender.MALE, "Python AI Perception Core, Central Orchestration & Adaptive Personalization",
+                "Technical, Precise, & Proactive", "Python AI, Deep Learning, Vision Transformers & Event Orchestration",
+                "Welcome back Abhijay. Python AI perception engine and central orchestrator are fully operational."
+            ),
+            new TeammateProfile(
                 "BHADRA", "Bhadra G. S.", "48", "STI25CS048",
                 Gender.FEMALE, "Project Ideation, Architecture & Problem Statement",
                 "Analytical, Visionary, & Structured", "System Architecture, Multi-modal AI, Research",

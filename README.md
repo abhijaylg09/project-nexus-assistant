@@ -13,6 +13,7 @@
 
 | Name | Roll No | Student ID | Focus Area |
 |---|---|---|---|
+| **Abhijay L. G.** | 121 | STI25CS | Python AI Perception Core, Central Orchestration & Adaptive Personalization |
 | **Bhadra G. S.** | 48 | STI25CS048 | Core Ideation, Architecture & Problem Statement |
 | **Aleena Maria Roy** | 26 | STI25CS026 | Computer Vision, OpenCV & ONNX Emotion Modeling |
 | **Abhishek A.** | 09 | STI25CS009 | Speech I/O (Vosk STT, Piper TTS, Porcupine Wake) |

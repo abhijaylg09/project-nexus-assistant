@@ -1,7 +1,7 @@
 # ADAPTIVE PERSONALIZATION METHODOLOGY & CLOSED-LOOP LEARNING
 ## PROJECT N.E.X.U.S: Research & Implementation Report
 
-**Team STI25CS:** Bhadra G. S., Aleena Maria Roy, Abhishek A., Dia M. Joby, Team STI25CS
+**Team STI25CS:** Abhijay L. G., Bhadra G. S., Aleena Maria Roy, Abhishek A., Dia M. Joby
 
 ---
 

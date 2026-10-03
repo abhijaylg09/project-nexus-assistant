@@ -16,13 +16,20 @@
 |:---:|---|---|---|
 | **01** | Title & Project Overview | **Bhadra G. S.** (48) | Welcome, problem scope & project identity |
 | **02** | The Problem Statement | **Bhadra G. S.** (48) | Fragmented stacks, GIL bottlenecks, memory amnesia |
+| **03** | Proposed Solution: Java Orchestration & Python Core | **Bhadra G. S. / Abhijay L. G.** | Why Java 21 + Python AI Core, zero GIL, 3 core pillars |
+| **04** | 3-Tier System Architecture | **Bhadra G. S. / Abhijay L. G.** | Input perception, central brain, output actions |
+| **05** | Concurrency Model & Multimodal Event Bus | **Abhijay L. G. / Dia M. Joby** | Thread isolation, zero UI freezing, Platform.runLater |
 | **06** | Computer Vision: Face Detection & ONNX FER+ | **Aleena Maria Roy** (26) | OpenCV Haar cascade, 6 emotion classes, temporal smoothing |
 | **07** | Hand Gesture Recognition & Shortcuts | **Aleena Maria Roy** (26) | Convexity defect classification, touchless shortcuts (Thumbs-up, Palm) |
 | **08** | Speech I/O Subsystem | **Abhishek A.** (09) | Porcupine wake word, offline Vosk STT, Piper neural TTS + SAPI |
+| **09** | Language Reasoning & Prompt Builder | **Abhijay L. G.** (121) | Async HTTP/2 client, multi-backend, heuristic fallback |
+| **10** | Adaptive Personalization Engine | **Abhijay L. G.** (121) | Closed-loop behavioral learning, SQLite persistence |
+| **11** | Token Efficiency & Mathematical Model | **Abhijay L. G.** (121) | Sentiment valence equation, bounded 6-turn history vs naive blowup |
 | **12** | JavaFX 21 Cyberpunk HUD Interface | **Dia M. Joby** (52) | Glassmorphic HUD, live audio visualizer, telemetry meters |
 | **13** | Performance Benchmarks & Experimental Results | **Dia M. Joby / Abhishek A.** | 60 FPS refresh, 12 ms ONNX inference, 165 MB heap |
-| **14** | Team STI25CS Role Allocation & Contributions | **Bhadra G. S.** (48) | Detailed individual contribution matrix |
+| **14** | Team STI25CS Role Allocation & Contributions | **Bhadra G. S. / Abhijay L. G.** | Detailed individual contribution matrix |
 | **15** | Viva Defense Guide & Evaluator Q&A | **All Team Members** | Top 3 examination questions and model answers |
+| **16** | Conclusion, Future Scope & Live Demo | **Bhadra G. S. / Abhijay L. G.** | Project summary, future roadmap, live demonstration |
 
 ---
 
@@ -134,13 +141,13 @@
 
 ### Slide 14: Team STI25CS: Role Allocation & Contributions
 * **Visual Elements:** 5 Team Member Cards with Student IDs, Focus Areas, and Specific Architectural Deliverables.
-* **Speaker Script (Bhadra G. S.):**
+* **Speaker Script (Bhadra G. S. & Abhijay L. G.):**
   > "Our team divided responsibilities according to specialized computer science domains:  
   > - Bhadra: Architecture and system specifications.  
   > - Aleena: OpenCV, ONNX emotion modeling, and gesture vision.  
   > - Abhishek: Vosk speech-to-text and dual-path speech synthesis.  
   > - Dia: JavaFX interface, audio visualizer, and telemetry.  
-  > - Team STI25CS: Central Java orchestrator, event bus, SQLite storage, and adaptive personalization."
+  > - Abhijay: Python AI perception core, central orchestrator, SQLite storage, and adaptive personalization."
 
 ---
 
@@ -156,5 +163,5 @@
 
 ### Slide 16: Conclusion, Future Scope & Live Demonstration
 * **Visual Elements:** Major Achievements summary, Future Roadmap (On-device SLMs, Multi-user face profiles, OS automation), and Live Demo invitation.
-* **Speaker Script (Bhadra G. S. & Team STI25CS):**
+* **Speaker Script (Bhadra G. S. & Abhijay L. G.):**
   > "In conclusion, Project N.E.X.U.S successfully demonstrates that Java 21 can power a real-time, multimodal, adaptive AI assistant with rock-solid concurrency and responsive cyberpunk aesthetics. We now invite our respected evaluators to observe the live HUD demonstration and ask any questions. Thank you!"

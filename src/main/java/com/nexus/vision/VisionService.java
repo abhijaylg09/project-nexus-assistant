@@ -66,7 +66,7 @@ public class VisionService {
         this.motionDetector = new MotionDetector();
         this.eyeClassifier = new EyeStateClassifier();
         this.eventBus = MultimodalEventBus.getInstance();
-        this.activeTeammate = TeammateProfile.getAllTeammates()[0]; // Default: Bhadra G. S.
+        this.activeTeammate = TeammateProfile.getAllTeammates()[0]; // Default: Abhijay L. G.
     }
 
     public synchronized void start() {

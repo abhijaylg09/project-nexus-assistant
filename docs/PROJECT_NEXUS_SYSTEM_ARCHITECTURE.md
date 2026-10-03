@@ -4,12 +4,12 @@
 * **Project Title:** PROJECT N.E.X.U.S (Neural EXecutive User System)
 * **Academic Batch / Stream:** STI25CS
 * **Project Team:**
-  - Bhadra G. S. (Roll No: 48, ID: STI25CS048)
-  - Aleena Maria Roy (Roll No: 26, ID: STI25CS026)
-  - Abhishek A. (Roll No: 09, ID: STI25CS009)
-  - Dia M. Joby (Roll No: 52, ID: STI25CS052)
-  - Team STI25CS
-* **Core Technology:** Java 21 LTS (Central Orchestrator)
+  - Abhijay L. G. (Roll No: 121, ID: STI25CS121) — Python AI Perception Core & Central Orchestration
+  - Bhadra G. S. (Roll No: 48, ID: STI25CS048) — Core Ideation & Architecture
+  - Aleena Maria Roy (Roll No: 26, ID: STI25CS026) — Computer Vision Subsystem
+  - Abhishek A. (Roll No: 09, ID: STI25CS009) — Speech I/O Subsystem
+  - Dia M. Joby (Roll No: 52, ID: STI25CS052) — JavaFX HUD & Visualizer
+* **Core Technology:** Java 21 LTS (Central Orchestrator) + Python Deep Learning AI Core
 
 ---
 

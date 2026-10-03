@@ -179,7 +179,7 @@ def create_presentation(output_path="PROJECT_NEXUS_PRESENTATION.pptx"):
     pt1.font.name = "Segoe UI"
     
     pt2 = tf_team.add_paragraph()
-    pt2.text = "Bhadra G. S. (48)   •   Aleena Maria Roy (26)   •   Abhishek A. (09)   •   Dia M. Joby (52)   •   Team STI25CS (121)"
+    pt2.text = "Bhadra G. S. (48)   •   Aleena Maria Roy (26)   •   Abhishek A. (09)   •   Dia M. Joby (52)   •   Abhijay L. G. (121)"
     pt2.font.size = Pt(12)
     pt2.font.bold = True
     pt2.font.color.rgb = TEXT_WHITE
@@ -1081,8 +1081,8 @@ def create_presentation(output_path="PROJECT_NEXUS_PRESENTATION.pptx"):
         ("Dia M. Joby", "STI25CS052", "JavaFX HUD & Visualizer",
          "Engineered cyberpunk glassmorphic JavaFX UI, real-time Canvas audio visualizer, chat viewports, and system telemetry meters.",
          BORDER_AMBER),
-        ("Team STI25CS", "STI25CS121", "Central Orchestration & Learning",
-         "Architected NexusCore, MultimodalEventBus, SQLite JDBC persistence, and the Closed-Loop Adaptive Personalization Engine.",
+        ("Abhijay L. G.", "STI25CS121", "Python AI Core & Orchestration",
+         "Architected Python AI perception microservice (FERPlus ONNX, ViT gender, OpenCV gestures), NexusCore, and closed-loop personalization.",
          BORDER_CYAN)
     ]
 
@@ -1122,13 +1122,13 @@ def create_presentation(output_path="PROJECT_NEXUS_PRESENTATION.pptx"):
         p2.font.name = "Segoe UI"
 
     s14.notes_slide.notes_text_frame.text = (
-        "TEAM CONTRIBUTIONS (Presented by Bhadra G. S.):\n"
+        "TEAM CONTRIBUTIONS (Presented by Bhadra G. S. & Abhijay L. G.):\n"
         "Our team divided responsibilities according to specialized computer science domains:\n"
         "- Bhadra: Architecture and system specifications.\n"
         "- Aleena: OpenCV, ONNX emotion modeling, and gesture vision.\n"
         "- Abhishek: Vosk speech-to-text and dual-path speech synthesis.\n"
         "- Dia: JavaFX interface, audio visualizer, and telemetry.\n"
-        "- Team STI25CS: Central Java orchestrator, event bus, SQLite storage, and adaptive personalization."
+        "- Abhijay: Python AI perception core, central orchestrator, SQLite storage, and adaptive personalization."
     )
 
     # =========================================================================
@@ -1229,7 +1229,7 @@ def create_presentation(output_path="PROJECT_NEXUS_PRESENTATION.pptx"):
     p_demo.space_before = Pt(16)
 
     s16.notes_slide.notes_text_frame.text = (
-        "CONCLUSION & LIVE DEMO (Presented by Bhadra G. S. & Team STI25CS):\n"
+        "CONCLUSION & LIVE DEMO (Presented by Bhadra G. S. & Abhijay L. G.):\n"
         "In conclusion, Project N.E.X.U.S successfully demonstrates that Java 21 can power a real-time, "
         "multimodal, adaptive AI assistant with rock-solid concurrency and responsive cyberpunk aesthetics. "
         "We now invite our respected evaluators to observe the live HUD demonstration and ask any questions. "

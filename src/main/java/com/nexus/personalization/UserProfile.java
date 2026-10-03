@@ -3,7 +3,7 @@ package com.nexus.personalization;
 import java.time.LocalDateTime;
 
 public class UserProfile {
-    private String userName = "Nexus User";
+    private String userName = "Abhijay";
     private String behavioralSummary = "User values clear, high-velocity technical execution, structured multi-modal workflows, and prompt responses.";
     private String preferredTone = "Technical, Precise, & Proactive";
     private String topTopics = "Multimodal AI, Java Architecture, Speech/Vision";
