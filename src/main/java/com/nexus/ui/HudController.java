@@ -18,6 +18,8 @@ import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.stage.FileChooser;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -41,10 +43,11 @@ public class HudController {
     // UI Nodes
     private final VBox chatMessagesBox = new VBox(10);
     private final ScrollPane chatScrollPane = new ScrollPane();
-    private final TextField inputTextField = new TextField();
-    private final Button sendButton = new Button("TRANSMIT");
+    private final TextArea inputTextArea = new TextArea();
+    private final Button sendButton = new Button("SEND ➔");
     private final Button voiceChatButton = new Button("🎙️ VOICE CHAT");
     private final Button micToggleButton = new Button("MIC ON");
+    private ChatMessageCell currentThinkingCell = null;
 
     // Image Attachment / Doubt Support
     private File currentAttachedImageFile = null;
@@ -152,9 +155,14 @@ public class HudController {
         chatScrollPane.getStyleClass().add("chat-scroll");
         VBox.setVgrow(chatScrollPane, Priority.ALWAYS);
 
-        // Welcome greeting
+        // Welcome greeting (ChatGPT Style)
         chatMessagesBox.getChildren().add(new ChatMessageCell(
-                "N.E.X.U.S AI Perception Core Online. Python Multimodal AI Engine (ViT-ONNX Mood & Gender + Real-Time Gesture Tracking) active. Glassmorphic HUD ready. Ask anything, click 'Image' to analyze a doubt, or press 'Voice Chat' to speak!",
+                "### ⚡ N.E.X.U.S AI Perception Core Online\n\n" +
+                "**ChatGPT-Grade Intelligence Active.** Real-time multimodal Python perception engine (ViT-ONNX Mood & Gender, MediaPipe Gestures, SFace Biometrics) online.\n\n" +
+                "* **Ask Anything:** Code debugging, math problem solving, algorithms, science, architecture, or general questions.\n" +
+                "* **🖼️ Image Doubt:** Attach any image file or click **📸 Snap** to analyze doubts visually.\n" +
+                "* **🎙️ Voice Chat:** Speak naturally in English or മലയാളം (Malayalam).\n\n" +
+                "*Type your question below and press **Enter** (Shift+Enter for a new line).* ",
                 false, "FOCUSED", 14
         ));
 
@@ -186,13 +194,35 @@ public class HudController {
         HBox.setHgrow(attachSpacer, Priority.ALWAYS);
         attachmentPreviewBar.getChildren().addAll(attachmentThumbView, attachmentNameLabel, attachSpacer, removeAttachBtn);
 
-        // Input Box & Controls
+        // Input Box & Controls (ChatGPT Multiline Input)
         HBox inputBar = new HBox(6);
         inputBar.setAlignment(Pos.CENTER);
 
-        inputTextField.setPromptText("Ask anything like ChatGPT or ask doubts about an image...");
-        inputTextField.getStyleClass().add("hud-text-field");
-        HBox.setHgrow(inputTextField, Priority.ALWAYS);
+        inputTextArea.setPromptText("Ask anything like ChatGPT... (Enter to send, Shift+Enter for newline)");
+        inputTextArea.getStyleClass().add("hud-text-area");
+        inputTextArea.setPrefRowCount(2);
+        inputTextArea.setMaxHeight(80);
+        inputTextArea.setMinHeight(44);
+        inputTextArea.setWrapText(true);
+        HBox.setHgrow(inputTextArea, Priority.ALWAYS);
+
+        // Enter to Send, Shift+Enter for Newline
+        inputTextArea.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (event.getCode() == KeyCode.ENTER) {
+                if (event.isShiftDown()) {
+                    // Default behavior: newline
+                } else {
+                    event.consume();
+                    handleSendMessage();
+                }
+            }
+        });
+
+        Button newChatBtn = new Button("🧹 New Chat");
+        newChatBtn.getStyleClass().add("hud-button-secondary");
+        newChatBtn.setStyle("-fx-font-size: 10px; -fx-padding: 5px 8px;");
+        newChatBtn.setTooltip(new Tooltip("Clear chat stream and start a fresh conversation session"));
+        newChatBtn.setOnAction(e -> handleNewChat());
 
         Button attachImgBtn = new Button("🖼️ Image");
         attachImgBtn.getStyleClass().add("hud-button-secondary");
@@ -207,6 +237,9 @@ public class HudController {
         snapCamBtn.setOnAction(e -> handleSnapCamera());
 
         sendButton.getStyleClass().add("hud-button");
+        sendButton.setText("SEND ➔");
+        sendButton.setOnAction(e -> handleSendMessage());
+
         voiceChatButton.getStyleClass().addAll("hud-button", "hud-button-mic-active");
         micToggleButton.getStyleClass().add("hud-button-secondary");
 
@@ -226,10 +259,6 @@ public class HudController {
             langToggleBtn.setText("🌐 " + next.getLabel());
         });
 
-        // Transmit text action
-        inputTextField.setOnAction(e -> handleSendMessage());
-        sendButton.setOnAction(e -> handleSendMessage());
-
         // Live Voice Chat Button Action
         voiceChatButton.setOnAction(e -> handleVoiceChatButton());
 
@@ -246,7 +275,7 @@ public class HudController {
             }
         });
 
-        inputBar.getChildren().addAll(inputTextField, attachImgBtn, snapCamBtn, sendButton, langToggleBtn, voiceChatButton, micToggleButton);
+        inputBar.getChildren().addAll(newChatBtn, inputTextArea, attachImgBtn, snapCamBtn, sendButton, langToggleBtn, voiceChatButton, micToggleButton);
 
         // Gesture Action Shortcut Toolbar
         HBox gestureToolbar = new HBox(8);
@@ -493,8 +522,21 @@ public class HudController {
         attachmentPreviewBar.setManaged(false);
     }
 
+    private void handleNewChat() {
+        chatMessagesBox.getChildren().clear();
+        clearAttachedImage();
+        if (currentThinkingCell != null) {
+            currentThinkingCell = null;
+        }
+        chatMessagesBox.getChildren().add(new ChatMessageCell(
+                "### ⚡ Fresh Session Started\n\nN.E.X.U.S AI Perception Core is ready. What topic, code challenge, or question would you like to explore?",
+                false, "FOCUSED", 0
+        ));
+        chatScrollPane.setVvalue(1.0);
+    }
+
     private void handleSendMessage() {
-        String text = inputTextField.getText().trim();
+        String text = inputTextArea.getText().trim();
         File imgToSend = currentAttachedImageFile;
 
         if (text.isEmpty() && imgToSend == null) return;
@@ -502,10 +544,17 @@ public class HudController {
             text = "Please inspect this attached image and explain any findings or answer my questions about it.";
         }
 
-        inputTextField.clear();
+        inputTextArea.clear();
         clearAttachedImage();
 
         chatMessagesBox.getChildren().add(new ChatMessageCell(text, imgToSend, true, null, 0));
+
+        // Animated ChatGPT Thinking Indicator
+        if (currentThinkingCell != null) {
+            chatMessagesBox.getChildren().remove(currentThinkingCell);
+        }
+        currentThinkingCell = ChatMessageCell.createThinkingCell();
+        chatMessagesBox.getChildren().add(currentThinkingCell);
         chatScrollPane.setVvalue(1.0);
 
         eventBus.publish(new UserInputEvent(text, UserInputEvent.InputSource.TEXT, imgToSend));
@@ -523,7 +572,15 @@ public class HudController {
                     if (transcript != null && !transcript.isBlank()) {
                         File imgToSend = currentAttachedImageFile;
                         chatMessagesBox.getChildren().add(new ChatMessageCell("🎙️ \"" + transcript + "\"", imgToSend, true, null, 0));
+
+                        // Add animated thinking indicator
+                        if (currentThinkingCell != null) {
+                            chatMessagesBox.getChildren().remove(currentThinkingCell);
+                        }
+                        currentThinkingCell = ChatMessageCell.createThinkingCell();
+                        chatMessagesBox.getChildren().add(currentThinkingCell);
                         chatScrollPane.setVvalue(1.0);
+
                         clearAttachedImage();
                         eventBus.publish(new UserInputEvent(transcript, UserInputEvent.InputSource.SPEECH, imgToSend));
                     } else {
@@ -692,6 +749,10 @@ public class HudController {
         // Assistant Reply -> Add to chat stream
         eventBus.subscribe(AssistantResponseEvent.class, replyEvent -> {
             Platform.runLater(() -> {
+                if (currentThinkingCell != null) {
+                    chatMessagesBox.getChildren().remove(currentThinkingCell);
+                    currentThinkingCell = null;
+                }
                 chatMessagesBox.getChildren().add(new ChatMessageCell(
                         replyEvent.getResponseText(),
                         false,

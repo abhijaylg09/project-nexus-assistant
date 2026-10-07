@@ -171,6 +171,30 @@
     -fx-effect: dropshadow(gaussian, rgba(56, 189, 248, 0.65), 18, 0, 0, 0);
 }
 
+/* Glassmorphic Multiline Input Text Area (ChatGPT Style) */
+.hud-text-area {
+    -fx-background-color: rgba(10, 18, 38, 0.82);
+    -fx-background-radius: 14px;
+    -fx-border-color: rgba(56, 189, 248, 0.40);
+    -fx-border-radius: 14px;
+    -fx-border-width: 1.2px;
+    -fx-text-fill: #f8fafc;
+    -fx-font-size: 13px;
+    -fx-padding: 8px 12px;
+    -fx-prompt-text-fill: #64748b;
+    -fx-effect: dropshadow(gaussian, rgba(56, 189, 248, 0.10), 12, 0, 0, 2);
+}
+
+.hud-text-area .content {
+    -fx-background-color: transparent;
+}
+
+.hud-text-area:focused {
+    -fx-border-color: #00f2fe;
+    -fx-background-color: rgba(14, 25, 52, 0.95);
+    -fx-effect: dropshadow(gaussian, rgba(0, 242, 254, 0.55), 16, 0, 0, 0);
+}
+
 /* Radiant Neon Buttons */
 .hud-button {
     -fx-background-color: linear-gradient(135deg, #0284c7 0%, #0ea5e9 40%, #6366f1 100%);
