@@ -123,7 +123,7 @@ public class CameraViewportCanvas extends Canvas {
             gc.strokeLine(0, 8, 0, 18);
             gc.restore();
 
-            // ─── Emotion Tag Card above face ───
+            // ─── Person Name Identification Tag directly above face ───
             Color moodAccent = switch (currentMood.getEmotion()) {
                 case HAPPY -> Color.rgb(16, 185, 129); // Emerald
                 case STRESSED -> Color.rgb(244, 63, 94); // Coral Red
@@ -132,15 +132,32 @@ public class CameraViewportCanvas extends Canvas {
                 default -> Color.rgb(0, 242, 254); // Cyan (Focused/Neutral)
             };
 
+            String personName = (currentMood.getRecognizedIdentity() != null && !currentMood.getRecognizedIdentity().isBlank())
+                    ? currentMood.getRecognizedIdentity()
+                    : "UNKNOWN PERSON";
+
+            double tagY = Math.max(8, by - 56);
+            gc.setFill(Color.rgb(10, 20, 42, 0.92));
+            gc.fillRoundRect(bx, tagY, 195, 24, 8, 8);
+            gc.setStroke(Color.rgb(56, 189, 248, 0.85));
+            gc.setLineWidth(1.2);
+            gc.strokeRoundRect(bx, tagY, 195, 24, 8, 8);
+
+            gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 11));
+            gc.setFill(Color.rgb(56, 189, 248));
+            gc.fillText("👤 " + personName, bx + 8, tagY + 16);
+
+            // ─── Emotion Tag Card above face ───
+            double moodY = Math.max(34, by - 28);
             gc.setFill(Color.rgb(10, 18, 36, 0.88));
-            gc.fillRoundRect(bx, by - 28, 175, 24, 8, 8);
+            gc.fillRoundRect(bx, moodY, 185, 24, 8, 8);
             gc.setStroke(moodAccent);
             gc.setLineWidth(1.2);
-            gc.strokeRoundRect(bx, by - 28, 175, 24, 8, 8);
+            gc.strokeRoundRect(bx, moodY, 185, 24, 8, 8);
 
             gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 10));
             gc.setFill(moodAccent);
-            gc.fillText("● MOOD: " + currentMood.getEmotion().name() + " (" + currentMood.getFormattedConfidence() + " FERPlus)", bx + 8, by - 12);
+            gc.fillText("● MOOD: " + currentMood.getEmotion().name() + " (" + currentMood.getFormattedConfidence() + " ViT-AI)", bx + 8, moodY + 16);
 
             // ─── Glassmorphic Gender Tag below face box ───
             boolean isMale = currentMood.getGender() == MoodDetectedEvent.Gender.MALE;
@@ -149,10 +166,10 @@ public class CameraViewportCanvas extends Canvas {
             Color genderText = isMale ? Color.rgb(56, 189, 248) : Color.rgb(244, 114, 182);
 
             gc.setFill(genderBg);
-            gc.fillRoundRect(bx, by + bh + 6, 175, 24, 8, 8);
+            gc.fillRoundRect(bx, by + bh + 6, 185, 24, 8, 8);
             gc.setStroke(genderBorder);
             gc.setLineWidth(1.2);
-            gc.strokeRoundRect(bx, by + bh + 6, 175, 24, 8, 8);
+            gc.strokeRoundRect(bx, by + bh + 6, 185, 24, 8, 8);
 
             String genderSymbol = isMale ? "♂ MALE" : "♀ FEMALE";
             gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 10));
@@ -182,14 +199,14 @@ public class CameraViewportCanvas extends Canvas {
         // 4. Hand Gesture Status Badge (Top Right)
         if (currentGesture != null && currentGesture.getGesture() != GestureDetectedEvent.Gesture.NONE) {
             gc.setFill(Color.rgb(147, 51, 234, 0.92));
-            gc.fillRoundRect(w - 185, 8, 175, 28, 8, 8);
+            gc.fillRoundRect(w - 195, 8, 185, 28, 8, 8);
             gc.setStroke(Color.rgb(192, 132, 252, 0.8));
             gc.setLineWidth(1.2);
-            gc.strokeRoundRect(w - 185, 8, 175, 28, 8, 8);
+            gc.strokeRoundRect(w - 195, 8, 185, 28, 8, 8);
 
             gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 10));
             gc.setFill(Color.WHITE);
-            gc.fillText("✋ GESTURE: " + currentGesture.getGesture().getDisplayName(), w - 177, 26);
+            gc.fillText("✋ GESTURE: " + currentGesture.getGesture().getDisplayName() + " [Python AI]", w - 187, 26);
         }
 
         // 5. Active Telemetry Footer (Bottom)
@@ -204,7 +221,7 @@ public class CameraViewportCanvas extends Canvas {
 
         gc.setFont(Font.font("Consolas", FontWeight.BOLD, 9));
         gc.setFill(Color.rgb(0, 242, 254, 0.9));
-        gc.fillText("⚡ PYTHON AI PERCEPTION CORE ONLINE • OPENCV • FERPLUS • ViT-ONNX • MOTION: "
+        gc.fillText("⚡ PYTHON AI MULTIMODAL CORE • ViT-EMOTION • ViT-GENDER • GESTURE ENGINE • MOTION: "
                 + String.format("%.0f%%", motionPercent) + " [" + motionTag + "]", 16, h - 11);
     }
 }

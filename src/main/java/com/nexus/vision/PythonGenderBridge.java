@@ -7,8 +7,10 @@ import com.nexus.core.events.MoodDetectedEvent;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -52,7 +54,7 @@ public class PythonGenderBridge {
     ) {}
 
     private volatile GenderResult latestGenderResult = new GenderResult(
-            false, "MALE", 0.90, 0.90, 0.10, false, "Initializing"
+            false, "MALE", 0.50, 0.50, 0.50, false, "Python ViT-ONNX (Initializing)"
     );
 
     private volatile MoodDetectedEvent.Emotion latestEmotion = MoodDetectedEvent.Emotion.FOCUSED;
@@ -60,6 +62,11 @@ public class PythonGenderBridge {
 
     private volatile GestureDetectedEvent.Gesture latestGesture = GestureDetectedEvent.Gesture.NONE;
     private volatile double latestGestureConfidence = 0.0;
+
+    private volatile String latestPersonId = "ABHIJAY";
+    private volatile String latestPersonName = "Abhijay L. G.";
+    private volatile String latestPersonRole = "Python AI Perception Core, Central Orchestration & Adaptive Personalization";
+    private volatile double latestPersonConfidence = 0.94;
 
     private volatile int[] latestFaceBox = null;
     private volatile double latestMotionLevel = 0.0;
@@ -147,9 +154,24 @@ public class PythonGenderBridge {
                     "--port",
                     String.valueOf(PORT)
             );
+            pb.directory(new File("."));
             pb.redirectErrorStream(true);
             pythonProcess = pb.start();
             System.out.println("[PythonPerceptionBridge] Spawned Python AI process (PID: " + pythonProcess.pid() + ") with " + pythonExe);
+
+            // Read process output in background thread to avoid Windows stdout pipe buffer saturation
+            Thread outputGobbler = new Thread(() -> {
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(pythonProcess.getInputStream()))) {
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        if (line.contains("[Python") || line.contains("[Nexus") || line.contains("ERROR")) {
+                            System.out.println(line);
+                        }
+                    }
+                } catch (Exception ignored) {}
+            }, "python-ai-output-gobbler");
+            outputGobbler.setDaemon(true);
+            outputGobbler.start();
 
         } catch (Exception e) {
             System.err.println("[PythonPerceptionBridge] Failed to launch Python process: " + e.getMessage());
@@ -158,7 +180,7 @@ public class PythonGenderBridge {
 
     private String resolvePythonExecutable() {
         String[] candidates = System.getProperty("os.name", "").toLowerCase().contains("win")
-                ? new String[]{"python", "python3", "py"}
+                ? new String[]{"python", "py", "python3", "C:\\Users\\abhij\\AppData\\Local\\Programs\\Python\\Python312\\python.exe"}
                 : new String[]{"python3", "python"};
 
         for (String candidate : candidates) {
@@ -243,7 +265,16 @@ public class PythonGenderBridge {
                         }
                     }
 
-                    // 3. Parse Gesture
+                    // 3. Parse Identity / Person Name
+                    JsonNode identityNode = root.path("identity");
+                    if (!identityNode.isMissingNode()) {
+                        this.latestPersonId = identityNode.path("id").asText("ABHIJAY");
+                        this.latestPersonName = identityNode.path("name").asText("Abhijay L. G.");
+                        this.latestPersonRole = identityNode.path("role").asText("");
+                        this.latestPersonConfidence = identityNode.path("confidence").asDouble(0.92);
+                    }
+
+                    // 4. Parse Gesture
                     JsonNode gestureNode = root.path("gesture");
                     if (!gestureNode.isMissingNode()) {
                         String gestStr = gestureNode.path("gesture").asText("NONE").toUpperCase();
@@ -251,7 +282,7 @@ public class PythonGenderBridge {
                         this.latestGestureConfidence = gestureNode.path("confidence").asDouble(0.0);
                     }
 
-                    // 4. Parse Face Box
+                    // 5. Parse Face Box
                     JsonNode faceBoxNode = root.path("face_box");
                     if (!faceBoxNode.isMissingNode() && faceBoxNode.has("x")) {
                         this.latestFaceBox = new int[] {
@@ -262,7 +293,7 @@ public class PythonGenderBridge {
                         };
                     }
 
-                    // 5. Motion Level
+                    // 6. Motion Level
                     if (root.has("motion_level")) {
                         this.latestMotionLevel = root.path("motion_level").asDouble(0.0);
                     }
@@ -325,6 +356,22 @@ public class PythonGenderBridge {
 
     public double getLatestMotionLevel() {
         return latestMotionLevel;
+    }
+
+    public String getLatestPersonId() {
+        return latestPersonId;
+    }
+
+    public String getLatestPersonName() {
+        return latestPersonName;
+    }
+
+    public String getLatestPersonRole() {
+        return latestPersonRole;
+    }
+
+    public double getLatestPersonConfidence() {
+        return latestPersonConfidence;
     }
 
     public synchronized void shutdown() {

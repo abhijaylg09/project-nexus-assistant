@@ -45,6 +45,8 @@ class GenderDetectorEngine:
         self.session = None
         self.face_cascade = None
         self.model_path = model_path or MODEL_PATH
+        self.smoothed_male_prob = 0.50
+        self.last_result = None
         self._load_face_detector()
         self._load_onnx_model()
 
@@ -86,8 +88,8 @@ class GenderDetectorEngine:
             print(f"[Python-GenderEngine] Failed to load ONNX model: {e}", file=sys.stderr)
 
     def crop_face(self, bgr_image):
-        """Locates face in image, returns cropped face image or original if no face detected."""
-        if self.face_cascade is None or bgr_image is None:
+        """Locates face in image with multi-scale detection and generous contextual head margin for ViT."""
+        if self.face_cascade is None or bgr_image is None or bgr_image.size == 0:
             return bgr_image, False
 
         gray = cv2.cvtColor(bgr_image, cv2.COLOR_BGR2GRAY)
@@ -99,20 +101,31 @@ class GenderDetectorEngine:
         )
 
         if len(faces) == 0:
+            # Fallback with relaxed sensitivity for tilted / varied lighting faces
+            faces = self.face_cascade.detectMultiScale(
+                gray,
+                scaleFactor=1.05,
+                minNeighbors=3,
+                minSize=(50, 50)
+            )
+
+        if len(faces) == 0:
             return bgr_image, False
 
         # Pick largest detected face
         faces = sorted(faces, key=lambda f: f[2] * f[3], reverse=True)
         x, y, w, h = faces[0]
 
-        # Add 15% margin around the face
-        pad_x = int(w * 0.15)
-        pad_y = int(h * 0.15)
+        # ViT gender classification relies heavily on full head context (hairline, jaw, ears)
+        pad_x = int(w * 0.25)
+        pad_top = int(h * 0.35)
+        pad_bottom = int(h * 0.20)
+
         ih, iw = bgr_image.shape[:2]
         x1 = max(0, x - pad_x)
-        y1 = max(0, y - pad_y)
+        y1 = max(0, y - pad_top)
         x2 = min(iw, x + w + pad_x)
-        y2 = min(ih, y + h + pad_y)
+        y2 = min(ih, y + h + pad_bottom)
 
         cropped = bgr_image[y1:y2, x1:x2]
         return cropped, True
@@ -142,19 +155,25 @@ class GenderDetectorEngine:
         return tensor
 
     def predict_from_array(self, image_array, is_bgr=True, auto_crop=True):
-        """Runs ViT inference on an image array."""
+        """Runs ViT inference with temporal smoothing and robust confidence calibration."""
         if self.session is None:
             return {
                 "status": "error",
                 "message": "ONNX model session not loaded",
                 "gender": "UNKNOWN",
-                "confidence": 0.50
+                "confidence": 0.50,
+                "male_prob": 0.50,
+                "female_prob": 0.50,
+                "face_detected": False,
+                "engine": "Python ViT-ONNX (Not Loaded)"
             }
 
         face_detected = False
         face_img = image_array
         if auto_crop and is_bgr and cv2 is not None:
             face_img, face_detected = self.crop_face(image_array)
+        elif not auto_crop:
+            face_detected = True
 
         tensor = self.preprocess_image(face_img, is_bgr=is_bgr)
         outputs = self.session.run(None, {self.input_name: tensor})
@@ -166,22 +185,31 @@ class GenderDetectorEngine:
         female_prob = float(probs[0])
         male_prob = float(probs[1])
 
-        if male_prob >= female_prob:
+        # Temporal Exponential Moving Average (EMA) smoothing: alpha = 0.60
+        alpha = 0.60
+        self.smoothed_male_prob = (self.smoothed_male_prob * (1.0 - alpha)) + (male_prob * alpha)
+        smoothed_female_prob = 1.0 - self.smoothed_male_prob
+
+        if self.smoothed_male_prob >= 0.50:
             gender = "MALE"
-            confidence = male_prob
+            confidence = self.smoothed_male_prob
         else:
             gender = "FEMALE"
-            confidence = female_prob
+            confidence = smoothed_female_prob
 
-        return {
+        result = {
             "status": "success",
             "gender": gender,
             "confidence": round(confidence, 4),
-            "male_prob": round(male_prob, 4),
-            "female_prob": round(female_prob, 4),
+            "male_prob": round(self.smoothed_male_prob, 4),
+            "female_prob": round(smoothed_female_prob, 4),
+            "raw_male_prob": round(male_prob, 4),
+            "raw_female_prob": round(female_prob, 4),
             "face_detected": face_detected,
             "engine": "Python ViT-ONNX (rizvandwiki/gender-classification)"
         }
+        self.last_result = result
+        return result
 
     def predict_from_bytes(self, image_bytes, auto_crop=True):
         """Decodes raw JPEG/PNG bytes and classifies gender."""

@@ -122,9 +122,9 @@ public class HudController {
         Label visionStatus = new Label("VISION: CAMERA ACTIVE");
         visionStatus.getStyleClass().add("hud-status-badge");
 
-        Label pythonAiStatus = new Label("PYTHON AI CORE: MOOD (FERPlus) + GENDER (ViT)");
+        Label pythonAiStatus = new Label("PYTHON AI CORE: MOOD (ViT) + GENDER (ViT) + GESTURES");
         pythonAiStatus.getStyleClass().addAll("hud-status-badge", "hud-status-badge-active");
-        pythonAiStatus.setStyle("-fx-border-color: #a855f7; -fx-text-fill: #c084fc; -fx-background-color: rgba(168, 85, 247, 0.18);");
+        pythonAiStatus.setStyle("-fx-border-color: #a855f7; -fx-text-fill: #c084fc; -fx-background-color: rgba(168, 85, 247, 0.22);");
 
         // AI Model Configuration Dialog Button
         Button aiSettingsBtn = new Button("⚙️ AI Model / Key");
@@ -154,7 +154,7 @@ public class HudController {
 
         // Welcome greeting
         chatMessagesBox.getChildren().add(new ChatMessageCell(
-                "N.E.X.U.S AI Perception Core Online. Python Deep Learning Engine (FERPlus Mood & ViT-ONNX Gender) active. Glassmorphic HUD ready. Ask anything, click 'Image' to analyze a doubt, or press 'Voice Chat' to speak!",
+                "N.E.X.U.S AI Perception Core Online. Python Multimodal AI Engine (ViT-ONNX Mood & Gender + Real-Time Gesture Tracking) active. Glassmorphic HUD ready. Ask anything, click 'Image' to analyze a doubt, or press 'Voice Chat' to speak!",
                 false, "FOCUSED", 14
         ));
 
@@ -251,18 +251,19 @@ public class HudController {
         // Gesture Action Shortcut Toolbar
         HBox gestureToolbar = new HBox(8);
         gestureToolbar.setAlignment(Pos.CENTER_LEFT);
-        Label gestLabel = new Label("GESTURE SHORTCUTS:");
-        gestLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: #64748b; -fx-font-weight: bold;");
+        gestureToolbar.setPadding(new Insets(2, 0, 0, 0));
+        Label gestLabel = new Label("PYTHON GESTURE CONTROLS:");
+        gestLabel.setStyle("-fx-font-size: 10px; -fx-text-fill: #94a3b8; -fx-font-weight: 800; -fx-letter-spacing: 0.8px;");
 
-        Button btnThumbs = new Button("Confirm");
+        Button btnThumbs = new Button("👍 Confirm (Thumbs Up)");
         btnThumbs.getStyleClass().add("hud-button-secondary");
         btnThumbs.setOnAction(e -> core.getVisionService().getGestureClassifier().triggerManualGesture(GestureDetectedEvent.Gesture.THUMBS_UP));
 
-        Button btnStop = new Button("Mute / Pause");
+        Button btnStop = new Button("✋ Mute / Pause (Open Palm)");
         btnStop.getStyleClass().add("hud-button-secondary");
         btnStop.setOnAction(e -> core.getVisionService().getGestureClassifier().triggerManualGesture(GestureDetectedEvent.Gesture.STOP_PALM));
 
-        Button btnPeace = new Button("Summarize");
+        Button btnPeace = new Button("✌️ Summarize (Peace Sign)");
         btnPeace.getStyleClass().add("hud-button-secondary");
         btnPeace.setOnAction(e -> core.getVisionService().getGestureClassifier().triggerManualGesture(GestureDetectedEvent.Gesture.PEACE));
 
@@ -362,16 +363,18 @@ public class HudController {
             chatMessagesBox.getChildren().add(new ChatMessageCell("Gender set to automatic Python ViT-ONNX Deep Learning analysis.", false, "FOCUSED", 0));
         });
 
-        Button btnCheckViT = new Button("⚡ Status");
+        Button btnCheckViT = new Button("⚡ AI Core Status");
         btnCheckViT.getStyleClass().add("hud-button-secondary");
         btnCheckViT.setStyle("-fx-font-size: 9px; -fx-padding: 3px 6px; -fx-text-fill: #a855f7;");
         btnCheckViT.setOnAction(e -> {
             var bridge = core.getVisionService().getFaceBiometrics().getPythonBridge();
             var res = bridge.getLatestResult();
             boolean ready = bridge.isPythonServiceReady();
-            String msg = "Python ViT Gender Engine: " + (ready ? "ONLINE (Active)" : "STARTING / FALLBACK")
-                    + " | Classification: " + res.gender() + " (" + String.format("%.1f%%", res.confidence() * 100.0) + ")"
-                    + " [Male: " + String.format("%.1f%%", res.maleProb() * 100.0) + ", Female: " + String.format("%.1f%%", res.femaleProb() * 100.0) + "]";
+            String msg = "Python Multimodal AI Core: " + (ready ? "ONLINE (Active)" : "INITIALIZING")
+                    + "\n• Emotion (ViT): " + bridge.getLatestEmotion() + " (" + String.format("%.1f%%", bridge.getLatestEmotionConfidence() * 100.0) + ")"
+                    + "\n• Gender (ViT): " + res.gender() + " (" + String.format("%.1f%%", res.confidence() * 100.0) + ")"
+                    + " [Male: " + String.format("%.1f%%", res.maleProb() * 100.0) + ", Female: " + String.format("%.1f%%", res.femaleProb() * 100.0) + "]"
+                    + "\n• Gesture Core: " + bridge.getLatestGesture() + " (Confidence: " + String.format("%.1f%%", bridge.getLatestGestureConfidence() * 100.0) + ")";
             chatMessagesBox.getChildren().add(new ChatMessageCell(msg, false, "FOCUSED", 0));
         });
 

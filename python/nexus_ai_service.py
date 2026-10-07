@@ -29,6 +29,7 @@ if SCRIPT_DIR not in sys.path:
 
 from nexus_emotion_detector import EmotionDetector
 from nexus_gesture_engine import GestureDetector
+from nexus_face_recognizer import FaceBiometricIdentifier
 
 # Import Gender Detector from scripts/gender_detector.py
 sys.path.insert(0, os.path.join(os.path.dirname(SCRIPT_DIR), "scripts"))
@@ -46,6 +47,7 @@ class NexusPerceptionEngine:
         self.emotion_detector = EmotionDetector()
         self.gesture_detector = GestureDetector()
         self.gender_detector = GenderDetectorEngine() if GenderDetectorEngine else None
+        self.face_identifier = FaceBiometricIdentifier()
 
         self.prev_gray_frame = None
         self.smoothed_face = None
@@ -146,19 +148,46 @@ class NexusPerceptionEngine:
                 "probabilities": {self.emotion_detector.last_emotion.lower(): self.emotion_detector.last_confidence}
             }
 
-        # 2. Gender Detection
-        if self.gender_detector and face_crop is not None and face_crop.size > 0:
-            gender_result = self.gender_detector.predict_from_array(face_crop, is_bgr=True, auto_crop=False)
+        # 2. Gender Detection (Authoritative Python ViT-ONNX Deep Learning)
+        if self.gender_detector:
+            if face_box is not None:
+                fx, fy, fw, fh = face_box
+                ih, iw = bgr_frame.shape[:2]
+                gx1 = max(0, fx - int(fw * 0.25))
+                gy1 = max(0, fy - int(fh * 0.35))
+                gx2 = min(iw, fx + fw + int(fw * 0.25))
+                gy2 = min(ih, fy + fh + int(fh * 0.20))
+                head_crop = bgr_frame[gy1:gy2, gx1:gx2]
+                gender_result = self.gender_detector.predict_from_array(head_crop, is_bgr=True, auto_crop=False)
+            else:
+                gender_result = self.gender_detector.predict_from_array(bgr_frame, is_bgr=True, auto_crop=True)
         else:
             gender_result = {
+                "status": "fallback",
                 "gender": "MALE",
-                "confidence": 0.92,
-                "male_prob": 0.92,
-                "female_prob": 0.08
+                "confidence": 0.85,
+                "male_prob": 0.50,
+                "female_prob": 0.50,
+                "face_detected": False,
+                "engine": "Neutral Fallback"
             }
 
         # 3. Hand Gesture Recognition
         gesture_result = self.gesture_detector.detect_gesture(bgr_frame, face_box=face_box)
+
+        # 4. Deep Face Biometric Person Name Identification (OpenCV SFace 128D)
+        if face_crop is not None and face_crop.size > 0:
+            target_gen = gender_result.get("gender", "MALE")
+            identity_result = self.face_identifier.identify_face(face_crop, detected_gender=target_gen)
+        else:
+            identity_result = {
+                "id": self.face_identifier.last_identified["id"],
+                "name": self.face_identifier.last_identified["name"],
+                "role": self.face_identifier.last_identified["role"],
+                "confidence": self.face_identifier.last_confidence,
+                "enrolled": False,
+                "engine": "Face Biometrics Engine"
+            }
 
         elapsed_ms = (time.time() - t0) * 1000.0
 
@@ -173,11 +202,12 @@ class NexusPerceptionEngine:
             } if face_box else None,
             "mood": mood_result,
             "gender": gender_result,
+            "identity": identity_result,
             "gesture": gesture_result,
             "motion_level": round(motion_level, 4),
             "inference_time_ms": round(elapsed_ms, 2),
             "fps": round(self.current_fps, 1),
-            "engine": "Python Multimodal AI Core (OpenCV + FERPlus + ViT)"
+            "engine": "Python Multimodal AI Core (OpenCV + ViT + SFace)"
         }
 
 

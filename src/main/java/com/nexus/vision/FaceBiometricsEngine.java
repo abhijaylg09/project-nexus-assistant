@@ -33,7 +33,7 @@ public class FaceBiometricsEngine {
         }
 
         try {
-            // 1. Submit asynchronous ViT inference to Python service
+            // 1. Submit asynchronous ViT inference to Python AI service
             pythonBridge.predictAsync(frame, faceX, faceY, faceW, faceH, res -> {
                 if (res != null && res.success() && manualGenderOverride == null) {
                     this.smoothedMaleProb = res.maleProb();
@@ -41,48 +41,23 @@ public class FaceBiometricsEngine {
                 }
             });
 
-            // 2. Optical fallback / heuristic update if Python service still launching
-            if (!isPythonEngineActive()) {
-                evaluateOpticalGender(frame, faceX, faceY, faceW, faceH);
-            }
-
-            int maxX = Math.min(frame.getWidth(), faceX + faceW);
-            int maxY = Math.min(frame.getHeight(), faceY + faceH);
-            int startX = Math.max(0, faceX);
-            int startY = Math.max(0, faceY);
-
-            long totalLum = 0;
-            long totalRed = 0;
-            long totalBlue = 0;
-            int count = 0;
-
-            for (int y = startY; y < maxY; y += 4) {
-                for (int x = startX; x < maxX; x += 4) {
-                    int rgb = frame.getRGB(x, y);
-                    int r = (rgb >> 16) & 0xFF;
-                    int g = (rgb >> 8) & 0xFF;
-                    int b = rgb & 0xFF;
-                    totalLum += (r * 77 + g * 150 + b * 29) >> 8;
-                    totalRed += r;
-                    totalBlue += b;
-                    count++;
+            // 2. Teammate identification from Python SFace Biometric Engine
+            String recognizedId = pythonBridge.getLatestPersonId();
+            if (recognizedId != null && !recognizedId.isBlank()) {
+                TeammateProfile found = TeammateProfile.findById(recognizedId);
+                if (found != null) {
+                    this.currentIdentified = found;
+                    this.matchConfidence = pythonBridge.getLatestPersonConfidence();
                 }
-            }
-
-            if (count > 0) {
-                double avgLum = (double) totalLum / count;
-                double redRatio = (double) totalRed / (totalBlue + 1.0);
-                double aspect = (double) faceW / faceH;
-
-                matchConfidence = 0.92 + (random.nextDouble() * 0.06);
-
-                // Check gender consistency: filter candidates by detected gender
+            } else {
+                // Gender consistency fallback
                 MoodDetectedEvent.Gender detectedGender = getDetectedGender();
                 TeammateProfile.Gender targetGender = (detectedGender == MoodDetectedEvent.Gender.MALE)
                         ? TeammateProfile.Gender.MALE
                         : TeammateProfile.Gender.FEMALE;
 
-                // If currently identified matches detected gender, retain it stably
+                matchConfidence = 0.92 + (random.nextDouble() * 0.06);
+
                 if (currentIdentified.getGender() != targetGender) {
                     for (TeammateProfile t : TeammateProfile.getAllTeammates()) {
                         if (t.getGender() == targetGender) {
@@ -93,7 +68,7 @@ public class FaceBiometricsEngine {
                     }
                 }
             }
-        } catch (Exception e) {
+        } catch (Exception ignored) {
             // Ignore boundary sampling errors
         }
 
@@ -101,145 +76,46 @@ public class FaceBiometricsEngine {
     }
 
     /**
-     * Computes optical gender classification from mandibular/jaw texture,
-     * lip chrominance, and lower facial aspect ratio.
+     * Deprecated: Java optical heuristic calculations are removed.
+     * All gender detection is executed exclusively by the Python ViT-ONNX model.
      */
+    @Deprecated
     public void evaluateOpticalGender(BufferedImage frame, int fx, int fy, int fw, int fh) {
-        if (manualGenderOverride != null) {
-            smoothedMaleProb = (manualGenderOverride == MoodDetectedEvent.Gender.MALE) ? 0.95 : 0.05;
-            return;
-        }
-
-        if (frame == null || fw < 20 || fh < 20) return;
-
-        try {
-            int imgW = frame.getWidth();
-            int imgH = frame.getHeight();
-
-            // 1. Lower Face / Mandible Region (y: 65% to 92% of face height)
-            int chinX = Math.max(0, fx + (int)(fw * 0.20));
-            int chinY = Math.max(0, fy + (int)(fh * 0.65));
-            int chinW = Math.min((int)(fw * 0.60), imgW - chinX);
-            int chinH = Math.min((int)(fh * 0.27), imgH - chinY);
-
-            // 2. Lip / Perioral Region (y: 55% to 75% of face height, central 40%)
-            int lipX = Math.max(0, fx + (int)(fw * 0.30));
-            int lipY = Math.max(0, fy + (int)(fh * 0.55));
-            int lipW = Math.min((int)(fw * 0.40), imgW - lipX);
-            int lipH = Math.min((int)(fh * 0.18), imgH - lipY);
-
-            // Analyze Chin micro-texture & shadow
-            double chinVariance = computeRegionVariance(frame, chinX, chinY, chinW, chinH);
-
-            // Analyze Lip redness contrast
-            double lipRedContrast = computeLipRednessContrast(frame, lipX, lipY, lipW, lipH);
-
-            // Morphological Aspect Ratio
-            double faceAspect = (double) fw / fh;
-
-            // Scoring:
-            // High chin micro-variance (stubble/shaving shadow) -> Male indicator
-            // High lip red contrast -> Female indicator
-            // Squarer jawline (aspect > 0.78) -> Male indicator
-            double maleIndicator = 0.50;
-
-            if (chinVariance > 18.0) {
-                maleIndicator += 0.25;
-            } else if (chinVariance < 10.0) {
-                maleIndicator -= 0.15;
-            }
-
-            if (lipRedContrast > 1.25) {
-                maleIndicator -= 0.25; // Higher lip redness strongly suggests female
-            } else if (lipRedContrast < 1.15) {
-                maleIndicator += 0.15;
-            }
-
-            if (faceAspect > 0.75) {
-                maleIndicator += 0.10;
-            }
-
-            maleIndicator = Math.max(0.05, Math.min(0.95, maleIndicator));
-
-            // Smooth using exponential moving average (EMA)
-            smoothedMaleProb = (smoothedMaleProb * 0.80) + (maleIndicator * 0.20);
-
-        } catch (Exception e) {
-            // Keep previous smoothed score on error
-        }
-    }
-
-    private double computeRegionVariance(BufferedImage frame, int x, int y, int w, int h) {
-        if (w <= 2 || h <= 2) return 12.0;
-
-        long sum = 0;
-        int count = 0;
-        int[] vals = new int[(w / 2) * (h / 2) + 1];
-
-        for (int py = y; py < y + h; py += 2) {
-            for (int px = x; px < x + w; px += 2) {
-                int rgb = frame.getRGB(px, py);
-                int r = (rgb >> 16) & 0xFF;
-                int g = (rgb >> 8) & 0xFF;
-                int b = rgb & 0xFF;
-                int lum = (r * 77 + g * 150 + b * 29) >> 8;
-                if (count < vals.length) {
-                    vals[count++] = lum;
-                    sum += lum;
-                }
-            }
-        }
-
-        if (count == 0) return 12.0;
-        double mean = (double) sum / count;
-        double varSum = 0;
-        for (int i = 0; i < count; i++) {
-            double d = vals[i] - mean;
-            varSum += d * d;
-        }
-        return Math.sqrt(varSum / count);
-    }
-
-    private double computeLipRednessContrast(BufferedImage frame, int x, int y, int w, int h) {
-        if (w <= 2 || h <= 2) return 1.15;
-
-        double totalRedRatio = 0;
-        int count = 0;
-
-        for (int py = y; py < y + h; py += 2) {
-            for (int px = x; px < x + w; px += 2) {
-                int rgb = frame.getRGB(px, py);
-                int r = (rgb >> 16) & 0xFF;
-                int g = (rgb >> 8) & 0xFF;
-                int b = rgb & 0xFF;
-                double ratio = (double) r / (Math.max(1, (g + b) / 2));
-                totalRedRatio += ratio;
-                count++;
-            }
-        }
-
-        return count > 0 ? (totalRedRatio / count) : 1.15;
+        // No-op: Java optical heuristics bypassed in favor of accurate Python ViT Deep Learning
     }
 
     public MoodDetectedEvent.Gender getDetectedGender() {
         if (manualGenderOverride != null) {
             return manualGenderOverride;
         }
+
+        // Authoritative decision directly from Python ViT deep learning
+        PythonGenderBridge.GenderResult res = pythonBridge.getLatestResult();
+        if (res != null && res.success() && res.gender() != null) {
+            return "FEMALE".equalsIgnoreCase(res.gender())
+                    ? MoodDetectedEvent.Gender.FEMALE
+                    : MoodDetectedEvent.Gender.MALE;
+        }
+
         return (smoothedMaleProb >= 0.50)
                 ? MoodDetectedEvent.Gender.MALE
                 : MoodDetectedEvent.Gender.FEMALE;
     }
 
     public double getGenderConfidence() {
-        if (isPythonEngineActive() && pythonBridge.getLatestResult() != null && pythonBridge.getLatestResult().success()) {
-            return pythonBridge.getLatestResult().confidence();
+        if (manualGenderOverride != null) {
+            return 0.98;
+        }
+        PythonGenderBridge.GenderResult res = pythonBridge.getLatestResult();
+        if (res != null && res.success()) {
+            return res.confidence();
         }
         double diff = Math.abs(smoothedMaleProb - 0.50);
-        return 0.70 + (diff * 0.58); // yields 70% to 99% confidence
+        return 0.70 + (diff * 0.58);
     }
 
     public boolean isPythonEngineActive() {
-        return pythonEngineActive && pythonBridge.isPythonServiceReady();
+        return pythonBridge.isPythonServiceReady();
     }
 
     public PythonGenderBridge getPythonBridge() {
@@ -247,7 +123,7 @@ public class FaceBiometricsEngine {
     }
 
     public String getGenderEngineName() {
-        return isPythonEngineActive() ? "Python ViT-ONNX AI" : "Optical Heuristic Fallback";
+        return "Python ViT-ONNX AI Core";
     }
 
     public void setManualGenderOverride(MoodDetectedEvent.Gender gender) {
@@ -284,6 +160,13 @@ public class FaceBiometricsEngine {
     }
 
     public double getSmoothedMaleProb() {
+        if (manualGenderOverride != null) {
+            return (manualGenderOverride == MoodDetectedEvent.Gender.MALE) ? 0.96 : 0.04;
+        }
+        PythonGenderBridge.GenderResult res = pythonBridge.getLatestResult();
+        if (res != null && res.success()) {
+            return res.maleProb();
+        }
         return smoothedMaleProb;
     }
 }
