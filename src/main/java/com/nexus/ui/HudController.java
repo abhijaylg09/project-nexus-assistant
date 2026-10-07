@@ -591,22 +591,68 @@ public class HudController {
         Label heading = new Label("Configure Cloud / Local LLM Model");
         heading.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #00f2fe;");
 
-        Label desc = new Label("N.E.X.U.S answers all questions offline via deep knowledge reasoning. You can also connect OpenAI, Groq, or Ollama for live cloud intelligence:");
+        Label desc = new Label("N.E.X.U.S automatically answers every question out-of-the-box using Free Zero-Config Cloud AI and Offline Intelligence. You can also connect Groq, OpenAI, or Ollama:");
         desc.setWrapText(true);
         desc.setStyle("-fx-font-size: 11px; -fx-text-fill: #94a3b8;");
 
+        // Quick Preset Buttons
+        HBox presetRow = new HBox(6);
+        presetRow.setAlignment(Pos.CENTER_LEFT);
+
+        Button freePreset = new Button("⚡ Free AI (Zero-Key)");
+        freePreset.getStyleClass().add("hud-button-secondary");
+        freePreset.setStyle("-fx-font-size: 10px; -fx-padding: 3px 8px; -fx-border-color: #00f2fe; -fx-text-fill: #00f2fe;");
+
+        Button groqPreset = new Button("🚀 Groq (500 tok/s)");
+        groqPreset.getStyleClass().add("hud-button-secondary");
+        groqPreset.setStyle("-fx-font-size: 10px; -fx-padding: 3px 8px; -fx-border-color: #f59e0b; -fx-text-fill: #fbbf24;");
+
+        Button openaiPreset = new Button("🟢 OpenAI");
+        openaiPreset.getStyleClass().add("hud-button-secondary");
+        openaiPreset.setStyle("-fx-font-size: 10px; -fx-padding: 3px 8px; -fx-border-color: #10b981; -fx-text-fill: #34d399;");
+
+        Button ollamaPreset = new Button("🦙 Ollama Local");
+        ollamaPreset.getStyleClass().add("hud-button-secondary");
+        ollamaPreset.setStyle("-fx-font-size: 10px; -fx-padding: 3px 8px;");
+
+        presetRow.getChildren().addAll(freePreset, groqPreset, openaiPreset, ollamaPreset);
+
         TextField endpointField = new TextField(AppConfig.getInstance().getLlmEndpoint());
-        endpointField.setPromptText("API Endpoint (e.g. https://api.openai.com/v1/chat/completions or http://localhost:11434/v1/chat/completions)");
+        endpointField.setPromptText("API Endpoint");
         endpointField.getStyleClass().add("hud-text-field");
 
         PasswordField apiKeyField = new PasswordField();
         apiKeyField.setText(AppConfig.getInstance().getLlmApiKey());
-        apiKeyField.setPromptText("Enter API Key (OpenAI 'sk-...' or Groq 'gsk_...' or leave blank for Ollama/Offline)");
+        apiKeyField.setPromptText("Enter API Key (or leave blank for Free AI / Ollama)");
         apiKeyField.getStyleClass().add("hud-text-field");
 
         TextField modelField = new TextField(AppConfig.getInstance().getLlmModel());
-        modelField.setPromptText("Model Name (e.g. gpt-4o-mini, llama-3.3-70b-versatile, llama3.2)");
+        modelField.setPromptText("Model Name");
         modelField.getStyleClass().add("hud-text-field");
+
+        freePreset.setOnAction(e -> {
+            endpointField.setText("https://text.pollinations.ai/openai");
+            modelField.setText("openai");
+            apiKeyField.setText("");
+        });
+
+        groqPreset.setOnAction(e -> {
+            endpointField.setText("https://api.groq.com/openai/v1/chat/completions");
+            modelField.setText("llama-3.3-70b-versatile");
+            apiKeyField.setPromptText("Enter Groq API Key (gsk_...)");
+        });
+
+        openaiPreset.setOnAction(e -> {
+            endpointField.setText("https://api.openai.com/v1/chat/completions");
+            modelField.setText("gpt-4o-mini");
+            apiKeyField.setPromptText("Enter OpenAI API Key (sk-...)");
+        });
+
+        ollamaPreset.setOnAction(e -> {
+            endpointField.setText("http://localhost:11434/v1/chat/completions");
+            modelField.setText("llama3.2");
+            apiKeyField.setText("");
+        });
 
         HBox btnRow = new HBox(10);
         btnRow.setAlignment(Pos.CENTER_RIGHT);
@@ -627,9 +673,16 @@ public class HudController {
 
         btnRow.getChildren().addAll(closeBtn, saveBtn);
 
-        content.getChildren().addAll(heading, desc, new Label("LLM Endpoint:"), endpointField, new Label("API Key:"), apiKeyField, new Label("Model:"), modelField, btnRow);
+        content.getChildren().addAll(
+                heading, desc,
+                new Label("Quick Presets:"), presetRow,
+                new Label("LLM Endpoint:"), endpointField,
+                new Label("API Key:"), apiKeyField,
+                new Label("Model:"), modelField,
+                btnRow
+        );
 
-        Scene scene = new Scene(content, 480, 360);
+        Scene scene = new Scene(content, 520, 420);
         scene.getStylesheets().add(getClass().getResource("/styles/hud-cyberpunk.css").toExternalForm());
         dialog.setScene(scene);
         dialog.showAndWait();

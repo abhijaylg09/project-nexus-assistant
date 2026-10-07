@@ -121,6 +121,12 @@ public class AppConfig {
         if (envKey != null && !envKey.isBlank()) {
             llmApiKey = envKey.trim();
         }
+        String groqKey = System.getenv("GROQ_API_KEY");
+        if (groqKey != null && !groqKey.isBlank() && (llmApiKey == null || llmApiKey.isBlank() || llmApiKey.contains("YOUR_API_KEY"))) {
+            llmApiKey = groqKey.trim();
+            llmEndpoint = "https://api.groq.com/openai/v1/chat/completions";
+            llmModel = "llama-3.3-70b-versatile";
+        }
         String envEndpoint = System.getenv("LLM_ENDPOINT");
         if (envEndpoint != null && !envEndpoint.isBlank()) {
             llmEndpoint = envEndpoint.trim();

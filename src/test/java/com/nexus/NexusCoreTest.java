@@ -274,4 +274,23 @@ public class NexusCoreTest {
         assertEquals("files", com.nexus.system.AppLauncherService.extractAppLaunchIntent("open my files"));
         assertEquals("chatgpt", com.nexus.system.AppLauncherService.extractAppLaunchIntent("open chatgpt"));
     }
+
+    @Test
+    @DisplayName("Verify OfflineKnowledgeEngine math evaluation and structured responses")
+    public void testMathEvaluationAndGeneralKnowledge() {
+        // Math evaluation
+        String mathAns = com.nexus.reasoning.OfflineKnowledgeEngine.answerQuery("what is 25 * 4", List.of(), "Abhijay");
+        assertNotNull(mathAns);
+        assertTrue(mathAns.contains("100"));
+
+        String sqrtAns = com.nexus.reasoning.OfflineKnowledgeEngine.answerQuery("sqrt(144)", List.of(), "Abhijay");
+        assertNotNull(sqrtAns);
+        assertTrue(sqrtAns.contains("12"));
+
+        // Algorithm knowledge
+        String qs = com.nexus.reasoning.OfflineKnowledgeEngine.answerQuery("how does quicksort work", List.of(), "Abhijay");
+        assertNotNull(qs);
+        assertTrue(qs.contains("QuickSort") && qs.contains("pivot"));
+    }
 }
+
