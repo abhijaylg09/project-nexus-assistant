@@ -33,14 +33,20 @@ public class OfflineKnowledgeEngine {
         }
 
         // =========================================================================
-        // 1. CONVERSATIONAL GREETINGS & STATUS
+        // 1. CONVERSATIONAL GREETINGS & FRIENDSHIP COMPANION
         // =========================================================================
+        if (q.contains("friend") || q.contains("talk to me") || q.contains("talk like a friend") || q.contains("be my friend") || q.contains("let's chat") || q.contains("hang out") || q.contains("casual")) {
+            String name = (activeTeammateName != null && !activeTeammateName.isBlank()) ? activeTeammateName : "Abhijay";
+            return "Hey " + name + "! You got it, my friend! From here on out, we're talking just like close buddies. " +
+                   "I'm right here with you—whether you want to brainstorm ideas, debug some code, talk about how your day is going, or just chill. What's on your mind today, bro?";
+        }
+
         if (q.equals("hi") || q.equals("hello") || q.equals("hey") || q.startsWith("hello ") || q.startsWith("hi ") || q.startsWith("hey ") ||
             q.contains("good morning") || q.contains("good afternoon") || q.contains("good evening") || q.contains("how are you") || q.contains("what's up") ||
             q.contains("namaskaram") || q.contains("sugamano") || q.contains("enthokkeyund") || q.contains("endha mone") || q.contains("scene mone")) {
-            return "Endha mone! N.E.X.U.S AI Perception Core is fully active.\n\n" +
-                   "My Python computer vision pipeline is tracking your expressions and gestures, the speech engine is listening, and the glassmorphic HUD is ready.\n\n" +
-                   "What doubt, code challenge, or question would you like to explore today? Fire away!";
+            String name = (activeTeammateName != null && !activeTeammateName.isBlank()) ? activeTeammateName : "Abhijay";
+            return "Hey " + name + "! What's up, buddy? I'm feeling awesome and super excited to hang out with you! " +
+                   "How's everything going with you today? What doubt, project idea, or challenge are we tackling together?";
         }
 
         if (q.contains("roast me") || q.contains("make fun of me") || q.contains("insult me") || q.contains("thug life") || q.equals("roast")) {
@@ -58,7 +64,8 @@ public class OfflineKnowledgeEngine {
         }
 
         if (q.contains("thank you") || q.contains("thanks") || q.equals("ty") || q.contains("nanni") || q.contains("appreciate it")) {
-            return "You're very welcome! Feel free to ask more questions, attach an image to clear doubts, or use **🎙️ VOICE CHAT** to speak!";
+            String name = (activeTeammateName != null && !activeTeammateName.isBlank()) ? activeTeammateName : "buddy";
+            return "Anytime, " + name + "! That's what friends are for. You're crushing it! Fire away whenever you have another question or want to chat!";
         }
 
         // =========================================================================

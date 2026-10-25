@@ -192,30 +192,44 @@ public class PiperTtsEngine {
 
     private void executeWindowsSapi(String text) {
         try {
-            File scriptFile = new File("scripts", "speak.ps1");
+            File scriptFile = resolveScriptFile();
             ProcessBuilder pb;
-            if (scriptFile.exists()) {
+            if (scriptFile != null && scriptFile.exists()) {
                 pb = new ProcessBuilder(
                         "powershell",
                         "-NoProfile",
                         "-NonInteractive",
                         "-ExecutionPolicy", "Bypass",
-                        "-File", scriptFile.getAbsolutePath(),
-                        text
+                        "-File", scriptFile.getAbsolutePath()
                 );
             } else {
-                String safeText = text.replace("\"", " ").replace("'", " ").trim();
-                String psCommand = "Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Rate = 1; $s.Speak(\"" + safeText + "\")";
-                pb = new ProcessBuilder("powershell", "-NoProfile", "-NonInteractive", "-Command", psCommand);
+                String safeCmd = "$text = [Console]::In.ReadToEnd(); Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Rate = 1; $s.Speak($text.Trim())";
+                pb = new ProcessBuilder("powershell", "-NoProfile", "-NonInteractive", "-Command", safeCmd);
             }
 
             pb.redirectErrorStream(true);
-            currentProcess = pb.start();
-            currentProcess.waitFor();
+            Process process = pb.start();
+            currentProcess = process;
+
+            // Feed spoken text safely via STDIN to handle any length and special characters
+            try (var os = process.getOutputStream()) {
+                os.write(text.getBytes(StandardCharsets.UTF_8));
+                os.flush();
+            }
+
+            process.waitFor();
 
         } catch (Exception e) {
             System.err.println("[PiperTtsEngine] Windows speech synthesis error: " + e.getMessage());
         }
+    }
+
+    private File resolveScriptFile() {
+        File f1 = new File("scripts", "speak.ps1");
+        if (f1.exists()) return f1.getAbsoluteFile();
+        File f2 = new File(System.getProperty("user.dir"), "scripts/speak.ps1");
+        if (f2.exists()) return f2.getAbsoluteFile();
+        return null;
     }
 
     public boolean isSpeaking() {

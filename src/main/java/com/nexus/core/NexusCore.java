@@ -78,8 +78,8 @@ public class NexusCore {
         speechService.start();
         startTelemetryMonitoring();
 
-        // Speak welcoming announcement
-        speechService.speak("Nexus online. Central orchestrator active.", null);
+        // Speak welcoming announcement like a real friend
+        speechService.speak("Hey Abhijay! Nexus is online and ready. What are we working on today, buddy?", null);
     }
 
     public void stop() {

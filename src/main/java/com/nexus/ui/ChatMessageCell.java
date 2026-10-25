@@ -147,7 +147,15 @@ public class ChatMessageCell extends HBox {
             readAloudBtn.setStyle("-fx-font-size: 9px; -fx-padding: 2px 7px; -fx-background-radius: 6px; -fx-text-fill: #38bdf8;");
             readAloudBtn.setOnAction(e -> {
                 if (defaultReadAloudHandler != null) {
+                    readAloudBtn.setText("🔊 Reading Aloud...");
+                    readAloudBtn.setStyle("-fx-font-size: 9px; -fx-padding: 2px 7px; -fx-background-radius: 6px; -fx-text-fill: #f472b6; -fx-border-color: #f43f5e;");
                     defaultReadAloudHandler.accept(text);
+
+                    Timeline revert = new Timeline(new KeyFrame(Duration.seconds(4), ev -> {
+                        readAloudBtn.setText("🔊 Read Aloud");
+                        readAloudBtn.setStyle("-fx-font-size: 9px; -fx-padding: 2px 7px; -fx-background-radius: 6px; -fx-text-fill: #38bdf8;");
+                    }));
+                    revert.play();
                 }
             });
 

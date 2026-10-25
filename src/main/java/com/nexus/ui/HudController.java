@@ -162,15 +162,16 @@ public class HudController {
             Platform.runLater(() -> chatScrollPane.setVvalue(1.0));
         });
 
-        // Welcome greeting (ChatGPT Style)
+        // Welcome greeting (Friendly AI Companion Style)
         chatMessagesBox.getChildren().add(new ChatMessageCell(
-                "### ⚡ N.E.X.U.S AI Perception Core Online\n\n" +
-                "**ChatGPT-Grade Intelligence Active.** Real-time multimodal Python perception engine (ViT-ONNX Mood & Gender, MediaPipe Gestures, SFace Biometrics) online.\n\n" +
-                "* **Ask Anything:** Code debugging, math problem solving, algorithms, science, architecture, or general questions.\n" +
-                "* **🖼️ Image Doubt:** Attach any image file or click **📸 Snap** to analyze doubts visually.\n" +
-                "* **🎙️ Voice Chat:** Speak naturally in English or മലയാളം (Malayalam).\n\n" +
-                "*Type your question below and press **Enter** (Shift+Enter for a new line).* ",
-                false, "FOCUSED", 14
+                "### 👋 Hey Abhijay, welcome back!\n\n" +
+                "I'm your **personal AI friend and assistant**! I'm completely tuned in with real-time camera vision, live voice chat, and instant **Voice TalkBack**.\n\n" +
+                "* 💬 **Chat Like a Friend:** Ask me anything, talk about your day, or brainstorm ideas!\n" +
+                "* 🔊 **Voice TalkBack:** I'll read my answers out loud to you automatically.\n" +
+                "* 🎙️ **Live Voice Chat:** Click the red mic button below or speak naturally.\n" +
+                "* 📸 **Vision Doubts:** Snap your webcam or drop in images to clear doubts together!\n\n" +
+                "*What's on your mind today, buddy? Fire away!*",
+                false, "HAPPY", 10
         ));
 
         // Real-Time Audio Visualizer Canvas with 60 FPS Holographic Animations
