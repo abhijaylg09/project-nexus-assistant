@@ -195,7 +195,7 @@ public class HudController {
         attachmentPreviewBar = new HBox(8);
         attachmentPreviewBar.setAlignment(Pos.CENTER_LEFT);
         attachmentPreviewBar.setPadding(new Insets(4, 10, 4, 10));
-        attachmentPreviewBar.setStyle("-fx-background-color: #111d33; -fx-border-color: #00f2fe; -fx-border-radius: 4px; -fx-background-radius: 4px;");
+        attachmentPreviewBar.setStyle("-fx-background-color: #111e3b; -fx-border-color: #38bdf8; -fx-border-radius: 4px; -fx-background-radius: 4px;");
         attachmentPreviewBar.setVisible(false);
         attachmentPreviewBar.setManaged(false);
 
@@ -398,7 +398,7 @@ public class HudController {
         livePerceptionBar.setPadding(new Insets(2, 0, 2, 0));
 
         liveMoodBadge = new Label("● MOOD: ACTIVE");
-        liveMoodBadge.setStyle("-fx-background-color: #0d1e38; -fx-text-fill: #00f2fe; -fx-border-color: #00f2fe; -fx-border-radius: 5px; -fx-background-radius: 5px; -fx-padding: 3px 8px; -fx-font-size: 10px; -fx-font-weight: bold;");
+        liveMoodBadge.setStyle("-fx-background-color: #0d1e38; -fx-text-fill: #38bdf8; -fx-border-color: #38bdf8; -fx-border-radius: 5px; -fx-background-radius: 5px; -fx-padding: 3px 8px; -fx-font-size: 10px; -fx-font-weight: bold;");
 
         liveGenderBadge = new Label("♂ GENDER: FairFace ViT-AI");
         liveGenderBadge.setStyle("-fx-background-color: #0d1e38; -fx-text-fill: #38bdf8; -fx-border-color: #38bdf8; -fx-border-radius: 5px; -fx-background-radius: 5px; -fx-padding: 3px 8px; -fx-font-size: 10px; -fx-font-weight: bold;");
@@ -510,7 +510,7 @@ public class HudController {
         UserProfile currentProfile = core.getPersonalizationEngine().getCurrentProfile();
 
         userProfileLabel = new Label("Recognized: " + core.getVisionService().getActiveTeammate().getName());
-        userProfileLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #00f2fe; -fx-font-size: 11px;");
+        userProfileLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #38bdf8; -fx-font-size: 11px;");
 
         preferredToneLabel = new Label("Inferred Demeanor: " + currentProfile.getPreferredTone());
         preferredToneLabel.setStyle("-fx-text-fill: #38bdf8; -fx-font-size: 10px;");
@@ -734,7 +734,7 @@ public class HudController {
         content.setStyle("-fx-background-color: #0d1629; -fx-text-fill: white;");
 
         Label heading = new Label("Configure Cloud / Local LLM Model");
-        heading.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #00f2fe;");
+        heading.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #38bdf8;");
 
         Label desc = new Label("N.E.X.U.S automatically answers every question out-of-the-box using Free Zero-Config Cloud AI and Offline Intelligence. You can also connect Groq, OpenAI, or Ollama:");
         desc.setWrapText(true);
@@ -746,7 +746,7 @@ public class HudController {
 
         Button freePreset = new Button("⚡ Free AI (Zero-Key)");
         freePreset.getStyleClass().add("hud-button-secondary");
-        freePreset.setStyle("-fx-font-size: 10px; -fx-padding: 3px 8px; -fx-border-color: #00f2fe; -fx-text-fill: #00f2fe;");
+        freePreset.setStyle("-fx-font-size: 10px; -fx-padding: 3px 8px; -fx-border-color: #38bdf8; -fx-text-fill: #38bdf8;");
 
         Button groqPreset = new Button("🚀 Groq (500 tok/s)");
         groqPreset.getStyleClass().add("hud-button-secondary");
@@ -869,7 +869,7 @@ public class HudController {
                         case STRESSED -> "#f43f5e";
                         case SURPRISED -> "#f59e0b";
                         case SAD -> "#94a3b8";
-                        default -> "#00f2fe";
+                        default -> "#38bdf8";
                     };
                     liveMoodBadge.setText("● MOOD: " + mood.getEmotion().name() + " (" + mood.getFormattedConfidence() + " ViT-AI)");
                     liveMoodBadge.setStyle("-fx-background-color: rgba(10, 20, 42, 0.9); -fx-text-fill: " + moodColor + "; -fx-border-color: " + moodColor + "; -fx-border-radius: 5px; -fx-background-radius: 5px; -fx-padding: 3px 8px; -fx-font-size: 10px; -fx-font-weight: bold;");

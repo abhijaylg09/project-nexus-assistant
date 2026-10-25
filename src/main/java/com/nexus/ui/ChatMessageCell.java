@@ -1,9 +1,12 @@
 package com.nexus.ui;
 
 import javafx.animation.Animation;
+import javafx.animation.FadeTransition;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
+import javafx.animation.ParallelTransition;
 import javafx.animation.Timeline;
+import javafx.animation.TranslateTransition;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
@@ -30,15 +33,18 @@ import java.util.List;
  * ChatGPT-Grade Glassmorphic Message View component for Project N.E.X.U.S.
  * 
  * Features:
+ *  - Smooth entrance animations (Fade + Slide) for every newly appended message
  *  - Native Markdown Parser: Headings (###), Bullet points, Numbered lists, Blockquotes
  *  - Syntax Code Blocks with monospace font and 1-Click "📋 Copy Code" buttons
  *  - 1-Click "📋 Copy Response" button on every assistant answer
- *  - Animated "Thinking..." pulse indicator for live query generation
+ *  - Animated "Thinking..." 3-dot wave pulse indicator for live query generation
  *  - Multimodal image attachments and perceptual telemetry badges
  */
 public class ChatMessageCell extends HBox {
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm:ss");
+
+    private static java.util.function.Consumer<String> defaultReadAloudHandler = null;
 
     public ChatMessageCell(String text, boolean isUser, String moodTag, long latencyMs) {
         this(text, null, isUser, moodTag, latencyMs);
@@ -47,6 +53,18 @@ public class ChatMessageCell extends HBox {
     public ChatMessageCell(String text, File attachedImageFile, boolean isUser, String moodTag, long latencyMs) {
         setSpacing(10);
         setPadding(new Insets(6, 12, 6, 12));
+
+        // Smooth ease-out entrance animation
+        setOpacity(0.0);
+        setTranslateY(8.0);
+        FadeTransition ft = new FadeTransition(Duration.millis(240), this);
+        ft.setFromValue(0.0);
+        ft.setToValue(1.0);
+        TranslateTransition tt = new TranslateTransition(Duration.millis(240), this);
+        tt.setFromY(8.0);
+        tt.setToY(0.0);
+        ParallelTransition pt = new ParallelTransition(ft, tt);
+        pt.play();
 
         VBox contentBox = new VBox(8);
         contentBox.setMaxWidth(620);
@@ -60,7 +78,7 @@ public class ChatMessageCell extends HBox {
                 ImageView iv = new ImageView(img);
                 iv.setFitWidth(260);
                 iv.setPreserveRatio(true);
-                iv.setStyle("-fx-effect: dropshadow(gaussian, rgba(0, 242, 254, 0.5), 10, 0, 0, 0); -fx-border-radius: 8px;");
+                iv.setStyle("-fx-effect: dropshadow(gaussian, rgba(56, 189, 248, 0.4), 10, 0, 0, 0); -fx-border-radius: 8px;");
                 contentBox.getChildren().add(iv);
             } catch (Exception ignored) {}
         }
@@ -103,7 +121,7 @@ public class ChatMessageCell extends HBox {
                 } else if (moodTag.contains("SURPRISED")) {
                     moodStyle += "-fx-background-color: rgba(245, 158, 11, 0.22); -fx-text-fill: #fbbf24; -fx-border-color: #f59e0b; -fx-border-radius: 10px;";
                 } else {
-                    moodStyle += "-fx-background-color: rgba(0, 242, 254, 0.20); -fx-text-fill: #38bdf8; -fx-border-color: #00f2fe; -fx-border-radius: 10px;";
+                    moodStyle += "-fx-background-color: rgba(56, 189, 248, 0.20); -fx-text-fill: #38bdf8; -fx-border-color: #38bdf8; -fx-border-radius: 10px;";
                 }
                 moodBadge.setStyle(moodStyle);
                 metaRow.getChildren().add(moodBadge);
@@ -166,14 +184,12 @@ public class ChatMessageCell extends HBox {
         }
     }
 
-    private static java.util.function.Consumer<String> defaultReadAloudHandler = null;
-
     public static void setDefaultReadAloudHandler(java.util.function.Consumer<String> handler) {
         defaultReadAloudHandler = handler;
     }
 
     /**
-     * Creates an animated "Thinking..." bubble for immediate user feedback.
+     * Creates an animated "Thinking..." bubble with a multi-dot wave animation for immediate user feedback.
      */
     public static ChatMessageCell createThinkingCell() {
         ChatMessageCell cell = new ChatMessageCell("", false, "THINKING", 0);
@@ -182,23 +198,56 @@ public class ChatMessageCell extends HBox {
         VBox box = new VBox(6);
         box.setMaxWidth(400);
 
-        HBox thinkingBubble = new HBox(10);
+        HBox thinkingBubble = new HBox(8);
         thinkingBubble.setAlignment(Pos.CENTER_LEFT);
-        thinkingBubble.setStyle("-fx-background-color: rgba(15, 23, 42, 0.85); -fx-border-color: #00f2fe; -fx-border-radius: 14px; -fx-background-radius: 14px; -fx-padding: 10px 16px;");
+        thinkingBubble.setStyle("-fx-background-color: rgba(17, 26, 48, 0.90); -fx-border-color: rgba(56, 189, 248, 0.60); -fx-border-radius: 14px; -fx-background-radius: 14px; -fx-padding: 10px 16px; -fx-effect: dropshadow(gaussian, rgba(56, 189, 248, 0.25), 12, 0, 0, 2);");
 
         Label pulseDot = new Label("⚡");
-        pulseDot.setStyle("-fx-font-size: 14px; -fx-text-fill: #00f2fe;");
+        pulseDot.setStyle("-fx-font-size: 13px; -fx-text-fill: #38bdf8;");
 
-        Label thinkingText = new Label("N.E.X.U.S is thinking...");
-        thinkingText.setStyle("-fx-text-fill: #38bdf8; -fx-font-size: 12px; -fx-font-weight: bold;");
+        Label thinkingText = new Label("N.E.X.U.S is thinking");
+        thinkingText.setStyle("-fx-text-fill: #94a3b8; -fx-font-size: 12px; -fx-font-weight: bold;");
 
-        thinkingBubble.getChildren().addAll(pulseDot, thinkingText);
+        // Staggered 3-dot wave
+        Label d1 = new Label("●");
+        d1.setStyle("-fx-font-size: 9px; -fx-text-fill: #38bdf8;");
+        Label d2 = new Label("●");
+        d2.setStyle("-fx-font-size: 9px; -fx-text-fill: #60a5fa;");
+        Label d3 = new Label("●");
+        d3.setStyle("-fx-font-size: 9px; -fx-text-fill: #c084fc;");
 
-        // Smooth breathing pulse animation
+        HBox dotsBox = new HBox(3, d1, d2, d3);
+        dotsBox.setAlignment(Pos.CENTER);
+
+        thinkingBubble.getChildren().addAll(pulseDot, thinkingText, dotsBox);
+
+        // Smooth wave animation
         Timeline pulseTimeline = new Timeline(
-                new KeyFrame(Duration.ZERO, new KeyValue(thinkingBubble.opacityProperty(), 1.0)),
-                new KeyFrame(Duration.millis(600), new KeyValue(thinkingBubble.opacityProperty(), 0.35)),
-                new KeyFrame(Duration.millis(1200), new KeyValue(thinkingBubble.opacityProperty(), 1.0))
+                new KeyFrame(Duration.ZERO,
+                        new KeyValue(d1.translateYProperty(), 0),
+                        new KeyValue(d2.translateYProperty(), 0),
+                        new KeyValue(d3.translateYProperty(), 0),
+                        new KeyValue(pulseDot.opacityProperty(), 0.6)),
+                new KeyFrame(Duration.millis(300),
+                        new KeyValue(d1.translateYProperty(), -3),
+                        new KeyValue(d2.translateYProperty(), 0),
+                        new KeyValue(d3.translateYProperty(), 0),
+                        new KeyValue(pulseDot.opacityProperty(), 1.0)),
+                new KeyFrame(Duration.millis(600),
+                        new KeyValue(d1.translateYProperty(), 0),
+                        new KeyValue(d2.translateYProperty(), -3),
+                        new KeyValue(d3.translateYProperty(), 0),
+                        new KeyValue(pulseDot.opacityProperty(), 0.6)),
+                new KeyFrame(Duration.millis(900),
+                        new KeyValue(d1.translateYProperty(), 0),
+                        new KeyValue(d2.translateYProperty(), 0),
+                        new KeyValue(d3.translateYProperty(), -3),
+                        new KeyValue(pulseDot.opacityProperty(), 1.0)),
+                new KeyFrame(Duration.millis(1200),
+                        new KeyValue(d1.translateYProperty(), 0),
+                        new KeyValue(d2.translateYProperty(), 0),
+                        new KeyValue(d3.translateYProperty(), 0),
+                        new KeyValue(pulseDot.opacityProperty(), 0.6))
         );
         pulseTimeline.setCycleCount(Animation.INDEFINITE);
         pulseTimeline.play();
@@ -255,17 +304,17 @@ public class ChatMessageCell extends HBox {
             String trimmed = line.trim();
             if (trimmed.startsWith("### ")) {
                 Label h3 = new Label(cleanInlineMarkdown(trimmed.substring(4)));
-                h3.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #00f2fe; -fx-padding: 4px 0 2px 0;");
+                h3.setStyle("-fx-font-size: 13px; -fx-font-weight: bold; -fx-text-fill: #38bdf8; -fx-padding: 4px 0 2px 0;");
                 h3.setWrapText(true);
                 container.getChildren().add(h3);
             } else if (trimmed.startsWith("## ")) {
                 Label h2 = new Label(cleanInlineMarkdown(trimmed.substring(3)));
-                h2.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #38bdf8; -fx-padding: 6px 0 2px 0;");
+                h2.setStyle("-fx-font-size: 14px; -fx-font-weight: bold; -fx-text-fill: #60a5fa; -fx-padding: 6px 0 2px 0;");
                 h2.setWrapText(true);
                 container.getChildren().add(h2);
             } else if (trimmed.startsWith("# ")) {
                 Label h1 = new Label(cleanInlineMarkdown(trimmed.substring(2)));
-                h1.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #ffffff; -fx-padding: 8px 0 4px 0;");
+                h1.setStyle("-fx-font-size: 16px; -fx-font-weight: bold; -fx-text-fill: #f8fafc; -fx-padding: 8px 0 4px 0;");
                 h1.setWrapText(true);
                 container.getChildren().add(h1);
             } else if (trimmed.startsWith("* ") || trimmed.startsWith("- ") || trimmed.startsWith("• ")) {
@@ -276,11 +325,11 @@ public class ChatMessageCell extends HBox {
                 bulletRow.setPadding(new Insets(1, 0, 1, 10));
 
                 Label dot = new Label("●");
-                dot.setStyle("-fx-font-size: 7px; -fx-text-fill: #00f2fe; -fx-padding: 4px 0 0 0;");
+                dot.setStyle("-fx-font-size: 7px; -fx-text-fill: #38bdf8; -fx-padding: 4px 0 0 0;");
 
                 Label text = new Label(cleanInlineMarkdown(bulletText));
                 text.setWrapText(true);
-                text.setStyle("-fx-text-fill: #f1f5f9; -fx-font-size: 12px; -fx-line-spacing: 2px;");
+                text.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 12px; -fx-line-spacing: 2px;");
                 HBox.setHgrow(text, Priority.ALWAYS);
 
                 bulletRow.getChildren().addAll(dot, text);
@@ -300,7 +349,7 @@ public class ChatMessageCell extends HBox {
 
                 Label text = new Label(cleanInlineMarkdown(body));
                 text.setWrapText(true);
-                text.setStyle("-fx-text-fill: #f1f5f9; -fx-font-size: 12px; -fx-line-spacing: 2px;");
+                text.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 12px; -fx-line-spacing: 2px;");
                 HBox.setHgrow(text, Priority.ALWAYS);
 
                 numRow.getChildren().addAll(numLabel, text);
@@ -309,13 +358,13 @@ public class ChatMessageCell extends HBox {
                 // Blockquote
                 Label quote = new Label(cleanInlineMarkdown(trimmed.substring(2)));
                 quote.setWrapText(true);
-                quote.setStyle("-fx-background-color: rgba(0, 242, 254, 0.08); -fx-border-color: #00f2fe; -fx-border-width: 0 0 0 3px; -fx-padding: 4px 10px; -fx-text-fill: #cbd5e1; -fx-font-style: italic;");
+                quote.setStyle("-fx-background-color: rgba(56, 189, 248, 0.10); -fx-border-color: #38bdf8; -fx-border-width: 0 0 0 3px; -fx-padding: 4px 10px; -fx-text-fill: #cbd5e1; -fx-font-style: italic;");
                 container.getChildren().add(quote);
             } else if (!trimmed.isEmpty()) {
                 // Normal paragraph
                 Label p = new Label(cleanInlineMarkdown(trimmed));
                 p.setWrapText(true);
-                p.setStyle("-fx-text-fill: #f1f5f9; -fx-font-size: 12px; -fx-line-spacing: 3px;");
+                p.setStyle("-fx-text-fill: #e2e8f0; -fx-font-size: 12px; -fx-line-spacing: 3px;");
                 container.getChildren().add(p);
             }
         }
@@ -333,17 +382,17 @@ public class ChatMessageCell extends HBox {
      */
     private Node createCodeBlockNode(String language, String code) {
         VBox codeBox = new VBox(0);
-        codeBox.setStyle("-fx-background-color: #090e1a; -fx-border-color: rgba(56, 189, 248, 0.40); -fx-border-radius: 8px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.5), 10, 0, 0, 2);");
+        codeBox.setStyle("-fx-background-color: #0c1427; -fx-border-color: rgba(56, 189, 248, 0.35); -fx-border-radius: 8px; -fx-background-radius: 8px; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.4), 8, 0, 0, 2);");
         codeBox.setPadding(new Insets(0));
 
         // Code block header
         HBox header = new HBox(10);
         header.setAlignment(Pos.CENTER_LEFT);
         header.setPadding(new Insets(5, 12, 5, 12));
-        header.setStyle("-fx-background-color: #111827; -fx-background-radius: 8px 8px 0 0; -fx-border-color: rgba(56, 189, 248, 0.25); -fx-border-width: 0 0 1px 0;");
+        header.setStyle("-fx-background-color: #111d38; -fx-background-radius: 8px 8px 0 0; -fx-border-color: rgba(56, 189, 248, 0.20); -fx-border-width: 0 0 1px 0;");
 
         Label langLabel = new Label(language.toUpperCase());
-        langLabel.setStyle("-fx-text-fill: #00f2fe; -fx-font-size: 10px; -fx-font-weight: bold; -fx-font-family: Consolas;");
+        langLabel.setStyle("-fx-text-fill: #38bdf8; -fx-font-size: 10px; -fx-font-weight: bold; -fx-font-family: Consolas;");
 
         Region spacer = new Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
@@ -376,8 +425,8 @@ public class ChatMessageCell extends HBox {
         codeArea.setPrefRowCount(Math.min(lineCount, 16));
         codeArea.setStyle(
                 "-fx-background-color: transparent; " +
-                "-fx-control-inner-background: #090e1a; " +
-                "-fx-text-fill: #38bdf8; " +
+                "-fx-control-inner-background: #0c1427; " +
+                "-fx-text-fill: #7dd3fc; " +
                 "-fx-font-family: Consolas, 'Fira Code', 'Courier New', monospace; " +
                 "-fx-font-size: 11px; " +
                 "-fx-border-color: transparent; " +
