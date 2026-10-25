@@ -847,11 +847,6 @@ public class HudController {
                         replyEvent.getLatencyMs()
                 ));
                 scrollToBottom();
-
-                // Voice TalkBack (Reading output aloud if enabled)
-                if (core.getSpeechService().isTalkbackEnabled()) {
-                    core.getSpeechService().speak(replyEvent.getResponseText(), null);
-                }
             });
         });
 

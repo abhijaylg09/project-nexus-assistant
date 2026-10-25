@@ -202,8 +202,10 @@ public class NexusCore {
             AssistantResponseEvent responseEvent = AssistantResponseEvent.success(reply, moodName, latencyMs);
             eventBus.publishOnFxThread(responseEvent);
 
-            // Synthesize voice via TTS
-            speechService.speak(reply, null);
+            // Synthesize voice via TTS if TalkBack is enabled
+            if (speechService.isTalkbackEnabled()) {
+                speechService.speak(reply, null);
+            }
 
             // Log interaction into SQLite and feed personalization engine
             personalizationEngine.processInteraction(

@@ -191,31 +191,30 @@ public class PiperTtsEngine {
     }
 
     private void executeWindowsSapi(String text) {
-        File tempScript = null;
         try {
-            // Write a tiny fast VBScript with SAPI.SpVoice for zero-latency speech
-            tempScript = File.createTempFile("nexus_sapi_", ".vbs");
-            String safeText = text.replace("\"", "\"\"");
-
-            String vbsCode = "Set voice = CreateObject(\"SAPI.SpVoice\")\n"
-                    + "voice.Rate = 1\n"
-                    + "voice.Speak \"" + safeText + "\"\n";
-
-            try (FileWriter writer = new FileWriter(tempScript, StandardCharsets.UTF_8)) {
-                writer.write(vbsCode);
+            File scriptFile = new File("scripts", "speak.ps1");
+            ProcessBuilder pb;
+            if (scriptFile.exists()) {
+                pb = new ProcessBuilder(
+                        "powershell",
+                        "-NoProfile",
+                        "-NonInteractive",
+                        "-ExecutionPolicy", "Bypass",
+                        "-File", scriptFile.getAbsolutePath(),
+                        text
+                );
+            } else {
+                String safeText = text.replace("\"", " ").replace("'", " ").trim();
+                String psCommand = "Add-Type -AssemblyName System.Speech; $s = New-Object System.Speech.Synthesis.SpeechSynthesizer; $s.Rate = 1; $s.Speak(\"" + safeText + "\")";
+                pb = new ProcessBuilder("powershell", "-NoProfile", "-NonInteractive", "-Command", psCommand);
             }
 
-            ProcessBuilder pb = new ProcessBuilder("cscript", "//nologo", tempScript.getAbsolutePath());
             pb.redirectErrorStream(true);
             currentProcess = pb.start();
             currentProcess.waitFor();
 
         } catch (Exception e) {
-            System.err.println("[PiperTtsEngine] SAPI synthesis error: " + e.getMessage());
-        } finally {
-            if (tempScript != null && tempScript.exists()) {
-                try { tempScript.delete(); } catch (Exception ignored) {}
-            }
+            System.err.println("[PiperTtsEngine] Windows speech synthesis error: " + e.getMessage());
         }
     }
 
