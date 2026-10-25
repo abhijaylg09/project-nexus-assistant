@@ -364,7 +364,7 @@ public class HudController {
         liveMoodBadge = new Label("● MOOD: ACTIVE");
         liveMoodBadge.setStyle("-fx-background-color: #0d1e38; -fx-text-fill: #00f2fe; -fx-border-color: #00f2fe; -fx-border-radius: 5px; -fx-background-radius: 5px; -fx-padding: 3px 8px; -fx-font-size: 10px; -fx-font-weight: bold;");
 
-        liveGenderBadge = new Label("♂ GENDER: ViT-ONNX AI");
+        liveGenderBadge = new Label("♂ GENDER: FairFace ViT-AI");
         liveGenderBadge.setStyle("-fx-background-color: #0d1e38; -fx-text-fill: #38bdf8; -fx-border-color: #38bdf8; -fx-border-radius: 5px; -fx-background-radius: 5px; -fx-padding: 3px 8px; -fx-font-size: 10px; -fx-font-weight: bold;");
 
         livePerceptionBar.getChildren().addAll(liveMoodBadge, liveGenderBadge);
@@ -842,7 +842,7 @@ public class HudController {
                     boolean isM = mood.getGender() == MoodDetectedEvent.Gender.MALE;
                     String gColor = isM ? "#38bdf8" : "#f472b6";
                     String gSymbol = isM ? "♂ MALE" : "♀ FEMALE";
-                    liveGenderBadge.setText(gSymbol + " • " + mood.getFormattedGenderConfidence() + " [ViT-ONNX AI]");
+                    liveGenderBadge.setText(gSymbol + " • " + mood.getFormattedGenderConfidence() + " [FairFace ViT-AI]");
                     liveGenderBadge.setStyle("-fx-background-color: rgba(10, 20, 42, 0.9); -fx-text-fill: " + gColor + "; -fx-border-color: " + gColor + "; -fx-border-radius: 5px; -fx-background-radius: 5px; -fx-padding: 3px 8px; -fx-font-size: 10px; -fx-font-weight: bold;");
                 }
             });

@@ -148,19 +148,57 @@ class NexusPerceptionEngine:
                 "probabilities": {self.emotion_detector.last_emotion.lower(): self.emotion_detector.last_confidence}
             }
 
-        # 2. Gender Detection (Authoritative Python ViT-ONNX Deep Learning)
+        # 2. Hand Gesture Recognition
+        gesture_result = self.gesture_detector.detect_gesture(bgr_frame, face_box=face_box)
+
+        # 3. Deep Face Biometric Person Name Identification (OpenCV SFace 128D)
+        if face_crop is not None and face_crop.size > 0:
+            identity_result = self.face_identifier.identify_face(face_crop)
+        else:
+            identity_result = {
+                "id": self.face_identifier.last_identified["id"],
+                "name": self.face_identifier.last_identified["name"],
+                "gender": self.face_identifier.last_identified.get("gender", "MALE"),
+                "role": self.face_identifier.last_identified["role"],
+                "confidence": self.face_identifier.last_confidence,
+                "enrolled": False,
+                "engine": "Face Biometrics Engine"
+            }
+
+        # 4. Gender Detection (Authoritative FairFace ViT-ONNX Deep Learning + Biometric Ground-Truth Fusion)
         if self.gender_detector:
             if face_box is not None:
                 fx, fy, fw, fh = face_box
                 ih, iw = bgr_frame.shape[:2]
-                gx1 = max(0, fx - int(fw * 0.25))
-                gy1 = max(0, fy - int(fh * 0.35))
-                gx2 = min(iw, fx + fw + int(fw * 0.25))
-                gy2 = min(ih, fy + fh + int(fh * 0.20))
+                center_x = fx + fw / 2.0
+                center_y = fy + fh / 2.0
+                max_dim = max(fw, fh)
+                margin = max_dim * 0.22
+                gx1 = int(max(0, center_x - max_dim / 2.0 - margin))
+                gy1 = int(max(0, center_y - max_dim / 2.0 - margin))
+                gx2 = int(min(iw, center_x + max_dim / 2.0 + margin))
+                gy2 = int(min(ih, center_y + max_dim / 2.0 + margin))
                 head_crop = bgr_frame[gy1:gy2, gx1:gx2]
                 gender_result = self.gender_detector.predict_from_array(head_crop, is_bgr=True, auto_crop=False)
             else:
                 gender_result = self.gender_detector.predict_from_array(bgr_frame, is_bgr=True, auto_crop=True)
+
+            # If identity matches an enrolled teammate with strong biometric similarity, fuse verified ground truth
+            if identity_result.get("enrolled") and identity_result.get("match_score", 0.0) >= 0.36:
+                known_gender = identity_result.get("gender")
+                if known_gender in ("MALE", "FEMALE"):
+                    gender_result["gender"] = known_gender
+                    gender_result["confidence"] = max(gender_result.get("confidence", 0.90), 0.96)
+                    if known_gender == "MALE":
+                        gender_result["male_prob"] = max(gender_result.get("male_prob", 0.9), 0.95)
+                        gender_result["female_prob"] = min(gender_result.get("female_prob", 0.1), 0.05)
+                        self.gender_detector.smoothed_male_prob = max(self.gender_detector.smoothed_male_prob, 0.90)
+                        self.gender_detector.current_gender = "MALE"
+                    else:
+                        gender_result["female_prob"] = max(gender_result.get("female_prob", 0.9), 0.95)
+                        gender_result["male_prob"] = min(gender_result.get("male_prob", 0.1), 0.05)
+                        self.gender_detector.smoothed_male_prob = min(self.gender_detector.smoothed_male_prob, 0.10)
+                        self.gender_detector.current_gender = "FEMALE"
         else:
             gender_result = {
                 "status": "fallback",
@@ -170,23 +208,6 @@ class NexusPerceptionEngine:
                 "female_prob": 0.50,
                 "face_detected": False,
                 "engine": "Neutral Fallback"
-            }
-
-        # 3. Hand Gesture Recognition
-        gesture_result = self.gesture_detector.detect_gesture(bgr_frame, face_box=face_box)
-
-        # 4. Deep Face Biometric Person Name Identification (OpenCV SFace 128D)
-        if face_crop is not None and face_crop.size > 0:
-            target_gen = gender_result.get("gender", "MALE")
-            identity_result = self.face_identifier.identify_face(face_crop, detected_gender=target_gen)
-        else:
-            identity_result = {
-                "id": self.face_identifier.last_identified["id"],
-                "name": self.face_identifier.last_identified["name"],
-                "role": self.face_identifier.last_identified["role"],
-                "confidence": self.face_identifier.last_confidence,
-                "enrolled": False,
-                "engine": "Face Biometrics Engine"
             }
 
         elapsed_ms = (time.time() - t0) * 1000.0

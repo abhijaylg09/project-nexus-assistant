@@ -123,7 +123,7 @@ public class FaceBiometricsEngine {
     }
 
     public String getGenderEngineName() {
-        return "Python ViT-ONNX AI Core";
+        return "FairFace ViT-ONNX AI Core";
     }
 
     public void setManualGenderOverride(MoodDetectedEvent.Gender gender) {

@@ -162,17 +162,12 @@ class FaceBiometricIdentifier:
                 "engine": "Face Biometrics Engine"
             }
 
-        target_gender = detected_gender.upper() if detected_gender else None
         best_id = None
         best_score = -1.0
 
-        # Compare against all enrolled identities
+        # Compare against all enrolled identities without artificial gender barriers
         for pid, ref_vectors in self.enrolled_embeddings.items():
             if pid not in TEAMMATES:
-                continue
-
-            # Gender consistency check
-            if target_gender and TEAMMATES[pid]["gender"] != target_gender:
                 continue
 
             for ref in ref_vectors:
@@ -194,6 +189,7 @@ class FaceBiometricIdentifier:
             return {
                 "id": person["id"],
                 "name": person["name"],
+                "gender": person["gender"],
                 "role": person["role"],
                 "confidence": self.last_confidence,
                 "match_score": round(float(best_score), 4),
@@ -201,19 +197,17 @@ class FaceBiometricIdentifier:
                 "engine": "OpenCV SFace Deep Biometric Recognition"
             }
 
-        # Auto-enrollment / Seed fallback for primary teammate:
-        # If no profile was matched yet, associate the face with the primary profile for this gender
-        fallback_pid = "ABHIJAY" if (target_gender != "FEMALE") else "BHADRA"
-        if fallback_pid not in self.enrolled_embeddings or len(self.enrolled_embeddings[fallback_pid]) == 0:
-            # Auto-enroll seed reference so user is remembered immediately
-            if fallback_pid not in self.enrolled_embeddings:
-                self.enrolled_embeddings[fallback_pid] = []
-            self.enrolled_embeddings[fallback_pid].append(feat)
-            self._save_database()
-
-        person = TEAMMATES[fallback_pid]
-        self.last_identified = person
-        self.last_confidence = 0.94
+        # If already identified, retain last identified teammate
+        person = self.last_identified
+        return {
+            "id": person["id"],
+            "name": person["name"],
+            "gender": person.get("gender", "MALE"),
+            "role": person["role"],
+            "confidence": 0.85,
+            "enrolled": False,
+            "engine": "OpenCV SFace Deep Biometric Recognition"
+        }
         return {
             "id": person["id"],
             "name": person["name"],
