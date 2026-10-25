@@ -39,14 +39,32 @@ public class SpeechService {
         });
     }
 
+    private boolean talkbackEnabled = true;
+
     public void stop() {
         wakeWordDetector.stopListening();
         liveMicService.stopCapture();
         sttEngine.stopListening();
+        stopSpeaking();
     }
 
     public void speak(String text, Runnable onComplete) {
         ttsEngine.speakAsync(text, onComplete);
+    }
+
+    public void stopSpeaking() {
+        ttsEngine.stopSpeaking();
+    }
+
+    public boolean isTalkbackEnabled() {
+        return talkbackEnabled;
+    }
+
+    public void setTalkbackEnabled(boolean enabled) {
+        this.talkbackEnabled = enabled;
+        if (!enabled) {
+            stopSpeaking();
+        }
     }
 
     public void listenToVoiceChatAsync(Consumer<String> onTranscript, Runnable onStart, Runnable onReady, Runnable onEnd) {
@@ -55,7 +73,7 @@ public class SpeechService {
 
     public double getLiveAudioLevel() {
         if (ttsEngine.isSpeaking()) {
-            return 0.85; // High oscillation during TTS speech
+            return ttsEngine.getCadenceAudioLevel();
         }
         return liveMicService.getCurrentVoiceLevel();
     }

@@ -173,8 +173,22 @@ public class HudController {
                 false, "FOCUSED", 14
         ));
 
-        // Real-Time Audio Visualizer Canvas
-        audioCanvas = new AudioVisualizerCanvas(580, 48);
+        // Real-Time Audio Visualizer Canvas with 60 FPS Holographic Animations
+        audioCanvas = new AudioVisualizerCanvas(580, 52);
+        audioCanvas.setAudioLevelSupplier(() -> core.getSpeechService().getLiveAudioLevel());
+        audioCanvas.setVoiceStateSuppliers(
+                () -> core.getSpeechService().isSpeaking(),
+                () -> core.getSpeechService().isListening()
+        );
+
+        // Global Read Aloud handler for chat cells
+        ChatMessageCell.setDefaultReadAloudHandler(text -> {
+            if (core.getSpeechService().isSpeaking()) {
+                core.getSpeechService().stopSpeaking();
+            } else {
+                core.getSpeechService().speak(text, null);
+            }
+        });
 
         // Attachment Preview Banner
         attachmentPreviewBar = new HBox(8);
@@ -262,6 +276,24 @@ public class HudController {
         Region toolsSpacer = new Region();
         HBox.setHgrow(toolsSpacer, Priority.ALWAYS);
 
+        // Automatic Voice TalkBack Toggle Button (Reads AI responses out loud)
+        Button talkbackToggleBtn = new Button("🔊 TalkBack: ON");
+        talkbackToggleBtn.getStyleClass().add("hud-button-secondary");
+        talkbackToggleBtn.setMinWidth(Region.USE_PREF_SIZE);
+        talkbackToggleBtn.setStyle("-fx-font-size: 11px; -fx-padding: 4px 9px; -fx-border-color: #10b981; -fx-text-fill: #34d399;");
+        talkbackToggleBtn.setTooltip(new Tooltip("Voice TalkBack: Automatically reads AI responses out loud"));
+        talkbackToggleBtn.setOnAction(e -> {
+            boolean now = !core.getSpeechService().isTalkbackEnabled();
+            core.getSpeechService().setTalkbackEnabled(now);
+            if (now) {
+                talkbackToggleBtn.setText("🔊 TalkBack: ON");
+                talkbackToggleBtn.setStyle("-fx-font-size: 11px; -fx-padding: 4px 9px; -fx-border-color: #10b981; -fx-text-fill: #34d399;");
+            } else {
+                talkbackToggleBtn.setText("🔇 TalkBack: OFF");
+                talkbackToggleBtn.setStyle("-fx-font-size: 11px; -fx-padding: 4px 9px; -fx-border-color: #64748b; -fx-text-fill: #94a3b8;");
+            }
+        });
+
         // Language Mode Button for Voice Chat (EN / Malayalam)
         Button langToggleBtn = new Button("🌐 " + core.getSpeechService().getVoiceLanguageMode().getLabel());
         langToggleBtn.getStyleClass().add("hud-button-secondary");
@@ -301,7 +333,7 @@ public class HudController {
             }
         });
 
-        toolsBar.getChildren().addAll(newChatBtn, attachImgBtn, snapCamBtn, toolsSpacer, langToggleBtn, voiceChatButton, micToggleButton);
+        toolsBar.getChildren().addAll(newChatBtn, attachImgBtn, snapCamBtn, toolsSpacer, talkbackToggleBtn, langToggleBtn, voiceChatButton, micToggleButton);
 
         // Gesture Action Shortcut Toolbar
         HBox gestureToolbar = new HBox(8);
@@ -318,7 +350,10 @@ public class HudController {
         Button btnStop = new Button("✋ Mute / Pause (Open Palm)");
         btnStop.getStyleClass().add("hud-button-secondary");
         btnStop.setMinWidth(Region.USE_PREF_SIZE);
-        btnStop.setOnAction(e -> core.getVisionService().getGestureClassifier().triggerManualGesture(GestureDetectedEvent.Gesture.STOP_PALM));
+        btnStop.setOnAction(e -> {
+            core.getSpeechService().stopSpeaking();
+            core.getVisionService().getGestureClassifier().triggerManualGesture(GestureDetectedEvent.Gesture.STOP_PALM);
+        });
 
         Button btnPeace = new Button("✌️ Summarize (Peace Sign)");
         btnPeace.getStyleClass().add("hud-button-secondary");
@@ -603,6 +638,7 @@ public class HudController {
     }
 
     private void handleVoiceChatButton() {
+        core.getSpeechService().stopSpeaking();
         voiceChatButton.setText("⏳ INITIALIZING MIC...");
         voiceChatButton.setStyle("-fx-background-color: #f59e0b; -fx-text-fill: black; -fx-font-weight: bold;");
 
@@ -811,6 +847,11 @@ public class HudController {
                         replyEvent.getLatencyMs()
                 ));
                 scrollToBottom();
+
+                // Voice TalkBack (Reading output aloud if enabled)
+                if (core.getSpeechService().isTalkbackEnabled()) {
+                    core.getSpeechService().speak(replyEvent.getResponseText(), null);
+                }
             });
         });
 

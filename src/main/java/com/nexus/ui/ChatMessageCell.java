@@ -142,11 +142,26 @@ public class ChatMessageCell extends HBox {
                 revert.play();
             });
 
-            footerRow.getChildren().add(copyFullBtn);
+            Button readAloudBtn = new Button("🔊 Read Aloud");
+            readAloudBtn.getStyleClass().add("hud-button-secondary");
+            readAloudBtn.setStyle("-fx-font-size: 9px; -fx-padding: 2px 7px; -fx-background-radius: 6px; -fx-text-fill: #38bdf8;");
+            readAloudBtn.setOnAction(e -> {
+                if (defaultReadAloudHandler != null) {
+                    defaultReadAloudHandler.accept(text);
+                }
+            });
+
+            footerRow.getChildren().addAll(copyFullBtn, readAloudBtn);
 
             contentBox.getChildren().addAll(metaRow, bodyBox, footerRow);
             getChildren().add(contentBox);
         }
+    }
+
+    private static java.util.function.Consumer<String> defaultReadAloudHandler = null;
+
+    public static void setDefaultReadAloudHandler(java.util.function.Consumer<String> handler) {
+        defaultReadAloudHandler = handler;
     }
 
     /**
