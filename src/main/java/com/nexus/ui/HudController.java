@@ -58,6 +58,8 @@ public class HudController {
     // Perceptual Viewports
     private CameraViewportCanvas cameraCanvas;
     private AudioVisualizerCanvas audioCanvas;
+    private Label liveMoodBadge;
+    private Label liveGenderBadge;
 
     // Telemetry Cards
     private TelemetryMeter cpuMeter;
@@ -155,6 +157,11 @@ public class HudController {
         chatScrollPane.getStyleClass().add("chat-scroll");
         VBox.setVgrow(chatScrollPane, Priority.ALWAYS);
 
+        // Auto-scroll to bottom whenever new messages or content change the height
+        chatMessagesBox.heightProperty().addListener((obs, oldVal, newVal) -> {
+            Platform.runLater(() -> chatScrollPane.setVvalue(1.0));
+        });
+
         // Welcome greeting (ChatGPT Style)
         chatMessagesBox.getChildren().add(new ChatMessageCell(
                 "### ⚡ N.E.X.U.S AI Perception Core Online\n\n" +
@@ -195,13 +202,13 @@ public class HudController {
         attachmentPreviewBar.getChildren().addAll(attachmentThumbView, attachmentNameLabel, attachSpacer, removeAttachBtn);
 
         // Input Box & Controls (ChatGPT Multiline Input)
-        HBox inputBar = new HBox(6);
+        HBox inputBar = new HBox(8);
         inputBar.setAlignment(Pos.CENTER);
 
         inputTextArea.setPromptText("Ask anything like ChatGPT... (Enter to send, Shift+Enter for newline)");
         inputTextArea.getStyleClass().add("hud-text-area");
         inputTextArea.setPrefRowCount(2);
-        inputTextArea.setMaxHeight(80);
+        inputTextArea.setMaxHeight(75);
         inputTextArea.setMinHeight(44);
         inputTextArea.setWrapText(true);
         HBox.setHgrow(inputTextArea, Priority.ALWAYS);
@@ -218,35 +225,48 @@ public class HudController {
             }
         });
 
+        sendButton.getStyleClass().add("hud-button");
+        sendButton.setText("SEND ➔");
+        sendButton.setMinWidth(Region.USE_PREF_SIZE);
+        sendButton.setPrefHeight(44);
+        sendButton.setOnAction(e -> handleSendMessage());
+
+        inputBar.getChildren().addAll(inputTextArea, sendButton);
+
+        // Quick Actions & Multimodal Voice Toolbar
+        HBox toolsBar = new HBox(8);
+        toolsBar.setAlignment(Pos.CENTER_LEFT);
+        toolsBar.setPadding(new Insets(2, 0, 0, 0));
+
         Button newChatBtn = new Button("🧹 New Chat");
         newChatBtn.getStyleClass().add("hud-button-secondary");
-        newChatBtn.setStyle("-fx-font-size: 10px; -fx-padding: 5px 8px;");
+        newChatBtn.setMinWidth(Region.USE_PREF_SIZE);
+        newChatBtn.setStyle("-fx-font-size: 11px; -fx-padding: 4px 9px;");
         newChatBtn.setTooltip(new Tooltip("Clear chat stream and start a fresh conversation session"));
         newChatBtn.setOnAction(e -> handleNewChat());
 
-        Button attachImgBtn = new Button("🖼️ Image");
+        Button attachImgBtn = new Button("🖼️ Image Doubt");
         attachImgBtn.getStyleClass().add("hud-button-secondary");
-        attachImgBtn.setStyle("-fx-font-size: 10px; -fx-padding: 5px 8px;");
+        attachImgBtn.setMinWidth(Region.USE_PREF_SIZE);
+        attachImgBtn.setStyle("-fx-font-size: 11px; -fx-padding: 4px 9px;");
         attachImgBtn.setTooltip(new Tooltip("Attach an image file to ask questions or doubts"));
         attachImgBtn.setOnAction(e -> handleAttachImage());
 
-        Button snapCamBtn = new Button("📸 Snap");
+        Button snapCamBtn = new Button("📸 Snap Camera");
         snapCamBtn.getStyleClass().add("hud-button-secondary");
-        snapCamBtn.setStyle("-fx-font-size: 10px; -fx-padding: 5px 8px;");
+        snapCamBtn.setMinWidth(Region.USE_PREF_SIZE);
+        snapCamBtn.setStyle("-fx-font-size: 11px; -fx-padding: 4px 9px;");
         snapCamBtn.setTooltip(new Tooltip("Snap current camera frame to ask doubts about it"));
         snapCamBtn.setOnAction(e -> handleSnapCamera());
 
-        sendButton.getStyleClass().add("hud-button");
-        sendButton.setText("SEND ➔");
-        sendButton.setOnAction(e -> handleSendMessage());
-
-        voiceChatButton.getStyleClass().addAll("hud-button", "hud-button-mic-active");
-        micToggleButton.getStyleClass().add("hud-button-secondary");
+        Region toolsSpacer = new Region();
+        HBox.setHgrow(toolsSpacer, Priority.ALWAYS);
 
         // Language Mode Button for Voice Chat (EN / Malayalam)
         Button langToggleBtn = new Button("🌐 " + core.getSpeechService().getVoiceLanguageMode().getLabel());
         langToggleBtn.getStyleClass().add("hud-button-secondary");
-        langToggleBtn.setStyle("-fx-font-size: 10px; -fx-padding: 5px 8px; -fx-border-color: #06b6d4;");
+        langToggleBtn.setMinWidth(Region.USE_PREF_SIZE);
+        langToggleBtn.setStyle("-fx-font-size: 11px; -fx-padding: 4px 9px; -fx-border-color: #06b6d4;");
         langToggleBtn.setTooltip(new Tooltip("Voice Recognition Language: Click to cycle Bilingual (EN + മലയാളം), മലയാളം, or English"));
         langToggleBtn.setOnAction(e -> {
             WindowsSpeechRecognizer.LanguageMode current = core.getSpeechService().getVoiceLanguageMode();
@@ -260,22 +280,28 @@ public class HudController {
         });
 
         // Live Voice Chat Button Action
+        voiceChatButton.getStyleClass().addAll("hud-button", "hud-button-mic-active");
+        voiceChatButton.setMinWidth(Region.USE_PREF_SIZE);
+        voiceChatButton.setStyle("-fx-font-size: 11px; -fx-padding: 4px 11px;");
         voiceChatButton.setOnAction(e -> handleVoiceChatButton());
 
         // Mic toggle action
+        micToggleButton.getStyleClass().add("hud-button-secondary");
+        micToggleButton.setMinWidth(Region.USE_PREF_SIZE);
+        micToggleButton.setStyle("-fx-font-size: 11px; -fx-padding: 4px 9px;");
         micToggleButton.setOnAction(e -> {
             if (core.getSpeechService().getLiveMicService().isRecording()) {
                 core.getSpeechService().getLiveMicService().stopCapture();
                 micToggleButton.setText("MIC OFF");
-                micToggleButton.setStyle("-fx-border-color: #ef4444; -fx-text-fill: #f87171;");
+                micToggleButton.setStyle("-fx-border-color: #ef4444; -fx-text-fill: #f87171; -fx-font-size: 11px; -fx-padding: 4px 9px;");
             } else {
                 core.getSpeechService().getLiveMicService().startCapture(chunk -> {});
                 micToggleButton.setText("MIC ON");
-                micToggleButton.setStyle("");
+                micToggleButton.setStyle("-fx-font-size: 11px; -fx-padding: 4px 9px;");
             }
         });
 
-        inputBar.getChildren().addAll(newChatBtn, inputTextArea, attachImgBtn, snapCamBtn, sendButton, langToggleBtn, voiceChatButton, micToggleButton);
+        toolsBar.getChildren().addAll(newChatBtn, attachImgBtn, snapCamBtn, toolsSpacer, langToggleBtn, voiceChatButton, micToggleButton);
 
         // Gesture Action Shortcut Toolbar
         HBox gestureToolbar = new HBox(8);
@@ -286,19 +312,22 @@ public class HudController {
 
         Button btnThumbs = new Button("👍 Confirm (Thumbs Up)");
         btnThumbs.getStyleClass().add("hud-button-secondary");
+        btnThumbs.setMinWidth(Region.USE_PREF_SIZE);
         btnThumbs.setOnAction(e -> core.getVisionService().getGestureClassifier().triggerManualGesture(GestureDetectedEvent.Gesture.THUMBS_UP));
 
         Button btnStop = new Button("✋ Mute / Pause (Open Palm)");
         btnStop.getStyleClass().add("hud-button-secondary");
+        btnStop.setMinWidth(Region.USE_PREF_SIZE);
         btnStop.setOnAction(e -> core.getVisionService().getGestureClassifier().triggerManualGesture(GestureDetectedEvent.Gesture.STOP_PALM));
 
         Button btnPeace = new Button("✌️ Summarize (Peace Sign)");
         btnPeace.getStyleClass().add("hud-button-secondary");
+        btnPeace.setMinWidth(Region.USE_PREF_SIZE);
         btnPeace.setOnAction(e -> core.getVisionService().getGestureClassifier().triggerManualGesture(GestureDetectedEvent.Gesture.PEACE));
 
         gestureToolbar.getChildren().addAll(gestLabel, btnThumbs, btnStop, btnPeace);
 
-        chatContainer.getChildren().addAll(chatTitle, chatScrollPane, audioCanvas, attachmentPreviewBar, inputBar, gestureToolbar);
+        chatContainer.getChildren().addAll(chatTitle, chatScrollPane, audioCanvas, attachmentPreviewBar, inputBar, toolsBar, gestureToolbar);
         return chatContainer;
     }
 
@@ -326,6 +355,19 @@ public class HudController {
         visionHeader.getChildren().addAll(visionTitle, vSpacer, scanFaceBtn);
 
         cameraCanvas = new CameraViewportCanvas(406, 210);
+
+        // Live Real-Time Perception HUD Bar (Docked beneath camera)
+        HBox livePerceptionBar = new HBox(8);
+        livePerceptionBar.setAlignment(Pos.CENTER_LEFT);
+        livePerceptionBar.setPadding(new Insets(2, 0, 2, 0));
+
+        liveMoodBadge = new Label("● MOOD: ACTIVE");
+        liveMoodBadge.setStyle("-fx-background-color: #0d1e38; -fx-text-fill: #00f2fe; -fx-border-color: #00f2fe; -fx-border-radius: 5px; -fx-background-radius: 5px; -fx-padding: 3px 8px; -fx-font-size: 10px; -fx-font-weight: bold;");
+
+        liveGenderBadge = new Label("♂ GENDER: ViT-ONNX AI");
+        liveGenderBadge.setStyle("-fx-background-color: #0d1e38; -fx-text-fill: #38bdf8; -fx-border-color: #38bdf8; -fx-border-radius: 5px; -fx-background-radius: 5px; -fx-padding: 3px 8px; -fx-font-size: 10px; -fx-font-weight: bold;");
+
+        livePerceptionBar.getChildren().addAll(liveMoodBadge, liveGenderBadge);
 
         // Teammate Switcher Toolbar
         VBox teamBox = new VBox(4);
@@ -409,7 +451,7 @@ public class HudController {
 
         genderControls.getChildren().addAll(genderCtrlLabel, btnMale, btnFemale, btnAutoGender, btnCheckViT);
 
-        visionPanel.getChildren().addAll(visionHeader, cameraCanvas, teamBox, eyeControls, genderControls);
+        visionPanel.getChildren().addAll(visionHeader, cameraCanvas, livePerceptionBar, teamBox, eyeControls, genderControls);
 
         // 2. Adaptive Personalization Inspector Panel
         VBox profilePanel = new VBox(6);
@@ -497,7 +539,7 @@ public class HudController {
         if (snapshot != null && snapshot.exists()) {
             setAttachedImage(snapshot);
             chatMessagesBox.getChildren().add(new ChatMessageCell("📸 Captured instant webcam snapshot. Type your question or click Voice Chat to ask!", false, "FOCUSED", 0));
-            chatScrollPane.setVvalue(1.0);
+            scrollToBottom();
         }
     }
 
@@ -532,7 +574,7 @@ public class HudController {
                 "### ⚡ Fresh Session Started\n\nN.E.X.U.S AI Perception Core is ready. What topic, code challenge, or question would you like to explore?",
                 false, "FOCUSED", 0
         ));
-        chatScrollPane.setVvalue(1.0);
+        scrollToBottom();
     }
 
     private void handleSendMessage() {
@@ -555,7 +597,7 @@ public class HudController {
         }
         currentThinkingCell = ChatMessageCell.createThinkingCell();
         chatMessagesBox.getChildren().add(currentThinkingCell);
-        chatScrollPane.setVvalue(1.0);
+        scrollToBottom();
 
         eventBus.publish(new UserInputEvent(text, UserInputEvent.InputSource.TEXT, imgToSend));
     }
@@ -579,13 +621,13 @@ public class HudController {
                         }
                         currentThinkingCell = ChatMessageCell.createThinkingCell();
                         chatMessagesBox.getChildren().add(currentThinkingCell);
-                        chatScrollPane.setVvalue(1.0);
+                        scrollToBottom();
 
                         clearAttachedImage();
                         eventBus.publish(new UserInputEvent(transcript, UserInputEvent.InputSource.SPEECH, imgToSend));
                     } else {
                         chatMessagesBox.getChildren().add(new ChatMessageCell("⚠️ No clear speech detected. Please speak closer to your mic or click '🎙️ VOICE CHAT' again.", false, "FOCUSED", 0));
-                        chatScrollPane.setVvalue(1.0);
+                        scrollToBottom();
                     }
                 }),
                 () -> Platform.runLater(() -> {
@@ -633,7 +675,16 @@ public class HudController {
                 teammate.getWelcomePhrase(),
                 false, "FOCUSED", 12
         ));
-        chatScrollPane.setVvalue(1.0);
+        scrollToBottom();
+    }
+
+    private void scrollToBottom() {
+        Platform.runLater(() -> {
+            chatScrollPane.applyCss();
+            chatScrollPane.layout();
+            chatScrollPane.setVvalue(1.0);
+            Platform.runLater(() -> chatScrollPane.setVvalue(1.0));
+        });
     }
 
     private void openAiSettingsDialog() {
@@ -759,7 +810,7 @@ public class HudController {
                         replyEvent.getMoodContext(),
                         replyEvent.getLatencyMs()
                 ));
-                chatScrollPane.setVvalue(1.0);
+                scrollToBottom();
             });
         });
 
@@ -774,6 +825,26 @@ public class HudController {
                 cameraCanvas.updateMood(mood);
                 moodMeter.update(String.format("%.0f%%", mood.getConfidence() * 100.0), mood.getConfidence());
                 motionMeter.update(String.format("%.0f%%", mood.getMotionLevel() * 100.0), mood.getMotionLevel());
+
+                if (liveMoodBadge != null) {
+                    String moodColor = switch (mood.getEmotion()) {
+                        case HAPPY -> "#10b981";
+                        case STRESSED -> "#f43f5e";
+                        case SURPRISED -> "#f59e0b";
+                        case SAD -> "#94a3b8";
+                        default -> "#00f2fe";
+                    };
+                    liveMoodBadge.setText("● MOOD: " + mood.getEmotion().name() + " (" + mood.getFormattedConfidence() + " ViT-AI)");
+                    liveMoodBadge.setStyle("-fx-background-color: rgba(10, 20, 42, 0.9); -fx-text-fill: " + moodColor + "; -fx-border-color: " + moodColor + "; -fx-border-radius: 5px; -fx-background-radius: 5px; -fx-padding: 3px 8px; -fx-font-size: 10px; -fx-font-weight: bold;");
+                }
+
+                if (liveGenderBadge != null) {
+                    boolean isM = mood.getGender() == MoodDetectedEvent.Gender.MALE;
+                    String gColor = isM ? "#38bdf8" : "#f472b6";
+                    String gSymbol = isM ? "♂ MALE" : "♀ FEMALE";
+                    liveGenderBadge.setText(gSymbol + " • " + mood.getFormattedGenderConfidence() + " [ViT-ONNX AI]");
+                    liveGenderBadge.setStyle("-fx-background-color: rgba(10, 20, 42, 0.9); -fx-text-fill: " + gColor + "; -fx-border-color: " + gColor + "; -fx-border-radius: 5px; -fx-background-radius: 5px; -fx-padding: 3px 8px; -fx-font-size: 10px; -fx-font-weight: bold;");
+                }
             });
         });
 

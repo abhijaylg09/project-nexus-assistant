@@ -26,7 +26,7 @@ public class NexusApp extends Application {
             HudController hudController = new HudController(core);
 
             // 3. Create Scene
-            Scene scene = new Scene(hudController.getRoot(), 1180, 780);
+            Scene scene = new Scene(hudController.getRoot(), 1240, 800);
 
             // 4. Attach Cyberpunk Sci-Fi Stylesheet
             URL cssUrl = getClass().getResource("/styles/hud-cyberpunk.css");
@@ -38,8 +38,8 @@ public class NexusApp extends Application {
 
             // 5. Configure Primary Stage
             primaryStage.setTitle("PROJECT N.E.X.U.S • Personal Real-Time AI Assistant [Java Orchestrator]");
-            primaryStage.setMinWidth(1080);
-            primaryStage.setMinHeight(700);
+            primaryStage.setMinWidth(1120);
+            primaryStage.setMinHeight(720);
             primaryStage.setScene(scene);
 
             // 6. Graceful Shutdown on Close
@@ -51,7 +51,10 @@ public class NexusApp extends Application {
                 System.exit(0);
             });
 
+            primaryStage.centerOnScreen();
             primaryStage.show();
+            primaryStage.toFront();
+            primaryStage.requestFocus();
             System.out.println("[NexusApp] JavaFX HUD Interface launched successfully.");
 
         } catch (Exception e) {

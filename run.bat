@@ -17,12 +17,13 @@ if exist "C:\Users\abhij\.gemini\antigravity-ide\scratch\tools\apache-maven-3.9.
     set "PATH=!MAVEN_HOME!\bin;!PATH!"
 )
 
-if exist "target\nexus-ai-assistant-1.0.0.jar" (
-    echo [N.E.X.U.S] Launching packaged executable JAR...
-    java -jar "target\nexus-ai-assistant-1.0.0.jar"
-) else (
-    echo [N.E.X.U.S] Standalone JAR not found. Launching via Maven JavaFX runner...
-    call mvn javafx:run
+echo [N.E.X.U.S] Launching via Maven JavaFX runner...
+call mvn javafx:run
+if %errorlevel% neq 0 (
+    if exist "target\nexus-ai-assistant-1.0.0.jar" (
+        echo [N.E.X.U.S] Maven launch failed. Attempting fallback standalone JAR...
+        java -jar "target\nexus-ai-assistant-1.0.0.jar"
+    )
 )
 
 if %errorlevel% neq 0 (

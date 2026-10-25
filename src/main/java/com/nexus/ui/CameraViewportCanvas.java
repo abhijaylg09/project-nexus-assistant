@@ -123,77 +123,6 @@ public class CameraViewportCanvas extends Canvas {
             gc.strokeLine(0, 8, 0, 18);
             gc.restore();
 
-            // ─── Person Name Identification Tag directly above face ───
-            Color moodAccent = switch (currentMood.getEmotion()) {
-                case HAPPY -> Color.rgb(16, 185, 129); // Emerald
-                case STRESSED -> Color.rgb(244, 63, 94); // Coral Red
-                case SURPRISED -> Color.rgb(245, 158, 11); // Amber
-                case SAD -> Color.rgb(148, 163, 184); // Slate
-                default -> Color.rgb(0, 242, 254); // Cyan (Focused/Neutral)
-            };
-
-            String personName = (currentMood.getRecognizedIdentity() != null && !currentMood.getRecognizedIdentity().isBlank())
-                    ? currentMood.getRecognizedIdentity()
-                    : "UNKNOWN PERSON";
-
-            double tagY = Math.max(8, by - 56);
-            gc.setFill(Color.rgb(10, 20, 42, 0.92));
-            gc.fillRoundRect(bx, tagY, 195, 24, 8, 8);
-            gc.setStroke(Color.rgb(56, 189, 248, 0.85));
-            gc.setLineWidth(1.2);
-            gc.strokeRoundRect(bx, tagY, 195, 24, 8, 8);
-
-            gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 11));
-            gc.setFill(Color.rgb(56, 189, 248));
-            gc.fillText("👤 " + personName, bx + 8, tagY + 16);
-
-            // ─── Emotion Tag Card above face ───
-            double moodY = Math.max(34, by - 28);
-            gc.setFill(Color.rgb(10, 18, 36, 0.88));
-            gc.fillRoundRect(bx, moodY, 185, 24, 8, 8);
-            gc.setStroke(moodAccent);
-            gc.setLineWidth(1.2);
-            gc.strokeRoundRect(bx, moodY, 185, 24, 8, 8);
-
-            gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 10));
-            gc.setFill(moodAccent);
-            gc.fillText("● MOOD: " + currentMood.getEmotion().name() + " (" + currentMood.getFormattedConfidence() + " ViT-AI)", bx + 8, moodY + 16);
-
-            // ─── Glassmorphic Gender Tag below face box ───
-            boolean isMale = currentMood.getGender() == MoodDetectedEvent.Gender.MALE;
-            Color genderBg = isMale ? Color.rgb(10, 25, 52, 0.88) : Color.rgb(50, 14, 42, 0.88);
-            Color genderBorder = isMale ? Color.rgb(56, 189, 248, 0.8) : Color.rgb(244, 114, 182, 0.8);
-            Color genderText = isMale ? Color.rgb(56, 189, 248) : Color.rgb(244, 114, 182);
-
-            gc.setFill(genderBg);
-            gc.fillRoundRect(bx, by + bh + 6, 185, 24, 8, 8);
-            gc.setStroke(genderBorder);
-            gc.setLineWidth(1.2);
-            gc.strokeRoundRect(bx, by + bh + 6, 185, 24, 8, 8);
-
-            String genderSymbol = isMale ? "♂ MALE" : "♀ FEMALE";
-            gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 10));
-            gc.setFill(genderText);
-            gc.fillText(genderSymbol + " • " + currentMood.getFormattedGenderConfidence() + " [ViT-ONNX AI]", bx + 8, by + bh + 22);
-        }
-
-        // 3. Recognized Teammate Identity Banner (Top Left)
-        if (currentMood != null && currentMood.getRecognizedIdentity() != null) {
-            gc.setFill(Color.rgb(11, 20, 42, 0.88));
-            gc.fillRoundRect(8, 8, 260, 38, 10, 10);
-            gc.setStroke(Color.rgb(0, 242, 254, 0.75));
-            gc.setLineWidth(1.2);
-            gc.strokeRoundRect(8, 8, 260, 38, 10, 10);
-
-            gc.setFont(Font.font("Segoe UI", FontWeight.BOLD, 11));
-            gc.setFill(Color.rgb(0, 242, 254));
-            gc.fillText("👤 " + currentMood.getRecognizedIdentity(), 16, 24);
-
-            gc.setFont(Font.font("Segoe UI", FontWeight.NORMAL, 9));
-            gc.setFill(Color.rgb(148, 163, 184));
-            String roleText = currentMood.getIdentityRole();
-            if (roleText.length() > 38) roleText = roleText.substring(0, 38) + "...";
-            gc.fillText(roleText, 16, 37);
         }
 
         // 4. Hand Gesture Status Badge (Top Right)
@@ -219,9 +148,16 @@ public class CameraViewportCanvas extends Canvas {
         double motionPercent = (currentMood != null) ? currentMood.getMotionLevel() * 100 : 5.0;
         String motionTag = (motionPercent > 30) ? "ACTIVE" : "STABLE";
 
+        String moodText = (currentMood != null)
+                ? currentMood.getEmotion().name() + " (" + currentMood.getFormattedConfidence() + ")"
+                : "ANALYZING";
+        String genderText = (currentMood != null)
+                ? (currentMood.getGender() == MoodDetectedEvent.Gender.MALE ? "♂ MALE" : "♀ FEMALE") + " (" + currentMood.getFormattedGenderConfidence() + ")"
+                : "DETECTING";
+
         gc.setFont(Font.font("Consolas", FontWeight.BOLD, 9));
         gc.setFill(Color.rgb(0, 242, 254, 0.9));
-        gc.fillText("⚡ PYTHON AI MULTIMODAL CORE • ViT-EMOTION • ViT-GENDER • GESTURE ENGINE • MOTION: "
+        gc.fillText("⚡ ViT-MOOD: " + moodText + " • ViT-GENDER: " + genderText + " • MOTION: "
                 + String.format("%.0f%%", motionPercent) + " [" + motionTag + "]", 16, h - 11);
     }
 }
